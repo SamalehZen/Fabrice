@@ -24,7 +24,7 @@ const App: React.FC = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-800 tracking-tight leading-none">
-                Hyper Analytics <span className="text-brand-600">Sondage</span>
+                Hyper <span className="text-brand-600">Analyse</span>
               </h1>
             </div>
           </div>
@@ -107,14 +107,14 @@ const App: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-900">
-            {activeTab === 'dashboard' && 'Panorama du sondage'}
+            {activeTab === 'dashboard' && "Panorama de l'analyse"}
             {activeTab === 'questions' && 'Analyse des questions (camemberts)'}
             {activeTab === 'editor' && 'Gestion des données'}
           </h2>
           <p className="text-slate-500 mt-1 max-w-2xl">
             {activeTab === 'dashboard' && 'Analyse complète des profils clients, habitudes d’achat et niveaux de satisfaction.'}
             {activeTab === 'questions' && 'Visualisation des réponses aux questions 0 à 10 sous forme de graphiques circulaires.'}
-            {activeTab === 'editor' && 'Mettez à jour les données du sondage en temps réel : graphiques et IA se synchronisent automatiquement.'}
+            {activeTab === 'editor' && "Mettez à jour les données de l'analyse en temps réel : graphiques et IA se synchronisent automatiquement."}
           </p>
         </div>
         

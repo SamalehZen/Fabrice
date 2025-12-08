@@ -67,7 +67,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Éditeur de données</h2>
-          <p className="text-sm text-slate-500">Modifiez les résultats du sondage en temps réel</p>
+          <p className="text-sm text-slate-500">Modifiez les résultats de l'analyse en temps réel</p>
         </div>
         <div className="flex gap-2">
           <button 

@@ -142,7 +142,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     addSheet(filteredData.preferredDepartment, 'Q8_Rayons');
     addSheet(filteredData.nameChangeAwareness, 'Q9_Nom');
     addSheet(filteredData.experienceChanges, 'Q10_Experience');
-    XLSX.writeFile(wb, `Hyper_Analytics_Sondage_${selectedZone}_${dateStr}.xlsx`);
+    XLSX.writeFile(wb, `Hyper_Analyse_${selectedZone}_${dateStr}.xlsx`);
   };
 
   return (
