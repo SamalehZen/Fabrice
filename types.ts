@@ -27,9 +27,11 @@ export interface SurveyDataset {
 }
 
 export enum ChartType {
-  PIE,
-  BAR,
-  LINE,
-  RADAR,
-  STACKED_BAR
+  PIE = 'PIE',
+  BAR = 'BAR',
+  LINE = 'LINE',
+  RADAR = 'RADAR',
+  STACKED_BAR = 'STACKED_BAR',
 }
+
+export type SurveyDataKey = keyof SurveyDataset;
