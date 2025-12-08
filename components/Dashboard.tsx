@@ -42,12 +42,12 @@ interface DashboardProps {
 }
 
 const QUESTION_META = {
-  q0: { title: 'Q0 • Répartition des âges', subtitle: 'Tranches d'âge des répondants' },
-  q2: { title: 'Q2 • Moyen de transport', subtitle: 'Comment les visiteurs se rendent au mall' },
-  q3: { title: 'Q3 • Fréquence de visite', subtitle: 'Rythme des achats à l'hypermarché' },
-  q5: { title: 'Q5 • Magasin alimentaire le plus fréquenté', subtitle: 'Part de visite par enseigne' },
-  q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
-  q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' }
+  q0: { title: "Q0 • Répartition des âges", subtitle: "Tranches d'âge des répondants" },
+  q2: { title: "Q2 • Moyen de transport", subtitle: "Comment les visiteurs se rendent au mall" },
+  q3: { title: "Q3 • Fréquence de visite", subtitle: "Rythme des achats à l'hypermarché" },
+  q5: { title: "Q5 • Magasin alimentaire le plus fréquenté", subtitle: "Part de visite par enseigne" },
+  q7: { title: "Q7 • Satisfaction globale", subtitle: "Évaluation de la visite du jour" },
+  q8: { title: "Q8 • Rayons préférés", subtitle: "Départements les plus attractifs" }
 };
 
 const MONTHLY_PROFITS_COLORS = ['#C4B5E6', '#A8D4F0', '#D4E4D2'];
