@@ -105,21 +105,18 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     };
   }, [data, selectedZone]);
 
-  const totalRespondents = filteredData.ageGroups.reduce((acc, curr) => acc + curr.value, 0);
+  const totalRespondents = filteredData.zones.reduce((acc, curr) => acc + curr.value, 0);
   const totalSatisfaction = filteredData.satisfaction.reduce((acc, curr) => acc + curr.value, 0);
   const positiveSatisfaction = filteredData.satisfaction
     .filter(s => s.name === 'Satisfait' || s.name === 'Très satisfait')
     .reduce((acc, curr) => acc + curr.value, 0);
   const satisfactionRate = totalSatisfaction > 0 ? Math.round((positiveSatisfaction / totalSatisfaction) * 100) : 0;
 
-  const topZone = selectedZone === 'All'
-    ? [...filteredData.zones].sort((a, b) => b.value - a.value)[0]
-    : { name: selectedZone, value: totalRespondents };
+  const topZone = [...filteredData.zones].sort((a, b) => b.value - a.value)[0] || { name: 'N/A', value: 0 };
 
+  const totalZones = data.zones.reduce((acc, curr) => acc + curr.value, 0);
   const topZonePercent = selectedZone === 'All'
-    ? (data.ageGroups.reduce((acc, curr) => acc + curr.value, 0) > 0
-        ? Math.round((topZone.value / data.ageGroups.reduce((acc, curr) => acc + curr.value, 0)) * 100)
-        : 0)
+    ? (totalZones > 0 ? Math.round((topZone.value / totalZones) * 100) : 0)
     : 100;
 
   const topTransport = [...filteredData.transport].sort((a, b) => b.value - a.value)[0];
