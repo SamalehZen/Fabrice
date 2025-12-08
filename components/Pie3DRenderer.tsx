@@ -16,22 +16,12 @@ interface Render3DPieOptions {
   showLegend?: boolean;
   paddingAngle?: number;
   minLabelPercent?: number;
-  isDark?: boolean;
+  isDark?: boolean; // Deprecated but kept for type compatibility
   labelPosition?: 'inside' | 'outside';
   labelOffset?: number;
 }
 
 const RADIAN = Math.PI / 180;
-
-const detectDarkMode = () => {
-  if (typeof document !== 'undefined') {
-    return document.documentElement.classList.contains('dark');
-  }
-  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-  return false;
-};
 
 export const render3DPie = (
   chartData: PieDatum[],
@@ -43,7 +33,6 @@ export const render3DPie = (
     showLegend = true,
     paddingAngle = 5,
     minLabelPercent = 0.05,
-    isDark,
     labelPosition = 'outside',
     labelOffset = 16,
   }: Render3DPieOptions = {}
@@ -51,14 +40,13 @@ export const render3DPie = (
   if (!chartData || chartData.length === 0) return null;
 
   const resolvedOuterRadius = typeof outerRadius === 'number' ? outerRadius : isWide ? 100 : 80;
-  const isDarkMode = typeof isDark === 'boolean' ? isDark : detectDarkMode();
-  const tooltipBackground = isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)';
-  const tooltipColor = isDarkMode ? '#e2e8f0' : '#0f172a';
-  const tooltipShadow = isDarkMode
-    ? '0 10px 25px -5px rgba(2,6,23,0.9)'
-    : '0 10px 30px -5px rgba(15,23,42,0.15)';
-  const legendColor = isDarkMode ? '#cbd5f5' : '#0f172a';
-  const labelColor = isDarkMode ? '#f1f5f9' : '#0f172a';
+  
+  // Force Light Mode Styling
+  const tooltipBackground = 'rgba(255,255,255,0.9)';
+  const tooltipColor = '#1e293b';
+  const tooltipShadow = '0 10px 30px -5px rgba(0,0,0,0.1)';
+  const legendColor = '#64748b';
+  const labelColor = '#475569';
 
   const renderLabel = (props: PieLabelRenderProps) => {
     const { percent, cx, cy, midAngle, innerRadius: labelInnerRadius, outerRadius: labelOuterRadius } = props;
@@ -77,8 +65,9 @@ export const render3DPie = (
         <text
           x={x}
           y={y}
-          fill={labelColor}
-          fontSize={12}
+          fill="#1e293b"
+          fontSize={11}
+          fontWeight={600}
           textAnchor="middle"
           dominantBaseline="central"
         >
@@ -96,7 +85,8 @@ export const render3DPie = (
         x={x}
         y={y}
         fill={labelColor}
-        fontSize={12}
+        fontSize={11}
+        fontWeight={500}
         textAnchor={x > centerX ? 'start' : 'end'}
         dominantBaseline="middle"
       >
@@ -111,22 +101,10 @@ export const render3DPie = (
         <defs>
           <filter id="shadow3d" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
-            <feOffset in="blur" dx="3" dy="3" result="offsetBlur" />
-            <feSpecularLighting
-              in="blur"
-              surfaceScale={5}
-              specularConstant={0.75}
-              specularExponent={20}
-              lightingColor="#ffffff"
-              result="specOut"
-            >
-              <fePointLight x={-5000} y={-10000} z={20000} />
-            </feSpecularLighting>
-            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
-            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1={0} k2={1} k3={1} k4={0} result="litPaint" />
+            <feOffset in="blur" dx="2" dy="4" result="offsetBlur" />
             <feMerge>
               <feMergeNode in="offsetBlur" />
-              <feMergeNode in="litPaint" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
@@ -138,31 +116,33 @@ export const render3DPie = (
           outerRadius={resolvedOuterRadius}
           paddingAngle={paddingAngle}
           dataKey="value"
-          style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }}
+          // Using CSS filter for soft drop shadow instead of heavy SVG filter
+          style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.05))' }}
           stroke="none"
           label={renderLabel}
-          labelLine={labelPosition === 'outside' ? { stroke: isDarkMode ? 'rgba(148,163,184,0.6)' : 'rgba(15,23,42,0.3)' } : false}
+          labelLine={labelPosition === 'outside' ? { stroke: '#cbd5e1', strokeWidth: 1 } : false}
         >
           {chartData.map((entry, index) => (
             <Cell
               key={`cell-${entry.name}-${index}`}
               fill={colors[index % colors.length]}
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={1}
+              stroke="#ffffff"
+              strokeWidth={2}
             />
           ))}
         </Pie>
         <Tooltip
           contentStyle={{
-            borderRadius: '12px',
-            border: 'none',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.5)',
             boxShadow: tooltipShadow,
             backgroundColor: tooltipBackground,
             color: tooltipColor,
-            backdropFilter: 'blur(6px)'
+            backdropFilter: 'blur(8px)',
+            padding: '12px'
           }}
-          itemStyle={{ color: tooltipColor }}
-          labelStyle={{ color: tooltipColor, fontWeight: 600 }}
+          itemStyle={{ color: tooltipColor, fontSize: '12px', fontWeight: 500 }}
+          labelStyle={{ color: tooltipColor, fontWeight: 700, marginBottom: '4px' }}
         />
         {showLegend && (
           <Legend
@@ -170,7 +150,9 @@ export const render3DPie = (
             verticalAlign={isWide ? 'middle' : 'bottom'}
             align={isWide ? 'right' : 'center'}
             wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
-            formatter={(value) => <span style={{ color: legendColor }}>{value}</span>}
+            formatter={(value) => <span style={{ color: legendColor, fontSize: '11px', fontWeight: 500 }}>{value}</span>}
+            iconType="circle" 
+            iconSize={8}
           />
         )}
       </PieChart>
