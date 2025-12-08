@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
 import { COLORS } from '../constants';
 
 export interface PieDatum {
@@ -15,7 +16,20 @@ interface Render3DPieOptions {
   showLegend?: boolean;
   paddingAngle?: number;
   minLabelPercent?: number;
+  isDark?: boolean;
 }
+
+const RADIAN = Math.PI / 180;
+
+const detectDarkMode = () => {
+  if (typeof document !== 'undefined') {
+    return document.documentElement.classList.contains('dark');
+  }
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  return false;
+};
 
 export const render3DPie = (
   chartData: PieDatum[],
@@ -27,11 +41,45 @@ export const render3DPie = (
     showLegend = true,
     paddingAngle = 5,
     minLabelPercent = 0.05,
+    isDark,
   }: Render3DPieOptions = {}
 ) => {
   if (!chartData || chartData.length === 0) return null;
 
   const resolvedOuterRadius = typeof outerRadius === 'number' ? outerRadius : isWide ? 100 : 80;
+  const isDarkMode = typeof isDark === 'boolean' ? isDark : detectDarkMode();
+  const tooltipBackground = isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)';
+  const tooltipColor = isDarkMode ? '#e2e8f0' : '#0f172a';
+  const tooltipShadow = isDarkMode
+    ? '0 10px 25px -5px rgba(2,6,23,0.9)'
+    : '0 10px 30px -5px rgba(15,23,42,0.15)';
+  const legendColor = isDarkMode ? '#cbd5f5' : '#0f172a';
+  const labelColor = isDarkMode ? '#f1f5f9' : '#0f172a';
+
+  const renderLabel = (props: PieLabelRenderProps) => {
+    const { percent, cx, cy, midAngle, innerRadius: labelInnerRadius, outerRadius: labelOuterRadius } = props;
+    if (typeof percent !== 'number' || percent <= minLabelPercent) return null;
+    const effectiveInner = typeof labelInnerRadius === 'number' ? labelInnerRadius : innerRadius;
+    const effectiveOuter = typeof labelOuterRadius === 'number' ? labelOuterRadius : resolvedOuterRadius;
+    const radius = effectiveInner + (effectiveOuter - effectiveInner) * 0.6;
+    const centerX = typeof cx === 'number' ? cx : Number(cx);
+    const centerY = typeof cy === 'number' ? cy : Number(cy);
+    const x = centerX + radius * Math.cos(-midAngle * RADIAN);
+    const y = centerY + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill={labelColor}
+        fontSize={12}
+        textAnchor={x > centerX ? 'start' : 'end'}
+        dominantBaseline="central"
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -68,7 +116,7 @@ export const render3DPie = (
           dataKey="value"
           style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }}
           stroke="none"
-          label={({ percent }) => (percent > minLabelPercent ? `${(percent * 100).toFixed(0)}%` : '')}
+          label={renderLabel}
           labelLine={false}
         >
           {chartData.map((entry, index) => (
@@ -84,10 +132,13 @@ export const render3DPie = (
           contentStyle={{
             borderRadius: '12px',
             border: 'none',
-            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(4px)'
+            boxShadow: tooltipShadow,
+            backgroundColor: tooltipBackground,
+            color: tooltipColor,
+            backdropFilter: 'blur(6px)'
           }}
+          itemStyle={{ color: tooltipColor }}
+          labelStyle={{ color: tooltipColor, fontWeight: 600 }}
         />
         {showLegend && (
           <Legend
@@ -95,6 +146,7 @@ export const render3DPie = (
             verticalAlign={isWide ? 'middle' : 'bottom'}
             align={isWide ? 'right' : 'center'}
             wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
+            formatter={(value) => <span style={{ color: legendColor }}>{value}</span>}
           />
         )}
       </PieChart>
