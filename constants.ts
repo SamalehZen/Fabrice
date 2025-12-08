@@ -1,8 +1,13 @@
 import { SurveyDataset } from './types';
 
-// Colors for charts
-export const COLORS = ['#0ea5e9', '#22c55e', '#eab308', '#f97316', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
-export const SATISFACTION_COLORS = ['#ef4444', '#f97316', '#84cc16', '#22c55e']; // Red to Green
+export const COLORS = ['#C4B5E6', '#A8D4F0', '#D4E4D2', '#F0E4C4', '#F5C4C4', '#B8D4B4', '#E8C8D8', '#A8C8E6'];
+export const SATISFACTION_COLORS = ['#F5A8A8', '#F5D4A8', '#D4E4D2', '#A8D4B8'];
+export const PIE_COLORS = {
+  primary: '#C4B5E6',
+  secondary: '#A8D4F0', 
+  tertiary: '#D4E4D2',
+  accent: '#F0E4C4'
+};
 
 export interface QuestionMapping {
   id: string;

@@ -3,7 +3,7 @@ import Dashboard from './components/Dashboard';
 import QuestionsView from './components/QuestionsView';
 import DataEditor from './components/DataEditor';
 import AIChatOverlay from './components/AIChatOverlay';
-import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu } from 'lucide-react';
+import { LayoutDashboard, PieChart as PieChartIcon, Database, Settings, LogOut, MessageSquare, Search, ChevronDown } from 'lucide-react';
 import { SURVEY_DATA } from './constants';
 import { SurveyDataset } from './types';
 
@@ -11,46 +11,20 @@ const THEME_STORAGE_KEY = 'hyper-analyse-theme';
 type ThemeMode = 'light' | 'dark';
 
 const resolveInitialTheme = (): ThemeMode => {
-  if (typeof window === 'undefined') {
-    return 'light';
-  }
+  if (typeof window === 'undefined') return 'light';
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === 'light' || stored === 'dark') {
-    return stored;
-  }
+  if (stored === 'light' || stored === 'dark') return stored;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-
-const FruitBadge: React.FC<{ theme: ThemeMode; className?: string }> = ({ theme, className = '' }) => {
-  const peelGradient = theme === 'dark' ? 'from-amber-300 via-orange-400 to-rose-500' : 'from-amber-200 via-orange-300 to-rose-400';
-  const glossGradient = theme === 'dark' ? 'from-white/25 to-transparent' : 'from-white/70 to-transparent';
-  const leafPrimary = theme === 'dark' ? 'bg-emerald-300' : 'bg-emerald-500';
-  const leafSecondary = theme === 'dark' ? 'bg-emerald-400/80' : 'bg-emerald-400/60';
-  const seedColor = theme === 'dark' ? 'bg-slate-900/60' : 'bg-white/70';
-
-  return (
-    <span className={`relative inline-flex w-10 h-10 ${className}`} aria-hidden>
-      <span className={`absolute inset-0 rounded-full bg-gradient-to-br ${peelGradient} shadow-[0_10px_30px_rgba(249,115,22,0.35)] transition-all duration-500`}></span>
-      <span className="absolute inset-[1px] rounded-full border border-white/30 dark:border-white/10"></span>
-      <span className={`absolute inset-[4px] rounded-full bg-gradient-to-br ${glossGradient} opacity-90 mix-blend-screen`}></span>
-      <span className={`absolute -top-1 left-1.5 w-5 h-2.5 rounded-full ${leafPrimary} rotate-[-18deg] origin-left blur-[0.3px]`}></span>
-      <span className={`absolute -top-2 left-3 w-3 h-3 rounded-full ${leafSecondary} rotate-[-34deg] origin-bottom`}></span>
-      <span className={`absolute bottom-3 left-4 w-1 h-1 rounded-full ${seedColor}`}></span>
-      <span className={`absolute bottom-2.5 right-3 w-1 h-1 rounded-full ${seedColor}`}></span>
-    </span>
-  );
 };
 
 const App: React.FC = () => {
   const [surveyData, setSurveyData] = useState<SurveyDataset>(JSON.parse(JSON.stringify(SURVEY_DATA)));
   const [activeTab, setActiveTab] = useState<'dashboard' | 'questions' | 'editor'>('dashboard');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>(() => resolveInitialTheme());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
+    if (typeof document === 'undefined') return;
     const root = document.documentElement;
     root.classList.toggle('dark', theme === 'dark');
     root.style.setProperty('color-scheme', theme);
@@ -59,184 +33,118 @@ const App: React.FC = () => {
     }
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
-  };
+  const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'questions', label: 'Statistiques', icon: PieChartIcon },
+    { id: 'editor', label: 'Données', icon: Database },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <header className="bg-white/80 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-brand-600 dark:bg-brand-500/90 p-2 rounded-lg shadow-md shadow-brand-200/70 dark:shadow-brand-900/40">
-              <LayoutDashboard className="text-white w-5 h-5" />
+    <div className="min-h-screen bg-cream-200 dark:bg-charcoal-900 flex transition-colors duration-300">
+      <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-charcoal-900 dark:bg-charcoal-950 flex flex-col transition-all duration-300 fixed h-full z-50`}>
+        <div className="p-6 flex items-center gap-3">
+          <div className="w-10 h-10 bg-cream-100 rounded-xl flex items-center justify-center shadow-lg">
+            <LayoutDashboard className="w-5 h-5 text-charcoal-900" />
+          </div>
+          {!sidebarCollapsed && (
+            <span className="text-xl font-bold text-white tracking-tight">Hyper</span>
+          )}
+        </div>
+
+        <div className="px-4 py-6 flex flex-col items-center border-b border-white/10">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cream-200 to-cream-300 overflow-hidden shadow-xl ring-4 ring-white/10">
+            <div className="w-full h-full bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">A</span>
             </div>
+          </div>
+          {!sidebarCollapsed && (
+            <>
+              <p className="text-cream-400 text-xs mt-3">Bienvenue,</p>
+              <p className="text-white font-semibold">Analyste</p>
+            </>
+          )}
+        </div>
+
+        <nav className="flex-1 px-3 py-6 space-y-1">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  isActive
+                    ? 'bg-sage-400/20 text-sage-300'
+                    : 'text-cream-400 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <Icon size={20} className={isActive ? 'text-sage-300' : ''} />
+                {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="px-3 py-4 space-y-1 border-t border-white/10">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-cream-400 hover:bg-white/5 hover:text-white transition-all">
+            <MessageSquare size={20} />
+            {!sidebarCollapsed && (
+              <>
+                <span className="font-medium">Messages</span>
+                <span className="ml-auto bg-sage-400 text-charcoal-900 text-xs font-bold px-2 py-0.5 rounded-full">5</span>
+              </>
+            )}
+          </button>
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-cream-400 hover:bg-white/5 hover:text-white transition-all">
+            <Settings size={20} />
+            {!sidebarCollapsed && <span className="font-medium">Paramètres</span>}
+          </button>
+          <button 
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-cream-400 hover:bg-white/5 hover:text-white transition-all"
+          >
+            <LogOut size={20} />
+            {!sidebarCollapsed && <span className="font-medium">{theme === 'dark' ? 'Mode clair' : 'Mode sombre'}</span>}
+          </button>
+        </div>
+      </aside>
+
+      <div className={`flex-1 ${sidebarCollapsed ? 'ml-20' : 'ml-64'} transition-all duration-300`}>
+        <header className="sticky top-0 z-40 bg-cream-200/80 dark:bg-charcoal-900/80 backdrop-blur-xl border-b border-cream-300 dark:border-charcoal-800">
+          <div className="px-8 h-16 flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight leading-none">
-                Hyper <span className="text-brand-600 dark:text-brand-300">Analyse</span>
+              <h1 className="text-xl font-bold text-charcoal-900 dark:text-white">
+                {activeTab === 'dashboard' && 'Dashboard'}
+                {activeTab === 'questions' && 'Statistiques'}
+                {activeTab === 'editor' && 'Éditeur de données'}
               </h1>
+              <p className="text-sm text-charcoal-900/60 dark:text-cream-400">Analyse des données clients</p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <nav className="hidden md:flex gap-1">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeTab === 'dashboard'
-                    ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:ring-brand-400/40'
-                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <LayoutDashboard size={16} /> Tableau de bord
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('questions')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeTab === 'questions'
-                    ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:ring-brand-400/40'
-                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <PieChartIcon size={16} /> Questions (camemberts)
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('editor')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeTab === 'editor'
-                    ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:ring-brand-400/40'
-                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <Database size={16} /> Éditeur de données
-                </span>
-              </button>
-            </nav>
-
-            <button
-              onClick={toggleTheme}
-              aria-label="Basculer le mode fruité"
-              className="hidden md:flex items-center gap-3 px-3 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 shadow-inner shadow-slate-200/60 dark:shadow-black/40 backdrop-blur"
-            >
-              <FruitBadge theme={theme} />
-              <div className="text-left">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Palette</p>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">{theme === 'dark' ? 'Sombre fruitée' : 'Clair vitaminé'}</p>
+            
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal-900/40 dark:text-cream-400" />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  className="pl-10 pr-4 py-2.5 w-64 bg-white dark:bg-charcoal-800 border border-cream-300 dark:border-charcoal-700 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-sage-400/50 transition-all"
+                />
               </div>
-              <span className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
-                theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200'
-              }`}>
-                <span
-                  className={`absolute top-1 w-4 h-4 rounded-full transition-transform duration-300 shadow ${
-                    theme === 'dark'
-                      ? 'translate-x-6 bg-brand-400 shadow-brand-900/50'
-                      : 'translate-x-1 bg-orange-400 shadow-orange-500/40'
-                  }`}
-                ></span>
-              </span>
-            </button>
-
-            <div className="flex items-center gap-2 md:hidden">
-              <button
-                onClick={toggleTheme}
-                aria-label="Basculer le mode fruité"
-                className="p-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70"
-              >
-                <FruitBadge theme={theme} />
-              </button>
-              <button
-                className="p-2 text-slate-600 dark:text-slate-200"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Ouvrir la navigation mobile"
-              >
-                <Menu size={24} />
-              </button>
             </div>
           </div>
-        </div>
+        </header>
 
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white/95 dark:bg-slate-950/90 border-t border-slate-100 dark:border-slate-800 p-4 space-y-3 shadow-lg shadow-slate-900/10">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-4 py-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Palette fruitée</p>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">{theme === 'dark' ? 'Mode sombre' : 'Mode clair'}</p>
-              </div>
-              <button
-                onClick={toggleTheme}
-                aria-label="Basculer le thème fruité"
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70"
-              >
-                <FruitBadge theme={theme} />
-              </button>
-            </div>
-            <button
-              onClick={() => {
-                setActiveTab('dashboard');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${
-                activeTab === 'dashboard'
-                  ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900/60'
-              }`}
-            >
-              <LayoutDashboard size={18} /> Tableau de bord
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('questions');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${
-                activeTab === 'questions'
-                  ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900/60'
-              }`}
-            >
-              <PieChartIcon size={18} /> Questions (camemberts)
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('editor');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${
-                activeTab === 'editor'
-                  ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900/60'
-              }`}
-            >
-              <Database size={18} /> Éditeur de données
-            </button>
+        <main className="p-8">
+          <div className="transition-opacity duration-300">
+            {activeTab === 'dashboard' && <Dashboard data={surveyData} />}
+            {activeTab === 'questions' && <QuestionsView data={surveyData} />}
+            {activeTab === 'editor' && <DataEditor data={surveyData} onUpdate={setSurveyData} />}
           </div>
-        )}
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {activeTab === 'dashboard' && 'Panorama de l\'analyse'}
-            {activeTab === 'questions' && 'Analyse des questions (camemberts)'}
-            {activeTab === 'editor' && 'Gestion des données'}
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-            {activeTab === 'dashboard' && 'Analyse complète des profils clients, habitudes d’achat et niveaux de satisfaction.'}
-            {activeTab === 'questions' && 'Visualisation des réponses aux questions 0 à 10 sous forme de graphiques circulaires.'}
-            {activeTab === 'editor' && "Mettez à jour les données de l'analyse en temps réel : graphiques et IA se synchronisent automatiquement."}
-          </p>
-        </div>
-        <div className="transition-opacity duration-300">
-          {activeTab === 'dashboard' && <Dashboard data={surveyData} />}
-          {activeTab === 'questions' && <QuestionsView data={surveyData} />}
-          {activeTab === 'editor' && <DataEditor data={surveyData} onUpdate={setSurveyData} />}
-        </div>
-      </main>
+        </main>
+      </div>
 
       <AIChatOverlay currentData={surveyData} />
     </div>

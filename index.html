@@ -18,6 +18,41 @@
                 600: '#0284c7',
                 700: '#0369a1',
                 900: '#0c4a6e'
+              },
+              cream: {
+                50: '#FDFCFA',
+                100: '#F8F6F1',
+                200: '#F2EFE8',
+                300: '#E8E4DA',
+                400: '#D9D4C7'
+              },
+              sage: {
+                50: '#F4F8F4',
+                100: '#E8F0E8',
+                200: '#D4E4D2',
+                300: '#B8D4B4',
+                400: '#9CC496',
+                500: '#6B9E64'
+              },
+              sand: {
+                50: '#FDF9F0',
+                100: '#F9F0DC',
+                200: '#F0E4C4',
+                300: '#E5D4A4',
+                400: '#D4C088'
+              },
+              lavender: {
+                50: '#F8F6FC',
+                100: '#EDE8F8',
+                200: '#D8CCF0',
+                300: '#C4B5E6',
+                400: '#A894D8',
+                500: '#8B6FC8'
+              },
+              charcoal: {
+                800: '#2C2C2C',
+                900: '#1C1C1C',
+                950: '#141414'
               }
             }
           }
@@ -25,20 +60,25 @@
       }
     </script>
     <style>
-      /* Custom scrollbar for webkit */
       ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #f1f1f1;
+        background: #F2EFE8;
       }
       ::-webkit-scrollbar-thumb {
-        background: #ccc;
+        background: #D9D4C7;
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #999;
+        background: #B8B0A0;
+      }
+      body {
+        background-color: #F2EFE8;
+      }
+      .dark body {
+        background-color: #1C1C1C;
       }
     </style>
   <script type="importmap">
@@ -57,7 +97,7 @@
 }
 </script>
 </head>
-  <body class="bg-gray-50 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+  <body class="bg-cream-200 text-charcoal-900 antialiased selection:bg-sage-200 selection:text-sage-500 dark:bg-charcoal-900 dark:text-cream-100 transition-colors duration-300">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

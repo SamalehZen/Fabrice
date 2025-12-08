@@ -41,7 +41,7 @@ export const render3DPie = (
     innerRadius = 0,
     outerRadius,
     showLegend = true,
-    paddingAngle = 5,
+    paddingAngle = 4,
     minLabelPercent = 0.05,
     isDark,
     labelPosition = 'outside',
@@ -52,13 +52,13 @@ export const render3DPie = (
 
   const resolvedOuterRadius = typeof outerRadius === 'number' ? outerRadius : isWide ? 100 : 80;
   const isDarkMode = typeof isDark === 'boolean' ? isDark : detectDarkMode();
-  const tooltipBackground = isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)';
-  const tooltipColor = isDarkMode ? '#e2e8f0' : '#0f172a';
+  const tooltipBackground = isDarkMode ? '#2C2C2C' : '#FFFFFF';
+  const tooltipColor = isDarkMode ? '#F8F6F1' : '#1C1C1C';
   const tooltipShadow = isDarkMode
-    ? '0 10px 25px -5px rgba(2,6,23,0.9)'
-    : '0 10px 30px -5px rgba(15,23,42,0.15)';
-  const legendColor = isDarkMode ? '#cbd5f5' : '#0f172a';
-  const labelColor = isDarkMode ? '#f1f5f9' : '#0f172a';
+    ? '0 10px 25px -5px rgba(0,0,0,0.6)'
+    : '0 10px 30px -5px rgba(0,0,0,0.1)';
+  const legendColor = isDarkMode ? '#E8E4DA' : '#1C1C1C';
+  const labelColor = isDarkMode ? '#F8F6F1' : '#1C1C1C';
 
   const renderLabel = (props: PieLabelRenderProps) => {
     const { percent, cx, cy, midAngle, innerRadius: labelInnerRadius, outerRadius: labelOuterRadius } = props;
@@ -74,14 +74,7 @@ export const render3DPie = (
       const x = centerX + radius * Math.cos(-midAngle * RADIAN);
       const y = centerY + radius * Math.sin(-midAngle * RADIAN);
       return (
-        <text
-          x={x}
-          y={y}
-          fill={labelColor}
-          fontSize={12}
-          textAnchor="middle"
-          dominantBaseline="central"
-        >
+        <text x={x} y={y} fill={labelColor} fontSize={12} fontWeight={600} textAnchor="middle" dominantBaseline="central">
           {`${(percent * 100).toFixed(0)}%`}
         </text>
       );
@@ -92,14 +85,7 @@ export const render3DPie = (
     const x = centerX + radius * Math.cos(-midAngle * RADIAN);
     const y = centerY + radius * Math.sin(-midAngle * RADIAN);
     return (
-      <text
-        x={x}
-        y={y}
-        fill={labelColor}
-        fontSize={12}
-        textAnchor={x > centerX ? 'start' : 'end'}
-        dominantBaseline="middle"
-      >
+      <text x={x} y={y} fill={labelColor} fontSize={12} fontWeight={500} textAnchor={x > centerX ? 'start' : 'end'} dominantBaseline="middle">
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
@@ -110,24 +96,7 @@ export const render3DPie = (
       <PieChart>
         <defs>
           <filter id="shadow3d" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
-            <feOffset in="blur" dx="3" dy="3" result="offsetBlur" />
-            <feSpecularLighting
-              in="blur"
-              surfaceScale={5}
-              specularConstant={0.75}
-              specularExponent={20}
-              lightingColor="#ffffff"
-              result="specOut"
-            >
-              <fePointLight x={-5000} y={-10000} z={20000} />
-            </feSpecularLighting>
-            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
-            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1={0} k2={1} k3={1} k4={0} result="litPaint" />
-            <feMerge>
-              <feMergeNode in="offsetBlur" />
-              <feMergeNode in="litPaint" />
-            </feMerge>
+            <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.15" />
           </filter>
         </defs>
         <Pie
@@ -138,18 +107,13 @@ export const render3DPie = (
           outerRadius={resolvedOuterRadius}
           paddingAngle={paddingAngle}
           dataKey="value"
-          style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }}
+          style={{ filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.12))' }}
           stroke="none"
           label={renderLabel}
-          labelLine={labelPosition === 'outside' ? { stroke: isDarkMode ? 'rgba(148,163,184,0.6)' : 'rgba(15,23,42,0.3)' } : false}
+          labelLine={labelPosition === 'outside' ? { stroke: isDarkMode ? 'rgba(232,228,218,0.4)' : 'rgba(28,28,28,0.2)' } : false}
         >
           {chartData.map((entry, index) => (
-            <Cell
-              key={`cell-${entry.name}-${index}`}
-              fill={colors[index % colors.length]}
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={1}
-            />
+            <Cell key={`cell-${entry.name}-${index}`} fill={colors[index % colors.length]} stroke="rgba(255,255,255,0.3)" strokeWidth={1} />
           ))}
         </Pie>
         <Tooltip
@@ -170,7 +134,7 @@ export const render3DPie = (
             verticalAlign={isWide ? 'middle' : 'bottom'}
             align={isWide ? 'right' : 'center'}
             wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
-            formatter={(value) => <span style={{ color: legendColor }}>{value}</span>}
+            formatter={(value) => <span style={{ color: legendColor, fontSize: '12px' }}>{value}</span>}
           />
         )}
       </PieChart>
