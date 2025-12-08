@@ -15,7 +15,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([
-    { role: 'assistant', text: "Bonjour ! Je suis votre assistant analytique pour le Bawadi Mall. Posez-moi vos questions sur les données (ex: 'Quelle est la satisfaction ?'), je peux afficher des graphiques." }
+    { role: 'assistant', text: "Bonjour ! Je suis votre assistant analytique pour Hyper Analyse. Posez-moi vos questions sur les données (ex: 'Quelle est la satisfaction ?'), je peux afficher des graphiques." }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

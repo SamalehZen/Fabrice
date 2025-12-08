@@ -24,7 +24,7 @@ const App: React.FC = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-800 tracking-tight leading-none">
-                Bawadi Mall <span className="text-brand-600">Analytics</span>
+                Hyper <span className="text-brand-600">Analyse</span>
               </h1>
             </div>
           </div>
@@ -40,7 +40,7 @@ const App: React.FC = () => {
               }`}
             >
               <span className="flex items-center gap-2">
-                <LayoutDashboard size={16} /> Overview
+                <LayoutDashboard size={16} /> Tableau de bord
               </span>
             </button>
             <button 
@@ -52,7 +52,7 @@ const App: React.FC = () => {
               }`}
             >
               <span className="flex items-center gap-2">
-                <PieChartIcon size={16} /> Questions (Pie)
+                <PieChartIcon size={16} /> Questions (camemberts)
               </span>
             </button>
             <button 
@@ -64,7 +64,7 @@ const App: React.FC = () => {
               }`}
             >
               <span className="flex items-center gap-2">
-                <Database size={16} /> Data Editor
+                <Database size={16} /> Éditeur de données
               </span>
             </button>
           </nav>
@@ -85,19 +85,19 @@ const App: React.FC = () => {
               onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
               className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${activeTab === 'dashboard' ? 'bg-brand-50 text-brand-700' : 'text-slate-600'}`}
             >
-              <LayoutDashboard size={18} /> Overview
+              <LayoutDashboard size={18} /> Tableau de bord
             </button>
             <button 
               onClick={() => { setActiveTab('questions'); setMobileMenuOpen(false); }}
               className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${activeTab === 'questions' ? 'bg-brand-50 text-brand-700' : 'text-slate-600'}`}
             >
-              <PieChartIcon size={18} /> Questions (Pie)
+              <PieChartIcon size={18} /> Questions (camemberts)
             </button>
             <button 
               onClick={() => { setActiveTab('editor'); setMobileMenuOpen(false); }}
               className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${activeTab === 'editor' ? 'bg-brand-50 text-brand-700' : 'text-slate-600'}`}
             >
-              <Database size={18} /> Data Editor
+              <Database size={18} /> Éditeur de données
             </button>
           </div>
         )}
@@ -107,14 +107,14 @@ const App: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-900">
-            {activeTab === 'dashboard' && 'Survey Overview'}
-            {activeTab === 'questions' && 'Questions Breakdown (Pie Charts)'}
-            {activeTab === 'editor' && 'Data Management'}
+            {activeTab === 'dashboard' && "Panorama de l'analyse"}
+            {activeTab === 'questions' && 'Analyse des questions (camemberts)'}
+            {activeTab === 'editor' && 'Gestion des données'}
           </h2>
           <p className="text-slate-500 mt-1 max-w-2xl">
-            {activeTab === 'dashboard' && 'Comprehensive analysis of customer demographics, shopping habits, and satisfaction levels.'}
-            {activeTab === 'questions' && 'Visualizing responses for questions 0 to 10 using proportional pie charts.'}
-            {activeTab === 'editor' && 'Update survey data in real-time. All charts and AI analysis will update automatically.'}
+            {activeTab === 'dashboard' && 'Analyse complète des profils clients, habitudes d’achat et niveaux de satisfaction.'}
+            {activeTab === 'questions' && 'Visualisation des réponses aux questions 0 à 10 sous forme de graphiques circulaires.'}
+            {activeTab === 'editor' && "Mettez à jour les données de l'analyse en temps réel : graphiques et IA se synchronisent automatiquement."}
           </p>
         </div>
         
