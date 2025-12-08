@@ -47,6 +47,175 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
 
   // Helper to render the Chart inside the chat based on the key
   const renderChart = (chartKey: string) => {
+    const nameChangeColors = ['#0ea5e9', '#94a3b8'];
+    const posNegColors = ['#22c55e', '#ef4444'];
+
+    if (chartKey === 'nameChangeAwareness') {
+      const total = currentData.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0) || 1;
+      return (
+        <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={currentData.nameChangeAwareness}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={40}
+                  outerRadius={70}
+                  paddingAngle={4}
+                  dataKey="value"
+                  stroke="none"
+                  label={({ percent }) => percent > 0.08 ? `${(percent * 100).toFixed(0)}%` : ''}
+                  labelLine={false}
+                >
+                  {currentData.nameChangeAwareness.map((entry, index) => (
+                    <Cell key={`q9-cell-${index}`} fill={nameChangeColors[index % nameChangeColors.length]} stroke="rgba(255,255,255,0.3)" />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-2 text-xs">
+            {currentData.nameChangeAwareness.map((slice, index) => {
+              const percent = Math.round((slice.value / total) * 100);
+              return (
+                <div key={`q9-row-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2">
+                  <div className="flex items-center gap-2 font-semibold text-slate-700">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: nameChangeColors[index % nameChangeColors.length] }} />
+                    {slice.name}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-bold text-slate-900">{percent}%</p>
+                    <p className="text-[11px] text-slate-500">{slice.value} réponses</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    if (chartKey === 'experienceChanges') {
+      const totalPositive = currentData.experienceChanges.reduce((acc, curr) => acc + curr.positive, 0);
+      const totalNegative = currentData.experienceChanges.reduce((acc, curr) => acc + curr.negative, 0);
+      const summaryTotal = totalPositive + totalNegative || 1;
+      const summaryData = [
+        { name: 'Perception positive', value: totalPositive },
+        { name: 'Perception négative', value: totalNegative }
+      ];
+      const detailCharts = currentData.experienceChanges.map((item) => ({
+        category: item.category,
+        slices: [
+          { label: item.labelPositive || 'Positif', value: item.positive },
+          { label: item.labelNegative || 'Négatif', value: item.negative }
+        ]
+      }));
+
+      return (
+        <div className="mt-4 space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-4">
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={summaryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={6}
+                    dataKey="value"
+                    stroke="none"
+                    label={({ percent }) => percent > 0.08 ? `${(percent * 100).toFixed(0)}%` : ''}
+                    labelLine={false}
+                  >
+                    {summaryData.map((entry, index) => (
+                      <Cell key={`q10-summary-${entry.name}`} fill={posNegColors[index % posNegColors.length]} stroke="rgba(255,255,255,0.35)" />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+              {summaryData.map((item, index) => (
+                <div key={`q10-highlight-${item.name}`} className="rounded-xl border border-slate-100 px-3 py-2 bg-white/80">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">{item.name}</p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">{Math.round((item.value / summaryTotal) * 100)}%</p>
+                  <p className="text-[11px] text-slate-500">{item.value} réponses</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {detailCharts.map((chart) => {
+              const total = chart.slices.reduce((sum, slice) => sum + slice.value, 0) || 1;
+              return (
+                <div key={`q10-detail-${chart.category}`} className="rounded-2xl border border-slate-100 bg-white/90 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-900">Répartition – {chart.category}</p>
+                    <span className="text-[11px] text-slate-500">{total} réponses</span>
+                  </div>
+                  <div className="mt-3 flex items-center gap-4">
+                    <div className="w-24 h-24">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={chart.slices}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={35}
+                            outerRadius={55}
+                            paddingAngle={4}
+                            dataKey="value"
+                            stroke="none"
+                            label={({ percent }) => percent > 0.12 ? `${(percent * 100).toFixed(0)}%` : ''}
+                            labelLine={false}
+                          >
+                            {chart.slices.map((slice, index) => (
+                              <Cell key={`q10-detail-cell-${slice.label}`} fill={posNegColors[index % posNegColors.length]} stroke="rgba(255,255,255,0.3)" />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex-1 space-y-2 text-xs">
+                      {chart.slices.map((slice, index) => {
+                        const percent = Math.round((slice.value / total) * 100);
+                        return (
+                          <div key={`q10-row-${chart.category}-${slice.label}`}>
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-2 font-semibold text-slate-700">
+                                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: posNegColors[index % posNegColors.length] }} />
+                                {slice.label}
+                              </span>
+                              <span className="font-semibold text-slate-900">{percent}%</span>
+                            </div>
+                            <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                              <span
+                                className="block h-full rounded-full"
+                                style={{
+                                  width: `${percent}%`,
+                                  backgroundColor: posNegColors[index % posNegColors.length]
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
     let data: any[] = [];
     let colors = COLORS;
 
@@ -61,15 +230,6 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
       case 'choiceReason': data = currentData.choiceReason; break;
       case 'satisfaction': data = currentData.satisfaction; colors = SATISFACTION_COLORS; break;
       case 'preferredDepartment': data = currentData.preferredDepartment; break;
-      case 'nameChangeAwareness': data = currentData.nameChangeAwareness; colors = ['#22c55e', '#ef4444']; break;
-      case 'experienceChanges': 
-        // Transform Q10 for Pie Chart
-        data = [
-            { name: 'Positif', value: currentData.experienceChanges.reduce((acc, curr) => acc + curr.positive, 0) },
-            { name: 'Négatif', value: currentData.experienceChanges.reduce((acc, curr) => acc + curr.negative, 0) }
-        ];
-        colors = ['#22c55e', '#ef4444'];
-        break;
       default: return null;
     }
 
