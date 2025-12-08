@@ -314,7 +314,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
     if (chartKey === 'nameChangeAwareness') {
       const total = currentData.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0) || 1;
       return (
-        <div className="mt-4 bg-white/95 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-black/40">
+        <div className="mt-4 bg-white/95 dark:bg-[#101010]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-black/60">
           <div className="h-56">
             {render3DPie(currentData.nameChangeAwareness, {
               colors: NAME_CHANGE_COLORS,
@@ -328,7 +328,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
             {currentData.nameChangeAwareness.map((slice, index) => {
               const percent = total ? (slice.value / total) * 100 : 0;
               return (
-                <div key={`q9-row-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800/80 px-3 py-2 bg-slate-50/70 dark:bg-slate-900/70">
+                <div key={`q9-row-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-white/10 px-3 py-2 bg-slate-50/70 dark:bg-[#1a1a1a]">
                   <div className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-100">
                     <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length] }} />
                     {slice.name}
@@ -364,7 +364,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
 
       return (
         <div className="mt-4 space-y-4">
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900/60 p-4 shadow-sm dark:shadow-black/40">
+          <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-gradient-to-b from-white to-slate-50 dark:from-[#141414] dark:to-[#0f0f0f] p-4 shadow-sm dark:shadow-black/60">
             <div className="h-56">
               {render3DPie(summaryData, {
                 colors: POS_NEG_COLORS,
@@ -376,7 +376,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
               {summaryData.map((item) => (
-                <div key={`q10-highlight-${item.name}`} className="rounded-xl border border-slate-100 dark:border-slate-800 px-3 py-2 bg-white/85 dark:bg-slate-900/70">
+                <div key={`q10-highlight-${item.name}`} className="rounded-xl border border-slate-100 dark:border-white/5 px-3 py-2 bg-white/85 dark:bg-[#1a1a1a]">
                   <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{item.name}</p>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{formatPercent((item.value / summaryTotal) * 100)}</p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">{formatNumber(item.value)} réponses</p>
@@ -388,7 +388,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
             {detailCharts.map((chart) => {
               const total = chart.total || 1;
               return (
-                <div key={`q10-detail-${chart.category}`} className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-4 shadow-sm dark:shadow-black/40">
+                <div key={`q10-detail-${chart.category}`} className="rounded-2xl border border-slate-100 dark:border-white/5 bg-white/90 dark:bg-[#101010]/85 p-4 shadow-sm dark:shadow-black/60">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">Répartition – {chart.category}</p>
                     <span className="text-[11px] text-slate-500 dark:text-slate-400">{formatNumber(chart.total)} réponses</span>
@@ -418,7 +418,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
                               </span>
                               <span className="font-semibold text-slate-900 dark:text-white">{formatPercent(percent)}</span>
                             </div>
-                            <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                            <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 dark:bg-[#2b2b2b] overflow-hidden">
                               <span
                                 className="block h-full rounded-full"
                                 style={{
@@ -481,7 +481,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0) || 1;
 
     return (
-      <div className="mt-4 bg-white/95 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-black/40">
+      <div className="mt-4 bg-white/95 dark:bg-[#101010]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-black/60">
         <div className="h-64">
           {render3DPie(data, {
             colors,
@@ -495,7 +495,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
           {data.map((slice, index) => {
             const percent = total ? (slice.value / total) * 100 : 0;
             return (
-              <div key={`chat-card-${chartKey}-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800/80 px-3 py-2 bg-slate-50/70 dark:bg-slate-900/70">
+              <div key={`chat-card-${chartKey}-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-white/10 px-3 py-2 bg-slate-50/70 dark:bg-[#1a1a1a]">
                 <div className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-100">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
                   {slice.name}
@@ -526,7 +526,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
 
       {/* Chat Window */}
       <div
-        className={`fixed z-50 bg-white/95 dark:bg-slate-950/90 rounded-2xl shadow-2xl shadow-slate-200/70 dark:shadow-black/70 border border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 origin-bottom-right ${
+        className={`fixed z-50 bg-white/95 dark:bg-[#0b0b0b]/95 rounded-2xl shadow-2xl shadow-slate-200/70 dark:shadow-black/80 border border-slate-200 dark:border-white/5 flex flex-col transition-all duration-300 origin-bottom-right ${
           isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'
         } ${
           isExpanded 
@@ -554,7 +554,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50 dark:bg-slate-900" ref={scrollRef}>
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50 dark:bg-[#111111]" ref={scrollRef}>
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -564,7 +564,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
                 className={`max-w-[90%] rounded-2xl text-sm overflow-hidden ${
                   msg.role === 'user'
                     ? 'bg-brand-600 text-white rounded-tr-none p-3 shadow-brand-500/30 shadow-lg'
-                    : 'bg-white/95 dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-tl-none shadow-sm dark:shadow-black/40'
+                    : 'bg-white/95 dark:bg-[#1b1b1b] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-white/5 rounded-tl-none shadow-sm dark:shadow-black/60'
                 }`}
               >
                 {msg.role === 'user' ? (
@@ -603,7 +603,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
                     
                     <button 
                       onClick={() => copyToClipboard(msg.text.replace(/\[\[CHART:\w+\]\]/g, ''))}
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-300 z-10"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-slate-100 dark:bg-[#2c2c2c] rounded text-slate-500 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-300 z-10"
                       title="Copier le texte"
                     >
                       <Copy size={14} />
@@ -615,7 +615,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-white/95 dark:bg-slate-900/80 p-4 rounded-2xl rounded-tl-none border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-black/40 flex items-center gap-2">
+              <div className="bg-white/95 dark:bg-[#1b1b1b] p-4 rounded-2xl rounded-tl-none border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-black/60 flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-brand-600" />
                 <span className="text-xs text-slate-500 dark:text-slate-400">Analyse des données et génération du graphique...</span>
               </div>
@@ -624,7 +624,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-white/95 dark:bg-slate-950/80 border-t border-slate-100 dark:border-slate-800 rounded-b-2xl">
+        <div className="p-4 bg-white/95 dark:bg-[#0f0f0f]/85 border-t border-slate-100 dark:border-white/5 rounded-b-2xl">
           <div className="flex gap-2">
             <input
               type="text"
@@ -632,7 +632,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Analysez les tendances, comparez les zones..."
-              className="flex-1 bg-slate-100 dark:bg-slate-900/70 border-0 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              className="flex-1 bg-slate-100 dark:bg-[#1c1c1c] border-0 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none"
             />
             <button
               onClick={handleSend}

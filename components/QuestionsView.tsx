@@ -132,7 +132,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
               {data.nameChangeAwareness.map((slice, index) => {
                 const percent = q9Total ? Math.round((slice.value / q9Total) * 100) : 0;
                 return (
-                  <div key={`q9-${slice.name}`} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/60 px-3 py-2">
+                  <div key={`q9-${slice.name}`} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/5 bg-white/90 dark:bg-[#191919] px-3 py-2">
                     <div className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length] }} />
                       <span className="font-semibold text-slate-700 dark:text-slate-100">{slice.name}</span>
@@ -155,7 +155,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
         >
           <div className="flex flex-col gap-6 h-full">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 p-6 lg:col-span-2 flex flex-col sm:flex-row items-center gap-6 shadow-slate-200/30 dark:shadow-black/40">
+              <div className="rounded-3xl border border-slate-200 dark:border-white/5 bg-gradient-to-b from-white to-slate-50 dark:from-[#141414] dark:to-[#0f0f0f] p-6 lg:col-span-2 flex flex-col sm:flex-row items-center gap-6 shadow-slate-200/30 dark:shadow-black/60">
                 <div className="w-40 h-40 shrink-0">
                   {render3DPie(q10SummaryPie, { colors: POS_NEG_COLORS, innerRadius: 55, showLegend: false })}
                 </div>
@@ -170,7 +170,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                 {perceptionHighlights.map((highlight) => (
-                  <div key={`badge-${highlight.label}`} className="rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 bg-white/90 dark:bg-slate-900/60">
+                  <div key={`badge-${highlight.label}`} className="rounded-2xl border border-slate-200 dark:border-white/5 px-4 py-3 bg-white/90 dark:bg-[#191919]">
                     <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{highlight.label}</p>
                     <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">{highlight.percent}%</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">{highlight.value} réponses</p>
@@ -182,7 +182,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
               {q10DetailCharts.map((chart) => {
                 const total = chart.data.reduce((sum, slice) => sum + slice.value, 0);
                 return (
-                  <div key={chart.title} className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/60 p-5 flex flex-col gap-4">
+                  <div key={chart.title} className="rounded-3xl border border-slate-200 dark:border-white/5 bg-white/90 dark:bg-[#181818] p-5 flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                       <p className="text-lg font-semibold text-slate-900 dark:text-white">{chart.title}</p>
                       <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{total} réponses</span>
@@ -203,7 +203,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
                                 </span>
                                 <span className="font-semibold text-slate-900 dark:text-white">{percent}%</span>
                               </div>
-                              <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                              <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 dark:bg-[#2b2b2b] overflow-hidden">
                                 <span
                                   className="block h-full rounded-full"
                                   style={{

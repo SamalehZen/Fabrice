@@ -73,7 +73,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
   ];
 
   return (
-    <div className="bg-white/90 dark:bg-slate-950/80 rounded-xl shadow-sm shadow-slate-200/60 dark:shadow-black/50 border border-slate-200 dark:border-slate-800 p-6">
+    <div className="bg-white/90 dark:bg-[#101010]/85 rounded-xl shadow-sm shadow-slate-200/60 dark:shadow-black/60 border border-slate-200 dark:border-white/5 p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">Éditeur de données</h2>
@@ -82,7 +82,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
         <div className="flex gap-2">
           <button 
             onClick={resetData}
-            className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/60"
+            className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-[#242424]"
           >
             <RefreshCw size={18} /> Réinitialiser
           </button>
@@ -105,7 +105,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
               className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 activeSection === section.key 
                 ? 'bg-brand-50 text-brand-700 border border-brand-100 dark:bg-brand-500/20 dark:text-brand-100 dark:border-brand-300/40' 
-                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/60'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#1f1f1f]'
               }`}
             >
               {section.label}
@@ -114,7 +114,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
         </div>
 
         {/* Editor Area */}
-        <div className="flex-1 bg-slate-50 dark:bg-slate-900/60 rounded-xl p-6 border border-slate-100 dark:border-slate-800">
+        <div className="flex-1 bg-slate-50 dark:bg-[#151515] rounded-xl p-6 border border-slate-100 dark:border-white/5">
            {activeSection && activeSection !== 'experienceChanges' && (
              <div className="space-y-4">
                 <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-4">{sections.find(s => s.key === activeSection)?.label}</h3>
@@ -129,7 +129,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                          type="text" 
                          value={item.name}
                          onChange={(e) => handleSimpleUpdate(activeSection as keyof SurveyDataset, index, 'name', e.target.value)}
-                         className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-100"
+                         className="w-full p-2 border border-slate-300 dark:border-white/5 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-[#1d1d1d] text-slate-800 dark:text-slate-100"
                        />
                     </div>
                     <div className="col-span-4">
@@ -137,7 +137,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                          type="number" 
                          value={item.value}
                          onChange={(e) => handleSimpleUpdate(activeSection as keyof SurveyDataset, index, 'value', e.target.value)}
-                         className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-100"
+                         className="w-full p-2 border border-slate-300 dark:border-white/5 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-[#1d1d1d] text-slate-800 dark:text-slate-100"
                        />
                     </div>
                   </div>
@@ -161,7 +161,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                            type="number" 
                            value={item.positive}
                            onChange={(e) => handleComparisonUpdate(index, 'positive', e.target.value)}
-                           className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 text-green-700 dark:text-green-300 bg-white dark:bg-slate-900/50"
+                           className="w-full p-2 border border-slate-300 dark:border-white/5 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 text-green-700 dark:text-green-300 bg-white dark:bg-[#1d1d1d]"
                          />
                      </div>
                      <div className="col-span-4">
@@ -169,7 +169,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                            type="number" 
                            value={item.negative}
                            onChange={(e) => handleComparisonUpdate(index, 'negative', e.target.value)}
-                           className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 text-red-700 dark:text-red-300 bg-white dark:bg-slate-900/50"
+                           className="w-full p-2 border border-slate-300 dark:border-white/5 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 text-red-700 dark:text-red-300 bg-white dark:bg-[#1d1d1d]"
                          />
                      </div>
                    </div>

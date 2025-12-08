@@ -52,13 +52,13 @@ export const render3DPie = (
 
   const resolvedOuterRadius = typeof outerRadius === 'number' ? outerRadius : isWide ? 100 : 80;
   const isDarkMode = typeof isDark === 'boolean' ? isDark : detectDarkMode();
-  const tooltipBackground = isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)';
-  const tooltipColor = isDarkMode ? '#e2e8f0' : '#0f172a';
+  const tooltipBackground = isDarkMode ? 'rgba(18,18,18,0.95)' : 'rgba(255,255,255,0.95)';
+  const tooltipColor = isDarkMode ? '#f5f5f5' : '#0f172a';
   const tooltipShadow = isDarkMode
-    ? '0 10px 25px -5px rgba(2,6,23,0.9)'
-    : '0 10px 30px -5px rgba(15,23,42,0.15)';
-  const legendColor = isDarkMode ? '#cbd5f5' : '#0f172a';
-  const labelColor = isDarkMode ? '#f1f5f9' : '#0f172a';
+    ? '0 18px 40px rgba(0,0,0,0.7)'
+    : '0 12px 32px -6px rgba(15,23,42,0.15)';
+  const legendColor = isDarkMode ? '#e5e7eb' : '#0f172a';
+  const labelColor = isDarkMode ? '#f4f4f5' : '#0f172a';
 
   const renderLabel = (props: PieLabelRenderProps) => {
     const { percent, cx, cy, midAngle, innerRadius: labelInnerRadius, outerRadius: labelOuterRadius } = props;
@@ -141,7 +141,7 @@ export const render3DPie = (
           style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }}
           stroke="none"
           label={renderLabel}
-          labelLine={labelPosition === 'outside' ? { stroke: isDarkMode ? 'rgba(148,163,184,0.6)' : 'rgba(15,23,42,0.3)' } : false}
+          labelLine={labelPosition === 'outside' ? { stroke: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(15,23,42,0.3)' } : false}
         >
           {chartData.map((entry, index) => (
             <Cell

@@ -25,21 +25,29 @@
       }
     </script>
     <style>
-      /* Custom scrollbar for webkit */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #999;
-      }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+html.dark ::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #2f2f2f;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3d3d3d;
+}
     </style>
   <script type="importmap">
 {
@@ -57,7 +65,7 @@
 }
 </script>
 </head>
-  <body class="bg-gray-50 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+  <body class="bg-gray-50 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900 dark:bg-[#121212] dark:text-slate-100 dark:selection:bg-brand-500/40 dark:selection:text-white transition-colors duration-300">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

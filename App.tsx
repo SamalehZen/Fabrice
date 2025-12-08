@@ -64,11 +64,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      <header className="bg-white/80 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 backdrop-blur-xl">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-[#121212] dark:via-[#141414] dark:to-[#1E1E1E] pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <header className="bg-white/80 dark:bg-[#121212]/85 border-b border-slate-200 dark:border-white/5 sticky top-0 z-40 backdrop-blur-xl shadow-lg shadow-slate-200/30 dark:shadow-black/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-brand-600 dark:bg-brand-500/90 p-2 rounded-lg shadow-md shadow-brand-200/70 dark:shadow-brand-900/40">
+            <div className="bg-brand-600 dark:bg-brand-500/90 p-2 rounded-lg shadow-md shadow-brand-200/70 dark:shadow-brand-900/50">
               <LayoutDashboard className="text-white w-5 h-5" />
             </div>
             <div>
@@ -85,7 +85,7 @@ const App: React.FC = () => {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   activeTab === 'dashboard'
                     ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:ring-brand-400/40'
-                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-[#262626]'
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -97,7 +97,7 @@ const App: React.FC = () => {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   activeTab === 'questions'
                     ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:ring-brand-400/40'
-                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-[#262626]'
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -109,7 +109,7 @@ const App: React.FC = () => {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   activeTab === 'editor'
                     ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:ring-brand-400/40'
-                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70'
+                    : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-[#262626]'
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -121,7 +121,7 @@ const App: React.FC = () => {
             <button
               onClick={toggleTheme}
               aria-label="Basculer le mode fruité"
-              className="hidden md:flex items-center gap-3 px-3 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 shadow-inner shadow-slate-200/60 dark:shadow-black/40 backdrop-blur"
+              className="hidden md:flex items-center gap-3 px-3 py-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-[#181818] shadow-inner shadow-slate-200/60 dark:shadow-black/50 backdrop-blur"
             >
               <FruitBadge theme={theme} />
               <div className="text-left">
@@ -129,7 +129,7 @@ const App: React.FC = () => {
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{theme === 'dark' ? 'Sombre fruitée' : 'Clair vitaminé'}</p>
               </div>
               <span className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
-                theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200'
+                theme === 'dark' ? 'bg-[#2a2a2a]' : 'bg-slate-200'
               }`}>
                 <span
                   className={`absolute top-1 w-4 h-4 rounded-full transition-transform duration-300 shadow ${
@@ -145,7 +145,7 @@ const App: React.FC = () => {
               <button
                 onClick={toggleTheme}
                 aria-label="Basculer le mode fruité"
-                className="p-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70"
+                className="p-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#1a1a1a]"
               >
                 <FruitBadge theme={theme} />
               </button>
@@ -161,8 +161,8 @@ const App: React.FC = () => {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white/95 dark:bg-slate-950/90 border-t border-slate-100 dark:border-slate-800 p-4 space-y-3 shadow-lg shadow-slate-900/10">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-4 py-3">
+          <div className="md:hidden bg-white/95 dark:bg-[#0f0f0f]/95 border-t border-slate-100 dark:border-white/5 p-4 space-y-3 shadow-lg shadow-slate-900/10 dark:shadow-black/60">
+            <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/80 dark:bg-[#171717]/70 px-4 py-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Palette fruitée</p>
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{theme === 'dark' ? 'Mode sombre' : 'Mode clair'}</p>
@@ -170,7 +170,7 @@ const App: React.FC = () => {
               <button
                 onClick={toggleTheme}
                 aria-label="Basculer le thème fruité"
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70"
+                className="p-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/90 dark:bg-[#1a1a1a]"
               >
                 <FruitBadge theme={theme} />
               </button>
@@ -183,7 +183,7 @@ const App: React.FC = () => {
               className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${
                 activeTab === 'dashboard'
                   ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f1f1f]'
               }`}
             >
               <LayoutDashboard size={18} /> Tableau de bord
@@ -196,7 +196,7 @@ const App: React.FC = () => {
               className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${
                 activeTab === 'questions'
                   ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f1f1f]'
               }`}
             >
               <PieChartIcon size={18} /> Questions (camemberts)
@@ -209,7 +209,7 @@ const App: React.FC = () => {
               className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 ${
                 activeTab === 'editor'
                   ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f1f1f]'
               }`}
             >
               <Database size={18} /> Éditeur de données
