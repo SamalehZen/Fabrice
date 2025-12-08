@@ -144,11 +144,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative z-20">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/90 dark:bg-slate-900/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 relative z-20 backdrop-blur">
         <div>
-          <h2 className="text-lg font-bold text-slate-800">Tableau de bord des questions</h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Tableau de bord des questions</h2>
           <div className="flex items-center gap-2">
-            <p className="text-xs text-slate-500">Analyse dynamique des réponses</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Analyse dynamique des réponses</p>
             {selectedZone !== 'All' && (
               <span className="bg-brand-100 text-brand-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center">
                 Filtre : {selectedZone}
@@ -157,7 +157,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-3 py-2 bg-slate-50 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-100 border border-slate-200 transition-colors">
+          <button className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 dark:bg-slate-900/60 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800/70 border border-slate-200 dark:border-slate-700 transition-colors">
             <Calendar size={16} />
             <span>30 derniers jours</span>
           </button>
@@ -166,8 +166,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                 selectedZone !== 'All'
-                  ? 'bg-brand-50 text-brand-700 border-brand-200'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:border-brand-300/40'
+                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 dark:bg-slate-900/60 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-800/80'
               }`}
             >
               <Filter size={16} />
@@ -177,8 +177,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             {isFilterOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)}></div>
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-20 py-1">
-                  <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white/95 dark:bg-slate-950 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-slate-800 overflow-hidden z-20 py-1">
+                  <div className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Choisir une zone
                   </div>
                   <button
@@ -186,7 +186,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                       setSelectedZone('All');
                       setIsFilterOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 flex items-center justify-between"
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-slate-900/60 dark:hover:text-brand-200 flex items-center justify-between"
                   >
                     <span>Toutes les zones</span>
                     {selectedZone === 'All' && <Check size={14} className="text-brand-600" />}
@@ -198,7 +198,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                         setSelectedZone(zone.name);
                         setIsFilterOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 flex items-center justify-between"
+                      className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-slate-900/60 dark:hover:text-brand-200 flex items-center justify-between"
                     >
                       <span>{zone.name}</span>
                       {selectedZone === zone.name && <Check size={14} className="text-brand-600" />}
@@ -210,7 +210,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
           <button
             onClick={handleExportXLSX}
-            className="flex items-center gap-2 px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm shadow-brand-200 transition-all hover:scale-105"
+            className="flex items-center gap-2 px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm shadow-brand-200/80 dark:shadow-brand-900/40 transition-all hover:scale-105"
           >
             <Download size={16} />
             <span>Exporter XLSX</span>
@@ -237,48 +237,48 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-sm group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-green-50 to-transparent rounded-bl-full opacity-50"></div>
+        <div className="relative overflow-hidden bg-white/90 dark:bg-slate-900/70 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
+          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-green-50 to-transparent dark:from-green-500/20 rounded-bl-full opacity-50"></div>
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-green-50 rounded-lg">
-              <Smile size={20} className="text-green-600" />
+            <div className="p-2 bg-green-50 dark:bg-green-500/20 rounded-lg">
+              <Smile size={20} className="text-green-600 dark:text-green-300" />
             </div>
-            <span className="flex items-center text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+            <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-500/20 px-2 py-1 rounded-full">
               <ArrowUpRight size={12} className="mr-1" /> Haut
             </span>
           </div>
-          <p className="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
-          <h3 className="text-3xl font-bold text-slate-800">{satisfactionRate}%</h3>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
-            <div className="bg-green-500 h-full rounded-full transition-all duration-1000" style={{ width: `${satisfactionRate}%` }}></div>
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
+          <h3 className="text-3xl font-bold text-slate-800 dark:text-white">{satisfactionRate}%</h3>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div className="bg-green-500 dark:bg-green-300 h-full rounded-full transition-all duration-1000" style={{ width: `${satisfactionRate}%` }}></div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-sm group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent rounded-bl-full opacity-50"></div>
+        <div className="relative overflow-hidden bg-white/90 dark:bg-slate-900/70 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
+          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-500/20 rounded-bl-full opacity-50"></div>
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-purple-50 rounded-lg">
-              <MapPin size={20} className="text-purple-600" />
+            <div className="p-2 bg-purple-50 dark:bg-purple-500/20 rounded-lg">
+              <MapPin size={20} className="text-purple-600 dark:text-purple-300" />
             </div>
             <div className="text-right">
-              <span className="text-2xl font-bold text-slate-800 block leading-none">{topZonePercent}%</span>
-              <span className="text-[10px] text-slate-400 font-medium">des répondants</span>
+              <span className="text-2xl font-bold text-slate-800 dark:text-white block leading-none">{topZonePercent}%</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">des répondants</span>
             </div>
           </div>
-          <p className="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Zone la plus représentée (Q1)</p>
-          <h3 className="text-xl font-bold text-slate-800 truncate" title={topZone.name}>{topZone.name}</h3>
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Zone la plus représentée (Q1)</p>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white truncate" title={topZone.name}>{topZone.name}</h3>
         </div>
 
-        <div className="relative overflow-hidden bg-white rounded-2xl p-6 border border-slate-100 shadow-sm group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent rounded-bl-full opacity-50"></div>
+        <div className="relative overflow-hidden bg-white/90 dark:bg-slate-900/70 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
+          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent dark:from-orange-500/20 rounded-bl-full opacity-50"></div>
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-orange-50 rounded-lg">
-              <Car size={20} className="text-orange-600" />
+            <div className="p-2 bg-orange-50 dark:bg-orange-500/20 rounded-lg">
+              <Car size={20} className="text-orange-600 dark:text-orange-300" />
             </div>
           </div>
-          <p className="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Mode d’accès dominant (Q2)</p>
-          <h3 className="text-xl font-bold text-slate-800 truncate">{topTransport ? topTransport.name : 'N/A'}</h3>
-          <p className="text-xs text-orange-600 mt-1 font-medium">Préférence de transport</p>
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Mode d’accès dominant (Q2)</p>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white truncate">{topTransport ? topTransport.name : 'N/A'}</h3>
+          <p className="text-xs text-orange-600 dark:text-orange-300 mt-1 font-medium">Préférence de transport</p>
         </div>
       </div>
 
@@ -436,13 +436,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-xl border border-slate-100 text-sm">
-        <p className="font-bold text-slate-800 mb-1">{label || payload[0].name}</p>
+      <div className="bg-white/95 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-slate-800 text-sm text-slate-800 dark:text-slate-100">
+        <p className="font-bold text-slate-800 dark:text-white mb-1">{label || payload[0].name}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }}></div>
-            <span className="text-slate-500 capitalize">{entry.name} :</span>
-            <span className="font-mono font-semibold text-slate-700">{entry.value}</span>
+            <span className="text-slate-500 dark:text-slate-400 capitalize">{entry.name} :</span>
+            <span className="font-mono font-semibold text-slate-700 dark:text-slate-100">{entry.value}</span>
           </div>
         ))}
       </div>
