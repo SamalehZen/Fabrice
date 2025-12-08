@@ -39,48 +39,48 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
 
   const saveChanges = () => {
     onUpdate(localData);
-    alert("Data updated successfully! Dashboard and Charts refreshed.");
+    alert("Données mises à jour avec succès ! Tableau et graphiques rafraîchis.");
   };
 
   const resetData = () => {
     setLocalData(JSON.parse(JSON.stringify(INITIAL_DATA)));
     onUpdate(JSON.parse(JSON.stringify(INITIAL_DATA)));
-    alert("Data reset to original values.");
+    alert("Données réinitialisées aux valeurs d’origine.");
   };
 
   const sections: { key: keyof SurveyDataset; label: string }[] = [
-    { key: 'ageGroups', label: 'Q0: Age Groups' },
-    { key: 'zones', label: 'Q1: Residential Zones' },
-    { key: 'transport', label: 'Q2: Transport' },
-    { key: 'frequency', label: 'Q3: Frequency' },
-    { key: 'visitReason', label: 'Q4: Visit Reason' },
-    { key: 'competitors', label: 'Q5: Competitors' },
-    { key: 'choiceReason', label: 'Q6: Choice Reason' },
-    { key: 'satisfaction', label: 'Q7: Satisfaction' },
-    { key: 'preferredDepartment', label: 'Q8: Departments' },
-    { key: 'nameChangeAwareness', label: 'Q9: Name Change' },
-    { key: 'experienceChanges', label: 'Q10: Experience Changes' },
+    { key: 'ageGroups', label: "Q0 : Tranches d'âge" },
+    { key: 'zones', label: 'Q1 : Zones résidentielles' },
+    { key: 'transport', label: 'Q2 : Transport' },
+    { key: 'frequency', label: 'Q3 : Fréquence de visite' },
+    { key: 'visitReason', label: 'Q4 : Motif de venue' },
+    { key: 'competitors', label: 'Q5 : Magasins fréquentés' },
+    { key: 'choiceReason', label: 'Q6 : Raison du choix' },
+    { key: 'satisfaction', label: 'Q7 : Satisfaction' },
+    { key: 'preferredDepartment', label: 'Q8 : Rayons préférés' },
+    { key: 'nameChangeAwareness', label: 'Q9 : Changement de nom' },
+    { key: 'experienceChanges', label: "Q10 : Changements d'expérience" },
   ];
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Data Editor</h2>
-          <p className="text-sm text-slate-500">Modify survey results in real-time</p>
+          <h2 className="text-xl font-bold text-slate-800">Éditeur de données</h2>
+          <p className="text-sm text-slate-500">Modifiez les résultats du sondage en temps réel</p>
         </div>
         <div className="flex gap-2">
           <button 
             onClick={resetData}
             className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50"
           >
-            <RefreshCw size={18} /> Reset
+            <RefreshCw size={18} /> Réinitialiser
           </button>
           <button 
             onClick={saveChanges}
             className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm"
           >
-            <Save size={18} /> Save Changes
+            <Save size={18} /> Sauvegarder
           </button>
         </div>
       </div>
@@ -109,8 +109,8 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
              <div className="space-y-4">
                 <h3 className="font-semibold text-slate-700 mb-4">{sections.find(s => s.key === activeSection)?.label}</h3>
                 <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  <div className="col-span-8">Label</div>
-                  <div className="col-span-4">Value</div>
+                  <div className="col-span-8">Libellé</div>
+                  <div className="col-span-4">Valeur</div>
                 </div>
                 {(localData[activeSection as keyof SurveyDataset] as SimpleDataPoint[]).map((item, index) => (
                   <div key={index} className="grid grid-cols-12 gap-4 items-center">
@@ -137,11 +137,11 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
 
            {activeSection === 'experienceChanges' && (
              <div className="space-y-4">
-               <h3 className="font-semibold text-slate-700 mb-4">Q10: Experience Changes</h3>
+               <h3 className="font-semibold text-slate-700 mb-4">Q10 : Changements d'expérience</h3>
                <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  <div className="col-span-4">Category</div>
-                  <div className="col-span-4 text-green-600">Positive</div>
-                  <div className="col-span-4 text-red-600">Negative</div>
+                  <div className="col-span-4">Catégorie</div>
+                  <div className="col-span-4 text-green-600">Positif</div>
+                  <div className="col-span-4 text-red-600">Négatif</div>
                 </div>
                 {localData.experienceChanges.map((item, index) => (
                    <div key={index} className="grid grid-cols-12 gap-4 items-center">

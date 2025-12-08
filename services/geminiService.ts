@@ -49,7 +49,7 @@ export const generateInsight = async (userPrompt: string, currentData?: SurveyDa
   const chartGuide = QUESTION_MAPPINGS.map(({ id, text, chart }) => `- ${id} ${text} : [[CHART:${chart}]]`).join("\n");
 
   const dynamicSystemInstruction = `
-Vous êtes un expert analyste de données pour le Bawadi Mall.
+Vous êtes un expert analyste de données pour Hyper Analytics Sondage.
 Vous avez accès aux données de l'enquête au format JSON ci-dessous :
 ${dataContext}
 

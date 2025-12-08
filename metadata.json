@@ -1,5 +1,5 @@
 {
-  "name": "Bawadi Mall Survey Analytics",
-  "description": "A comprehensive interactive dashboard visualizing customer survey data for Bawadi Mall, featuring demographic analysis, satisfaction metrics, and AI-powered insights.",
+  "name": "Hyper Analytics Sondage",
+  "description": "Tableau de bord interactif Hyper Analytics pour explorer les résultats du sondage : démographie, satisfaction, insights IA et édition temps réel.",
   "requestFramePermissions": []
 }
