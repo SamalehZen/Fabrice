@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { SurveyDataset } from '../types';
 import { COLORS, SATISFACTION_COLORS } from '../constants';
 import ChartCard from './ChartCard';
+import { render3DPie } from './Pie3DRenderer';
 
 interface QuestionsViewProps {
   data: SurveyDataset;
@@ -47,82 +47,6 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
   const dominantPercent = totalPositive >= totalNegative ? perceptionHighlights[0].percent : perceptionHighlights[1].percent;
   const q9Total = data.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0);
 
-  // Helper to render the 3D-style Pie Chart
-  // isWide determines if we place legend on the right (for Bento span-2 or span-4)
-  const render3DPie = (
-    chartData: {name: string, value: number}[], 
-    colors: string[] = COLORS, 
-    isWide: boolean = false,
-    innerRadius: number = 0,
-    showLegend: boolean = true
-  ) => (
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <defs>
-          <filter id="shadow3d" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
-            <feOffset in="blur" dx="3" dy="3" result="offsetBlur" />
-            <feSpecularLighting in="blur" surfaceScale="5" specularConstant=".75" specularExponent="20" lightingColor="#ffffff" result="specOut">
-              <fePointLight x="-5000" y="-10000" z="20000" />
-            </feSpecularLighting>
-            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
-            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litPaint" />
-            <feMerge>
-              <feMergeNode in="offsetBlur" />
-              <feMergeNode in="litPaint" />
-            </feMerge>
-          </filter>
-        </defs>
-        <Pie
-          data={chartData}
-          cx="50%"
-          cy="50%"
-          innerRadius={innerRadius}
-          outerRadius={isWide ? 100 : 80}
-          fill="#8884d8"
-          paddingAngle={5}
-          dataKey="value"
-          // Apply the 3D filter to the pie group
-          style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }} 
-          stroke="none"
-          label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-             const RADIAN = Math.PI / 180;
-             const radius = innerRadius + (outerRadius - innerRadius) * 0.6; // Push label slightly out
-             const x = cx + radius * Math.cos(-midAngle * RADIAN);
-             const y = cy + radius * Math.sin(-midAngle * RADIAN);
-             return percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : '';
-          }}
-          labelLine={false}
-        >
-          {chartData.map((entry, index) => (
-            <Cell 
-              key={`cell-${index}`} 
-              fill={colors[index % colors.length]} 
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={1}
-            />
-          ))}
-        </Pie>
-        <Tooltip 
-          contentStyle={{ 
-            borderRadius: '12px', 
-            border: 'none', 
-            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(4px)'
-          }} 
-        />
-        {showLegend && (
-          <Legend 
-            layout={isWide ? "vertical" : "horizontal"} 
-            verticalAlign={isWide ? "middle" : "bottom"} 
-            align={isWide ? "right" : "center"}
-            wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
-          />
-        )}
-      </PieChart>
-    </ResponsiveContainer>
-  );
 
   return (
     <div className="p-6">
@@ -130,19 +54,19 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
         
         {/* ROW 1: Q0 - Q3 (Demographics - 2 columns per row) */}
         <ChartCard title="Q0: Âge" subtitle="Tranche d'âge" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.ageGroups, COLORS, true)}
+          {render3DPie(data.ageGroups, { colors: COLORS, isWide: true })}
         </ChartCard>
 
         <ChartCard title="Q1: Zone" subtitle="Résidence" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.zones, COLORS, true)}
+          {render3DPie(data.zones, { colors: COLORS, isWide: true })}
         </ChartCard>
 
         <ChartCard title="Q2: Transport" subtitle="Moyen de transport" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.transport, COLORS, true)}
+          {render3DPie(data.transport, { colors: COLORS, isWide: true })}
         </ChartCard>
 
         <ChartCard title="Q3: Fréquence" subtitle="Visites par mois" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.frequency, COLORS, true)}
+          {render3DPie(data.frequency, { colors: COLORS, isWide: true })}
         </ChartCard>
 
         {/* ROW 2: Q4 & Q5 (Medium) */}
@@ -151,7 +75,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           subtitle="Pourquoi venez-vous ?" 
           className="col-span-1 lg:col-span-2"
         >
-          {render3DPie(data.visitReason, COLORS, true)}
+          {render3DPie(data.visitReason, { colors: COLORS, isWide: true })}
         </ChartCard>
 
         <ChartCard 
@@ -159,7 +83,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           subtitle="Magasins fréquentés" 
           className="col-span-1 lg:col-span-2"
         >
-          {render3DPie(data.competitors, COLORS, true)}
+          {render3DPie(data.competitors, { colors: COLORS, isWide: true })}
         </ChartCard>
 
         {/* ROW 3: Q6 & Q7 (Medium) */}
@@ -168,7 +92,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           subtitle="Critère principal" 
           className="col-span-1 lg:col-span-2"
         >
-          {render3DPie(data.choiceReason, COLORS, true)}
+          {render3DPie(data.choiceReason, { colors: COLORS, isWide: true })}
         </ChartCard>
 
         <ChartCard 
@@ -176,7 +100,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           subtitle="Expérience client" 
           className="col-span-1 lg:col-span-2"
         >
-           {render3DPie(data.satisfaction, SATISFACTION_COLORS, true, 40)}
+           {render3DPie(data.satisfaction, { colors: SATISFACTION_COLORS, isWide: true, innerRadius: 40 })}
         </ChartCard>
 
         {/* ROW 4: Q8 (Large - Full Width) */}
@@ -188,7 +112,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           {/* Custom rendering for the large card to split into 2 pies or a very wide pie */}
           <div className="flex flex-col md:flex-row h-full items-center justify-center">
              <div className="w-full h-full">
-               {render3DPie(data.preferredDepartment, COLORS, true, 60)}
+               {render3DPie(data.preferredDepartment, { colors: COLORS, isWide: true, innerRadius: 60 })}
              </div>
           </div>
         </ChartCard>
@@ -202,7 +126,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           <div className="flex flex-col h-full gap-6">
             <div className="flex-1 flex items-center justify-center min-h-[220px]">
               <div className="w-40 h-40">
-                {render3DPie(data.nameChangeAwareness, NAME_CHANGE_COLORS, false, 55, false)}
+                {render3DPie(data.nameChangeAwareness, { colors: NAME_CHANGE_COLORS, innerRadius: 55, showLegend: false })}
               </div>
             </div>
             <div className="space-y-3 text-sm">
@@ -234,7 +158,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="rounded-3xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 lg:col-span-2 flex flex-col sm:flex-row items-center gap-6">
                 <div className="w-40 h-40 shrink-0">
-                  {render3DPie(q10SummaryPie, POS_NEG_COLORS, false, 55, false)}
+                  {render3DPie(q10SummaryPie, { colors: POS_NEG_COLORS, innerRadius: 55, showLegend: false })}
                 </div>
                 <div className="space-y-3 text-slate-600">
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Vue globale</p>
@@ -266,7 +190,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
                     </div>
                     <div className="flex items-center gap-5">
                       <div className="w-32 h-32">
-                        {render3DPie(chart.data, POS_NEG_COLORS, false, 42, false)}
+                        {render3DPie(chart.data, { colors: POS_NEG_COLORS, innerRadius: 42, showLegend: false, minLabelPercent: 0.12, paddingAngle: 4 })}
                       </div>
                       <div className="flex-1 space-y-3 text-sm">
                         {chart.data.map((slice, index) => {
