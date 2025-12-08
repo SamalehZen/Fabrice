@@ -1,21 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { SurveyDataset } from "../types";
+import { QUESTION_MAPPINGS } from "../constants";
 
 let client: GoogleGenAI | null = null;
-
-const QUESTION_MAPPINGS = [
-  { id: "Q0", text: "Répartition des âges", key: "ageGroups", chart: "ageGroups" },
-  { id: "Q1", text: "Zone de résidence", key: "zones", chart: "zones" },
-  { id: "Q2", text: "Moyen de transport", key: "transport", chart: "transport" },
-  { id: "Q3", text: "Fréquence de visite", key: "frequency", chart: "frequency" },
-  { id: "Q4", text: "Motif principal de venue", key: "visitReason", chart: "visitReason" },
-  { id: "Q5", text: "Magasin le plus fréquenté", key: "competitors", chart: "competitors" },
-  { id: "Q6", text: "Raison du choix", key: "choiceReason", chart: "choiceReason" },
-  { id: "Q7", text: "Satisfaction de la visite", key: "satisfaction", chart: "satisfaction" },
-  { id: "Q8", text: "Rayon préféré", key: "preferredDepartment", chart: "preferredDepartment" },
-  { id: "Q9", text: "Changement de nom remarqué", key: "nameChangeAwareness", chart: "nameChangeAwareness" },
-  { id: "Q10", text: "Différences d'expérience d'achat", key: "experienceChanges", chart: "experienceChanges" }
-];
 
 const resolveApiKey = (): string => {
   return (
@@ -76,7 +63,9 @@ Si un utilisateur mentionne un numéro de question (ex. "question 8"), vous deve
 Règles à suivre :
 1. **Langue** : Répondez TOUJOURS en **Français**.
 2. **Format** : Utilisez le **Markdown** pour structurer votre réponse (titres, gras, listes, tableaux).
-3. **Visuels** : lorsque la réponse concerne l'une des questions, ajoutez le tag correspondant pour afficher le graphique.
+3. **Visuels** : lorsque la réponse concerne l'une des questions, ajoutez le tag correspondant pour afficher le graphique circulaire.
+4. **Tableaux** : dès qu'une question Q0 à Q10 (ou "question X") est mentionnée, terminez avec un tableau Markdown professionnel à trois colonnes (**Option | Réponses | Part**) juste avant le tag du graphique.
+5. **Rapports/Résumés complets** : si l'utilisateur demande un rapport global, une synthèse ou un résumé complet, créez un bloc dédié comportant un tableau multi-indicateurs, un tag de graphique pertinent et une explication détaillée (plusieurs phrases).
 
 Tags graphiques autorisés :
 ${chartGuide}
@@ -89,7 +78,7 @@ Points d'attention essentiels :
 Exemple :
 Si l'utilisateur demande "D'où viennent les clients ?", répondez avec l'analyse textuelle puis finissez par : [[CHART:zones]]
 
-4. **Contenu** :
+6. **Contenu** :
    - Soyez factuel, professionnel et concis.
    - Citez les chiffres exacts du JSON pour justifier vos analyses.
    - Ne déduisez rien au-delà des données fournies.

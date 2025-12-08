@@ -1,11 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Sparkles, Loader2, Maximize2, Minimize2, Copy } from 'lucide-react';
 import { generateInsight } from '../services/geminiService';
-import { SurveyDataset } from '../types';
+import { SurveyDataset, SimpleDataPoint, ComparisonDataPoint } from '../types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { COLORS, SATISFACTION_COLORS } from '../constants';
+import { COLORS, SATISFACTION_COLORS, QUESTION_MAPPINGS, QuestionMapping } from '../constants';
+import { render3DPie } from './Pie3DRenderer';
+
+const QUESTION_CONFIG_MAP = QUESTION_MAPPINGS.reduce<Record<string, QuestionMapping>>((acc, mapping) => {
+  acc[mapping.id.toUpperCase()] = mapping;
+  return acc;
+}, {});
+
+const SUMMARY_REGEX = /(rapport|résumé|resume|synthèse|synthese|bilan|summary)/i;
+
+const extractQuestionIds = (text: string): string[] => {
+  if (!text) return [];
+  const matches = new Set<string>();
+  const regex = /(question\s*(\d+)|\bQ(\d+)\b)/gi;
+  let match: RegExpExecArray | null = null;
+  while ((match = regex.exec(text)) !== null) {
+    const numberString = match[2] || match[3];
+    if (!numberString) continue;
+    const numberValue = Number(numberString);
+    if (!Number.isNaN(numberValue) && numberValue >= 0 && numberValue <= 10) {
+      matches.add(`Q${numberValue}`);
+    }
+  }
+  return Array.from(matches);
+};
+
+const numberFormatter = new Intl.NumberFormat('fr-FR');
+const formatNumber = (value: number) => numberFormatter.format(value);
+const formatPercent = (value: number, decimals = 1) => `${value.toFixed(decimals).replace('.', ',')}%`;
+
+const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
+const POS_NEG_COLORS = ['#22c55e', '#ef4444'];
+const isSummaryPrompt = (text: string) => (text ? SUMMARY_REGEX.test(text) : false);
 
 interface AIChatOverlayProps {
   currentData: SurveyDataset;
@@ -36,59 +67,248 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
     setLoading(true);
 
     const response = await generateInsight(userMsg, currentData);
+    const enrichedResponse = enforceResponseVisuals(userMsg, response);
     
     setLoading(false);
-    setMessages(prev => [...prev, { role: 'assistant', text: response }]);
+    setMessages(prev => [...prev, { role: 'assistant', text: enrichedResponse }]);
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
+  const getTopEntry = (dataset: SimpleDataPoint[]) => {
+    if (!dataset || dataset.length === 0) return null;
+    return dataset.reduce((prev, curr) => (curr.value > prev.value ? curr : prev));
+  };
+
+  const buildSimpleTable = (dataset: SimpleDataPoint[]) => {
+    if (!dataset || dataset.length === 0) return '';
+    const total = dataset.reduce((sum, item) => sum + item.value, 0) || 1;
+    const header = '| Option | Réponses | Part |\n| --- | ---: | ---: |\n';
+    const rows = dataset
+      .map((item) => {
+        const percent = (item.value / total) * 100;
+        return `| ${item.name} | ${formatNumber(item.value)} | ${formatPercent(percent)} |`;
+      })
+      .join('\n');
+    return `${header}${rows}`;
+  };
+
+  const buildExperienceTable = (dataset: ComparisonDataPoint[]) => {
+    if (!dataset || dataset.length === 0) return '';
+    const header = '| Catégorie | Perception positive | Perception négative |\n| --- | ---: | ---: |\n';
+    const rows = dataset
+      .map((item) => {
+        const total = item.positive + item.negative || 1;
+        const positiveShare = (item.positive / total) * 100;
+        const negativeShare = (item.negative / total) * 100;
+        return `| ${item.category} | ${formatNumber(item.positive)} (${formatPercent(positiveShare)}) | ${formatNumber(item.negative)} (${formatPercent(negativeShare)}) |`;
+      })
+      .join('\n');
+    return `${header}${rows}`;
+  };
+
+  const buildTableForKey = (key: keyof SurveyDataset) => {
+    if (key === 'experienceChanges') {
+      return buildExperienceTable(currentData.experienceChanges);
+    }
+    return buildSimpleTable(currentData[key] as SimpleDataPoint[]);
+  };
+
+  const computeSummaryMetrics = () => {
+    const zoneTop = getTopEntry(currentData.zones);
+    const reasonTop = getTopEntry(currentData.visitReason);
+    const freqTop = getTopEntry(currentData.frequency);
+    const departmentTop = getTopEntry(currentData.preferredDepartment);
+    const totalZones = currentData.zones.reduce((sum, item) => sum + item.value, 0) || 1;
+    const totalVisitReason = currentData.visitReason.reduce((sum, item) => sum + item.value, 0) || 1;
+    const totalFrequency = currentData.frequency.reduce((sum, item) => sum + item.value, 0) || 1;
+    const totalDepartment = currentData.preferredDepartment.reduce((sum, item) => sum + item.value, 0) || 1;
+    const totalSatisfaction = currentData.satisfaction.reduce((sum, item) => sum + item.value, 0) || 1;
+    const satisfiedCount = currentData.satisfaction
+      .filter((item) => item.name.toLowerCase().includes('satisfait'))
+      .reduce((sum, item) => sum + item.value, 0);
+
+    return {
+      zoneTop,
+      reasonTop,
+      freqTop,
+      departmentTop,
+      totalZones,
+      totalVisitReason,
+      totalFrequency,
+      totalDepartment,
+      totalSatisfaction,
+      satisfiedCount,
+    };
+  };
+
+  const buildSummaryTable = () => {
+    const {
+      zoneTop,
+      reasonTop,
+      freqTop,
+      departmentTop,
+      totalZones,
+      totalVisitReason,
+      totalFrequency,
+      totalDepartment,
+      totalSatisfaction,
+      satisfiedCount,
+    } = computeSummaryMetrics();
+
+    const rows: { indicator: string; result: string; source: string }[] = [];
+
+    if (zoneTop) {
+      const share = (zoneTop.value / totalZones) * 100;
+      rows.push({
+        indicator: 'Zone dominante',
+        result: `${zoneTop.name} (${formatNumber(zoneTop.value)} répondants, ${formatPercent(share)})`,
+        source: 'Q1 - Zones',
+      });
+    }
+
+    if (reasonTop) {
+      const share = (reasonTop.value / totalVisitReason) * 100;
+      rows.push({
+        indicator: 'Motif principal',
+        result: `${reasonTop.name} (${formatNumber(reasonTop.value)} répondants, ${formatPercent(share)})`,
+        source: 'Q4 - Motifs',
+      });
+    }
+
+    if (freqTop) {
+      const share = (freqTop.value / totalFrequency) * 100;
+      rows.push({
+        indicator: 'Fréquence la plus citée',
+        result: `${freqTop.name} (${formatNumber(freqTop.value)} répondants, ${formatPercent(share)})`,
+        source: 'Q3 - Fréquence',
+      });
+    }
+
+    if (departmentTop) {
+      const share = (departmentTop.value / totalDepartment) * 100;
+      rows.push({
+        indicator: 'Rayon privilégié',
+        result: `${departmentTop.name} (${formatNumber(departmentTop.value)} visites, ${formatPercent(share)})`,
+        source: 'Q8 - Rayons',
+      });
+    }
+
+    if (totalSatisfaction) {
+      const satisfactionShare = (satisfiedCount / totalSatisfaction) * 100;
+      rows.push({
+        indicator: 'Clients satisfaits',
+        result: `${formatNumber(satisfiedCount)} répondants (${formatPercent(satisfactionShare)})`,
+        source: 'Q7 - Satisfaction',
+      });
+    }
+
+    if (rows.length === 0) return '';
+
+    const header = '| Indicateur | Résultat | Source |\n| --- | --- | --- |\n';
+    const body = rows
+      .map((row) => `| ${row.indicator} | ${row.result} | ${row.source} |`)
+      .join('\n');
+
+    return `${header}${body}`;
+  };
+
+  const buildSummaryNarrative = () => {
+    const {
+      zoneTop,
+      reasonTop,
+      freqTop,
+      departmentTop,
+      totalZones,
+      totalVisitReason,
+      totalFrequency,
+      totalDepartment,
+      totalSatisfaction,
+      satisfiedCount,
+    } = computeSummaryMetrics();
+
+    const sentences: string[] = [];
+
+    if (zoneTop) {
+      const share = (zoneTop.value / totalZones) * 100;
+      sentences.push(`Les répondants proviennent majoritairement de ${zoneTop.name} (${formatPercent(share)} des ${formatNumber(totalZones)} participants).`);
+    }
+
+    if (reasonTop) {
+      const share = (reasonTop.value / totalVisitReason) * 100;
+      sentences.push(`Le motif dominant reste "${reasonTop.name}" avec ${formatNumber(reasonTop.value)} citations (${formatPercent(share)}).`);
+    }
+
+    if (freqTop && departmentTop) {
+      const freqShare = (freqTop.value / totalFrequency) * 100;
+      const deptShare = (departmentTop.value / totalDepartment) * 100;
+      sentences.push(`La fréquence ${freqTop.name.toLowerCase()} représente ${formatPercent(freqShare)}, tandis que le rayon ${departmentTop.name} concentre ${formatPercent(deptShare)} des préférences.`);
+    }
+
+    if (totalSatisfaction) {
+      const satisfactionShare = (satisfiedCount / totalSatisfaction) * 100;
+      sentences.push(`Au global, ${formatPercent(satisfactionShare)} des clients se déclarent satisfaits ou très satisfaits (${formatNumber(satisfiedCount)} réponses sur ${formatNumber(totalSatisfaction)}).`);
+    }
+
+    return sentences.join(' ');
+  };
+
+  const enforceResponseVisuals = (prompt: string, assistantText: string) => {
+    let enrichedResponse = assistantText || '';
+    const questionIds = extractQuestionIds(prompt).map((id) => id.toUpperCase());
+
+    questionIds.forEach((questionId) => {
+      const mapping = QUESTION_CONFIG_MAP[questionId];
+      if (!mapping) return;
+      const blockTitle = `#### Tableau professionnel – ${questionId}`;
+      const chartTag = `[[CHART:${mapping.chart}]]`;
+      if (!enrichedResponse.includes(blockTitle) || !enrichedResponse.includes(chartTag)) {
+        const table = buildTableForKey(mapping.key);
+        const tableContent = table || '_Aucune donnée disponible pour cette question._';
+        enrichedResponse += `\n\n${blockTitle}\n${tableContent}\n${chartTag}`;
+      }
+    });
+
+    if (isSummaryPrompt(prompt)) {
+      const summaryTitle = '### Rapport synthétique officiel';
+      if (!enrichedResponse.includes(summaryTitle)) {
+        const table = buildSummaryTable();
+        const narrative = buildSummaryNarrative();
+        enrichedResponse += `\n\n${summaryTitle}\n${table || '_Aucune donnée pour le rapport global._'}\n\n${narrative || ''}\n\n[[CHART:satisfaction]]`;
+      }
+    }
+
+    return enrichedResponse;
+  };
+
   // Helper to render the Chart inside the chat based on the key
   const renderChart = (chartKey: string) => {
-    const nameChangeColors = ['#0ea5e9', '#94a3b8'];
-    const posNegColors = ['#22c55e', '#ef4444'];
-
     if (chartKey === 'nameChangeAwareness') {
       const total = currentData.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0) || 1;
       return (
-        <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={currentData.nameChangeAwareness}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
-                  paddingAngle={4}
-                  dataKey="value"
-                  stroke="none"
-                  label={({ percent }) => percent > 0.08 ? `${(percent * 100).toFixed(0)}%` : ''}
-                  labelLine={false}
-                >
-                  {currentData.nameChangeAwareness.map((entry, index) => (
-                    <Cell key={`q9-cell-${index}`} fill={nameChangeColors[index % nameChangeColors.length]} stroke="rgba(255,255,255,0.3)" />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
-              </PieChart>
-            </ResponsiveContainer>
+        <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-sm">
+          <div className="h-56">
+            {render3DPie(currentData.nameChangeAwareness, {
+              colors: NAME_CHANGE_COLORS,
+              innerRadius: 55,
+              showLegend: false,
+              paddingAngle: 4,
+            })}
           </div>
           <div className="space-y-2 text-xs">
             {currentData.nameChangeAwareness.map((slice, index) => {
-              const percent = Math.round((slice.value / total) * 100);
+              const percent = total ? (slice.value / total) * 100 : 0;
               return (
-                <div key={`q9-row-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2">
+                <div key={`q9-row-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 bg-slate-50/70">
                   <div className="flex items-center gap-2 font-semibold text-slate-700">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: nameChangeColors[index % nameChangeColors.length] }} />
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length] }} />
                     {slice.name}
                   </div>
                   <div className="text-right">
-                    <p className="text-base font-bold text-slate-900">{percent}%</p>
-                    <p className="text-[11px] text-slate-500">{slice.value} réponses</p>
+                    <p className="text-base font-bold text-slate-900">{formatPercent(percent)}</p>
+                    <p className="text-[11px] text-slate-500">{formatNumber(slice.value)} réponses</p>
                   </div>
                 </div>
               );
@@ -108,98 +328,72 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
       ];
       const detailCharts = currentData.experienceChanges.map((item) => ({
         category: item.category,
+        total: item.positive + item.negative,
         slices: [
-          { label: item.labelPositive || 'Positif', value: item.positive },
-          { label: item.labelNegative || 'Négatif', value: item.negative }
+          { name: item.labelPositive || 'Positif', value: item.positive },
+          { name: item.labelNegative || 'Négatif', value: item.negative }
         ]
       }));
 
       return (
         <div className="mt-4 space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-4">
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={summaryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={6}
-                    dataKey="value"
-                    stroke="none"
-                    label={({ percent }) => percent > 0.08 ? `${(percent * 100).toFixed(0)}%` : ''}
-                    labelLine={false}
-                  >
-                    {summaryData.map((entry, index) => (
-                      <Cell key={`q10-summary-${entry.name}`} fill={posNegColors[index % posNegColors.length]} stroke="rgba(255,255,255,0.35)" />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
-                </PieChart>
-              </ResponsiveContainer>
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-4 shadow-sm">
+            <div className="h-56">
+              {render3DPie(summaryData, {
+                colors: POS_NEG_COLORS,
+                innerRadius: 55,
+                paddingAngle: 6,
+                showLegend: false,
+              })}
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-              {summaryData.map((item, index) => (
-                <div key={`q10-highlight-${item.name}`} className="rounded-xl border border-slate-100 px-3 py-2 bg-white/80">
+              {summaryData.map((item) => (
+                <div key={`q10-highlight-${item.name}`} className="rounded-xl border border-slate-100 px-3 py-2 bg-white/85">
                   <p className="text-[11px] uppercase tracking-wide text-slate-500">{item.name}</p>
-                  <p className="text-2xl font-bold text-slate-900 mt-1">{Math.round((item.value / summaryTotal) * 100)}%</p>
-                  <p className="text-[11px] text-slate-500">{item.value} réponses</p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">{formatPercent((item.value / summaryTotal) * 100)}</p>
+                  <p className="text-[11px] text-slate-500">{formatNumber(item.value)} réponses</p>
                 </div>
               ))}
             </div>
           </div>
           <div className="grid grid-cols-1 gap-3">
             {detailCharts.map((chart) => {
-              const total = chart.slices.reduce((sum, slice) => sum + slice.value, 0) || 1;
+              const total = chart.total || 1;
               return (
-                <div key={`q10-detail-${chart.category}`} className="rounded-2xl border border-slate-100 bg-white/90 p-4">
+                <div key={`q10-detail-${chart.category}`} className="rounded-2xl border border-slate-100 bg-white/90 p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-slate-900">Répartition – {chart.category}</p>
-                    <span className="text-[11px] text-slate-500">{total} réponses</span>
+                    <span className="text-[11px] text-slate-500">{formatNumber(chart.total)} réponses</span>
                   </div>
                   <div className="mt-3 flex items-center gap-4">
                     <div className="w-24 h-24">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={chart.slices}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={35}
-                            outerRadius={55}
-                            paddingAngle={4}
-                            dataKey="value"
-                            stroke="none"
-                            label={({ percent }) => percent > 0.12 ? `${(percent * 100).toFixed(0)}%` : ''}
-                            labelLine={false}
-                          >
-                            {chart.slices.map((slice, index) => (
-                              <Cell key={`q10-detail-cell-${slice.label}`} fill={posNegColors[index % posNegColors.length]} stroke="rgba(255,255,255,0.3)" />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
+                      {render3DPie(chart.slices, {
+                        colors: POS_NEG_COLORS,
+                        innerRadius: 40,
+                        outerRadius: 60,
+                        paddingAngle: 4,
+                        showLegend: false,
+                        minLabelPercent: 0.12,
+                      })}
                     </div>
                     <div className="flex-1 space-y-2 text-xs">
                       {chart.slices.map((slice, index) => {
-                        const percent = Math.round((slice.value / total) * 100);
+                        const percent = total ? (slice.value / total) * 100 : 0;
                         return (
-                          <div key={`q10-row-${chart.category}-${slice.label}`}>
+                          <div key={`q10-row-${chart.category}-${slice.name}`}>
                             <div className="flex items-center justify-between">
                               <span className="flex items-center gap-2 font-semibold text-slate-700">
-                                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: posNegColors[index % posNegColors.length] }} />
-                                {slice.label}
+                                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: POS_NEG_COLORS[index % POS_NEG_COLORS.length] }} />
+                                {slice.name}
                               </span>
-                              <span className="font-semibold text-slate-900">{percent}%</span>
+                              <span className="font-semibold text-slate-900">{formatPercent(percent)}</span>
                             </div>
                             <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
                               <span
                                 className="block h-full rounded-full"
                                 style={{
                                   width: `${percent}%`,
-                                  backgroundColor: posNegColors[index % posNegColors.length]
+                                  backgroundColor: POS_NEG_COLORS[index % POS_NEG_COLORS.length]
                                 }}
                               />
                             </div>
@@ -216,7 +410,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
       );
     }
 
-    let data: any[] = [];
+    let data: SimpleDataPoint[] = [];
     let colors = COLORS;
     const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
     const tooltipStyles = {
@@ -229,62 +423,70 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
       backdropFilter: 'blur(4px)'
     };
 
-    // Map string key to dataset
     switch (chartKey) {
-      case 'ageGroups': data = currentData.ageGroups; break;
-      case 'zones': data = currentData.zones; break;
-      case 'transport': data = currentData.transport; break;
-      case 'frequency': data = currentData.frequency; break;
-      case 'visitReason': data = currentData.visitReason; break;
-      case 'competitors': data = currentData.competitors; break;
-      case 'choiceReason': data = currentData.choiceReason; break;
-      case 'satisfaction': data = currentData.satisfaction; colors = SATISFACTION_COLORS; break;
-      case 'preferredDepartment': data = currentData.preferredDepartment; break;
-      default: return null;
+      case 'ageGroups':
+        data = currentData.ageGroups;
+        break;
+      case 'zones':
+        data = currentData.zones;
+        break;
+      case 'transport':
+        data = currentData.transport;
+        break;
+      case 'frequency':
+        data = currentData.frequency;
+        break;
+      case 'visitReason':
+        data = currentData.visitReason;
+        break;
+      case 'competitors':
+        data = currentData.competitors;
+        break;
+      case 'choiceReason':
+        data = currentData.choiceReason;
+        break;
+      case 'satisfaction':
+        data = currentData.satisfaction;
+        colors = SATISFACTION_COLORS;
+        break;
+      case 'preferredDepartment':
+        data = currentData.preferredDepartment;
+        break;
+      default:
+        return null;
     }
 
     if (!data || data.length === 0) return null;
 
+    const total = data.reduce((sum, item) => sum + item.value, 0) || 1;
+
     return (
-      <div className="w-full h-64 mt-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 p-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <defs>
-              <filter id="shadow3dChat" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur" />
-                <feOffset in="blur" dx="2" dy="2" result="offsetBlur" />
-                <feSpecularLighting in="blur" surfaceScale="5" specularConstant=".75" specularExponent="20" lightingColor="#ffffff" result="specOut">
-                  <fePointLight x="-5000" y="-10000" z="20000" />
-                </feSpecularLighting>
-                <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
-                <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litPaint" />
-                <feMerge>
-                  <feMergeNode in="offsetBlur" />
-                  <feMergeNode in="litPaint" />
-                </feMerge>
-              </filter>
-            </defs>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={30}
-              outerRadius={60}
-              paddingAngle={4}
-              dataKey="value"
-              style={{ filter: 'url(#shadow3dChat)' }}
-              stroke="none"
-              label={({ percent }) => percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''}
-              labelLine={false}
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} stroke="rgba(255,255,255,0.2)" />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={tooltipStyles} />
-            <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-sm">
+        <div className="h-64">
+          {render3DPie(data, {
+            colors,
+            innerRadius: 55,
+            paddingAngle: 4,
+            showLegend: false,
+          })}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          {data.map((slice, index) => {
+            const percent = total ? (slice.value / total) * 100 : 0;
+            return (
+              <div key={`chat-card-${chartKey}-${slice.name}`} className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 bg-slate-50/70">
+                <div className="flex items-center gap-2 font-semibold text-slate-700">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
+                  {slice.name}
+                </div>
+                <div className="text-right">
+                  <p className="text-base font-bold text-slate-900">{formatPercent(percent)}</p>
+                  <p className="text-[11px] text-slate-500">{formatNumber(slice.value)} réponses</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>  
       </div>
     );
   };

@@ -4,6 +4,27 @@ import { SurveyDataset } from './types';
 export const COLORS = ['#0ea5e9', '#22c55e', '#eab308', '#f97316', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
 export const SATISFACTION_COLORS = ['#ef4444', '#f97316', '#84cc16', '#22c55e']; // Red to Green
 
+export interface QuestionMapping {
+  id: string;
+  text: string;
+  key: keyof SurveyDataset;
+  chart: keyof SurveyDataset | 'experienceChanges';
+}
+
+export const QUESTION_MAPPINGS: QuestionMapping[] = [
+  { id: 'Q0', text: "Répartition des âges", key: 'ageGroups', chart: 'ageGroups' },
+  { id: 'Q1', text: "Zone de résidence", key: 'zones', chart: 'zones' },
+  { id: 'Q2', text: "Moyen de transport", key: 'transport', chart: 'transport' },
+  { id: 'Q3', text: "Fréquence de visite", key: 'frequency', chart: 'frequency' },
+  { id: 'Q4', text: "Motif principal de venue", key: 'visitReason', chart: 'visitReason' },
+  { id: 'Q5', text: "Magasin le plus fréquenté", key: 'competitors', chart: 'competitors' },
+  { id: 'Q6', text: "Raison du choix", key: 'choiceReason', chart: 'choiceReason' },
+  { id: 'Q7', text: "Satisfaction de la visite", key: 'satisfaction', chart: 'satisfaction' },
+  { id: 'Q8', text: "Rayon préféré", key: 'preferredDepartment', chart: 'preferredDepartment' },
+  { id: 'Q9', text: "Changement de nom remarqué", key: 'nameChangeAwareness', chart: 'nameChangeAwareness' },
+  { id: 'Q10', text: "Différences d'expérience d'achat", key: 'experienceChanges', chart: 'experienceChanges' }
+];
+
 export const SURVEY_DATA: SurveyDataset = {
   ageGroups: [
     { name: '< 20 ans', value: 17 },
