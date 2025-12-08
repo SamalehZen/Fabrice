@@ -3,6 +3,20 @@ import { SurveyDataset } from "../types";
 
 let client: GoogleGenAI | null = null;
 
+const QUESTION_MAPPINGS = [
+  { id: "Q0", text: "Répartition des âges", key: "ageGroups", chart: "ageGroups" },
+  { id: "Q1", text: "Zone de résidence", key: "zones", chart: "zones" },
+  { id: "Q2", text: "Moyen de transport", key: "transport", chart: "transport" },
+  { id: "Q3", text: "Fréquence de visite", key: "frequency", chart: "frequency" },
+  { id: "Q4", text: "Motif principal de venue", key: "visitReason", chart: "visitReason" },
+  { id: "Q5", text: "Magasin le plus fréquenté", key: "competitors", chart: "competitors" },
+  { id: "Q6", text: "Raison du choix", key: "choiceReason", chart: "choiceReason" },
+  { id: "Q7", text: "Satisfaction de la visite", key: "satisfaction", chart: "satisfaction" },
+  { id: "Q8", text: "Rayon préféré", key: "preferredDepartment", chart: "preferredDepartment" },
+  { id: "Q9", text: "Changement de nom remarqué", key: "nameChangeAwareness", chart: "nameChangeAwareness" },
+  { id: "Q10", text: "Différences d'expérience d'achat", key: "experienceChanges", chart: "experienceChanges" }
+];
+
 const resolveApiKey = (): string => {
   return (
     import.meta.env.VITE_GEMINI_API_KEY ||
@@ -30,8 +44,9 @@ export const generateInsight = async (userPrompt: string, currentData?: SurveyDa
     return "La clé API est manquante. Configurez GEMINI_API_KEY ou GOOGLE_GENERATIVE_AI_API_KEY.";
   }
 
-  // Use provided data or fallback
   const dataContext = currentData ? JSON.stringify(currentData) : "Aucune donnée disponible";
+  const questionGuide = QUESTION_MAPPINGS.map(({ id, text, key }) => `- ${id} : ${text} -> clé JSON "${key}"`).join("\n");
+  const chartGuide = QUESTION_MAPPINGS.map(({ id, text, chart }) => `- ${id} ${text} : [[CHART:${chart}]]`).join("\n");
 
   const dynamicSystemInstruction = `
 Vous êtes un expert analyste de données pour le Bawadi Mall.
@@ -40,31 +55,26 @@ ${dataContext}
 
 Votre mission est de répondre aux questions de l'utilisateur en vous basant *uniquement* sur ces données.
 
-Règles à suivre impérativement :
+Correspondance officielle des questions :
+${questionGuide}
+
+Si un utilisateur mentionne un numéro de question (ex. "question 8"), vous devez impérativement utiliser la clé JSON associée ci-dessus pour éviter toute confusion.
+
+Règles à suivre :
 1. **Langue** : Répondez TOUJOURS en **Français**.
 2. **Format** : Utilisez le **Markdown** pour structurer votre réponse (titres, gras, listes, tableaux).
-3. **Visuels (GRAPHIQUES)** : Si la réponse concerne une catégorie de données spécifique, vous DEVEZ ajouter un TAG spécial à la fin de votre réponse pour que l'interface affiche le graphique correspondant.
+3. **Visuels** : lorsque la réponse concerne l'une des questions, ajoutez le tag correspondant pour afficher le graphique.
 
-Liste des tags disponibles (utilisez exactement ce format) :
-- Âge : [[CHART:ageGroups]]
-- Zones résidentielles : [[CHART:zones]]
-- Transport : [[CHART:transport]]
-- Fréquence de visite : [[CHART:frequency]]
-- Motif de visite : [[CHART:visitReason]]
-- Concurrents : [[CHART:competitors]]
-- Raison du choix : [[CHART:choiceReason]]
-- Satisfaction : [[CHART:satisfaction]]
-- Rayons préférés : [[CHART:preferredDepartment]]
-- Changement de nom : [[CHART:nameChangeAwareness]]
-- Changements expérience (Q10) : [[CHART:experienceChanges]]
+Tags graphiques autorisés :
+${chartGuide}
 
-Exemple : 
+Exemple :
 Si l'utilisateur demande "D'où viennent les clients ?", répondez avec l'analyse textuelle puis finissez par : [[CHART:zones]]
 
-4. **Contenu** : 
+4. **Contenu** :
    - Soyez factuel, professionnel et concis.
    - Citez les chiffres exacts du JSON pour justifier vos analyses.
-   - Si les données ont changé, basez-vous sur le JSON fourni ci-dessus.
+   - Ne déduisez rien au-delà des données fournies.
 `;
 
   try {
