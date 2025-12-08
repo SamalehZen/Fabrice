@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import type { PieLabelRenderProps } from 'recharts';
 import { COLORS } from '../constants';
@@ -23,7 +23,7 @@ interface Render3DPieOptions {
 
 const RADIAN = Math.PI / 180;
 
-const detectDarkMode = () => {
+const detectDarkMode = (): boolean => {
   if (typeof document !== 'undefined') {
     return document.documentElement.classList.contains('dark');
   }
@@ -33,9 +33,13 @@ const detectDarkMode = () => {
   return false;
 };
 
-export const render3DPie = (
-  chartData: PieDatum[],
-  {
+interface PieChartComponentProps {
+  chartData: PieDatum[];
+  options: Render3DPieOptions;
+}
+
+const PieChartComponent: React.FC<PieChartComponentProps> = memo(({ chartData, options }) => {
+  const {
     colors = COLORS,
     isWide = false,
     innerRadius = 0,
@@ -46,19 +50,22 @@ export const render3DPie = (
     isDark,
     labelPosition = 'outside',
     labelOffset = 16,
-  }: Render3DPieOptions = {}
-) => {
-  if (!chartData || chartData.length === 0) return null;
+  } = options;
 
-  const resolvedOuterRadius = typeof outerRadius === 'number' ? outerRadius : isWide ? 100 : 80;
-  const isDarkMode = typeof isDark === 'boolean' ? isDark : detectDarkMode();
-  const tooltipBackground = isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)';
-  const tooltipColor = isDarkMode ? '#e2e8f0' : '#0f172a';
-  const tooltipShadow = isDarkMode
-    ? '0 10px 25px -5px rgba(2,6,23,0.9)'
-    : '0 10px 30px -5px rgba(15,23,42,0.15)';
-  const legendColor = isDarkMode ? '#cbd5f5' : '#0f172a';
-  const labelColor = isDarkMode ? '#f1f5f9' : '#0f172a';
+  const resolvedOuterRadius = useMemo(() => (typeof outerRadius === 'number' ? outerRadius : isWide ? 100 : 80), [outerRadius, isWide]);
+  const isDarkMode = useMemo(() => (typeof isDark === 'boolean' ? isDark : detectDarkMode()), [isDark]);
+
+  const styles = useMemo(
+    () => ({
+      tooltipBackground: isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
+      tooltipColor: isDarkMode ? '#e2e8f0' : '#0f172a',
+      tooltipShadow: isDarkMode ? '0 10px 25px -5px rgba(2,6,23,0.9)' : '0 10px 30px -5px rgba(15,23,42,0.15)',
+      legendColor: isDarkMode ? '#cbd5f5' : '#0f172a',
+      labelColor: isDarkMode ? '#f1f5f9' : '#0f172a',
+      labelLineStroke: isDarkMode ? 'rgba(148,163,184,0.6)' : 'rgba(15,23,42,0.3)',
+    }),
+    [isDarkMode]
+  );
 
   const renderLabel = (props: PieLabelRenderProps) => {
     const { percent, cx, cy, midAngle, innerRadius: labelInnerRadius, outerRadius: labelOuterRadius } = props;
@@ -74,14 +81,7 @@ export const render3DPie = (
       const x = centerX + radius * Math.cos(-midAngle * RADIAN);
       const y = centerY + radius * Math.sin(-midAngle * RADIAN);
       return (
-        <text
-          x={x}
-          y={y}
-          fill={labelColor}
-          fontSize={12}
-          textAnchor="middle"
-          dominantBaseline="central"
-        >
+        <text x={x} y={y} fill={styles.labelColor} fontSize={12} textAnchor="middle" dominantBaseline="central" aria-hidden="true">
           {`${(percent * 100).toFixed(0)}%`}
         </text>
       );
@@ -92,18 +92,13 @@ export const render3DPie = (
     const x = centerX + radius * Math.cos(-midAngle * RADIAN);
     const y = centerY + radius * Math.sin(-midAngle * RADIAN);
     return (
-      <text
-        x={x}
-        y={y}
-        fill={labelColor}
-        fontSize={12}
-        textAnchor={x > centerX ? 'start' : 'end'}
-        dominantBaseline="middle"
-      >
+      <text x={x} y={y} fill={styles.labelColor} fontSize={12} textAnchor={x > centerX ? 'start' : 'end'} dominantBaseline="middle" aria-hidden="true">
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
   };
+
+  if (!chartData || chartData.length === 0) return null;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -112,14 +107,7 @@ export const render3DPie = (
           <filter id="shadow3d" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
             <feOffset in="blur" dx="3" dy="3" result="offsetBlur" />
-            <feSpecularLighting
-              in="blur"
-              surfaceScale={5}
-              specularConstant={0.75}
-              specularExponent={20}
-              lightingColor="#ffffff"
-              result="specOut"
-            >
+            <feSpecularLighting in="blur" surfaceScale={5} specularConstant={0.75} specularExponent={20} lightingColor="#ffffff" result="specOut">
               <fePointLight x={-5000} y={-10000} z={20000} />
             </feSpecularLighting>
             <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
@@ -141,28 +129,23 @@ export const render3DPie = (
           style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }}
           stroke="none"
           label={renderLabel}
-          labelLine={labelPosition === 'outside' ? { stroke: isDarkMode ? 'rgba(148,163,184,0.6)' : 'rgba(15,23,42,0.3)' } : false}
+          labelLine={labelPosition === 'outside' ? { stroke: styles.labelLineStroke } : false}
         >
           {chartData.map((entry, index) => (
-            <Cell
-              key={`cell-${entry.name}-${index}`}
-              fill={colors[index % colors.length]}
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={1}
-            />
+            <Cell key={`cell-${entry.name}-${index}`} fill={colors[index % colors.length]} stroke="rgba(255,255,255,0.2)" strokeWidth={1} />
           ))}
         </Pie>
         <Tooltip
           contentStyle={{
             borderRadius: '12px',
             border: 'none',
-            boxShadow: tooltipShadow,
-            backgroundColor: tooltipBackground,
-            color: tooltipColor,
-            backdropFilter: 'blur(6px)'
+            boxShadow: styles.tooltipShadow,
+            backgroundColor: styles.tooltipBackground,
+            color: styles.tooltipColor,
+            backdropFilter: 'blur(6px)',
           }}
-          itemStyle={{ color: tooltipColor }}
-          labelStyle={{ color: tooltipColor, fontWeight: 600 }}
+          itemStyle={{ color: styles.tooltipColor }}
+          labelStyle={{ color: styles.tooltipColor, fontWeight: 600 }}
         />
         {showLegend && (
           <Legend
@@ -170,10 +153,17 @@ export const render3DPie = (
             verticalAlign={isWide ? 'middle' : 'bottom'}
             align={isWide ? 'right' : 'center'}
             wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
-            formatter={(value) => <span style={{ color: legendColor }}>{value}</span>}
+            formatter={(value) => <span style={{ color: styles.legendColor }}>{value}</span>}
           />
         )}
       </PieChart>
     </ResponsiveContainer>
   );
+});
+
+PieChartComponent.displayName = 'PieChartComponent';
+
+export const render3DPie = (chartData: PieDatum[], options: Render3DPieOptions = {}) => {
+  if (!chartData || chartData.length === 0) return null;
+  return <PieChartComponent chartData={chartData} options={options} />;
 };
