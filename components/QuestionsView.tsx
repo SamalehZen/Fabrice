@@ -11,11 +11,16 @@ interface QuestionsViewProps {
 
 const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
   
-  // Transform Q10 (Experience Changes) for Pie format
-  const q10Data = [
-      { name: 'Positif', value: data.experienceChanges.reduce((acc, curr) => acc + curr.positive, 0) },
-      { name: 'Négatif', value: data.experienceChanges.reduce((acc, curr) => acc + curr.negative, 0) }
-  ];
+  // Transform Q10 (Experience Changes) to individual pies per category
+  const q10DetailCharts = data.experienceChanges.map((item) => ({
+      title: `Répartition – ${item.category}`,
+      data: [
+        { name: item.labelPositive || 'Positif', value: item.positive },
+        { name: item.labelNegative || 'Négatif', value: item.negative }
+      ]
+  }));
+
+  const POS_NEG_COLORS = ['#22c55e', '#ef4444'];
 
   // Helper to render the 3D-style Pie Chart
   // isWide determines if we place legend on the right (for Bento span-2 or span-4)
@@ -23,7 +28,8 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
     chartData: {name: string, value: number}[], 
     colors: string[] = COLORS, 
     isWide: boolean = false,
-    innerRadius: number = 0
+    innerRadius: number = 0,
+    showLegend: boolean = true
   ) => (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
@@ -81,12 +87,14 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
             backdropFilter: 'blur(4px)'
           }} 
         />
-        <Legend 
-          layout={isWide ? "vertical" : "horizontal"} 
-          verticalAlign={isWide ? "middle" : "bottom"} 
-          align={isWide ? "right" : "center"}
-          wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
-        />
+        {showLegend && (
+          <Legend 
+            layout={isWide ? "vertical" : "horizontal"} 
+            verticalAlign={isWide ? "middle" : "bottom"} 
+            align={isWide ? "right" : "center"}
+            wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
+          />
+        )}
       </PieChart>
     </ResponsiveContainer>
   );
@@ -174,7 +182,35 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           subtitle="Impact des changements" 
           className="col-span-1 md:col-span-2 lg:col-span-2"
         >
-          {render3DPie(q10Data, ['#22c55e', '#ef4444'], true, 40)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+            {q10DetailCharts.map((chart) => {
+              const total = chart.data.reduce((sum, slice) => sum + slice.value, 0);
+              return (
+                <div key={chart.title} className="bg-slate-50 rounded-2xl p-4 flex flex-col border border-slate-100 shadow-sm">
+                  <p className="text-sm font-semibold text-slate-700 mb-3">{chart.title}</p>
+                  <div className="flex-1 min-h-[200px]">
+                    {render3DPie(chart.data, POS_NEG_COLORS, false, 35, false)}
+                  </div>
+                  <div className="mt-3 space-y-1 text-xs">
+                    {chart.data.map((slice, index) => (
+                      <div key={slice.name} className="flex items-center justify-between text-slate-600">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: POS_NEG_COLORS[index % POS_NEG_COLORS.length] }}
+                          />
+                          <span className="font-medium">{slice.name}</span>
+                        </div>
+                        <span className="font-semibold text-slate-700">
+                          {total ? Math.round((slice.value / total) * 100) : 0}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </ChartCard>
 
       </div>
