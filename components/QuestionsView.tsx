@@ -97,19 +97,19 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
         
         {/* ROW 1: Q0 - Q3 (Demographics - 2 columns per row) */}
         <ChartCard title="Q0: Âge" subtitle="Tranche d'âge" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.ageGroups)}
+          {render3DPie(data.ageGroups, COLORS, true)}
         </ChartCard>
 
         <ChartCard title="Q1: Zone" subtitle="Résidence" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.zones)}
+          {render3DPie(data.zones, COLORS, true)}
         </ChartCard>
 
         <ChartCard title="Q2: Transport" subtitle="Moyen de transport" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.transport)}
+          {render3DPie(data.transport, COLORS, true)}
         </ChartCard>
 
         <ChartCard title="Q3: Fréquence" subtitle="Visites par mois" className="col-span-1 lg:col-span-2">
-          {render3DPie(data.frequency)}
+          {render3DPie(data.frequency, COLORS, true)}
         </ChartCard>
 
         {/* ROW 2: Q4 & Q5 (Medium) */}
