@@ -96,11 +96,11 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
   }, [activeSection]);
 
   return (
-    <div className="bg-white/90 dark:bg-slate-950/80 rounded-xl shadow-sm shadow-slate-200/60 dark:shadow-black/50 border border-slate-200 dark:border-slate-800 p-6">
+    <div className="bg-white/90 dark:bg-dark-surface/90 rounded-xl shadow-sm shadow-slate-200/60 dark:shadow-black/50 border border-slate-200 dark:border-dark-border p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">Éditeur de données</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-gray-400">
             Modifiez les résultats de l'analyse en temps réel
             {hasChanges && (
               <span className="ml-2 text-amber-600 dark:text-amber-400 font-medium">• Modifications non sauvegardées</span>
@@ -111,7 +111,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
           <button
             onClick={() => setShowResetConfirm(true)}
             disabled={!hasChanges && JSON.stringify(localData) === JSON.stringify(INITIAL_DATA)}
-            className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-dark-border text-slate-600 dark:text-gray-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             aria-label="Réinitialiser les données"
           >
             <RefreshCw size={18} aria-hidden="true" />
@@ -167,7 +167,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
               className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                 activeSection === section.key
                   ? 'bg-brand-50 text-brand-700 border border-brand-100 dark:bg-brand-500/20 dark:text-brand-100 dark:border-brand-300/40'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/60'
+                  : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-dark-hover/60'
               }`}
             >
               {section.label}
@@ -175,11 +175,11 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
           ))}
         </nav>
 
-        <div className="flex-1 bg-slate-50 dark:bg-slate-900/60 rounded-xl p-6 border border-slate-100 dark:border-slate-800">
+        <div className="flex-1 bg-slate-50 dark:bg-dark-card/70 rounded-xl p-6 border border-slate-100 dark:border-dark-border">
           {activeSection !== 'experienceChanges' && currentSectionData && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-4">{currentSectionLabel}</h3>
-              <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              <h3 className="font-semibold text-slate-700 dark:text-gray-200 mb-4">{currentSectionLabel}</h3>
+              <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                 <div className="col-span-8">Libellé</div>
                 <div className="col-span-4">Valeur</div>
               </div>
@@ -194,7 +194,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                       type="text"
                       value={item.name}
                       onChange={(e) => handleSimpleUpdate(activeSection, index, 'name', e.target.value)}
-                      className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 transition-colors"
+                      className="w-full p-2.5 border border-slate-300 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-dark-card/60 text-slate-800 dark:text-slate-100 transition-colors"
                     />
                   </div>
                   <div className="col-span-4">
@@ -207,7 +207,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                       min="0"
                       value={item.value}
                       onChange={(e) => handleSimpleUpdate(activeSection, index, 'value', e.target.value)}
-                      className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 transition-colors"
+                      className="w-full p-2.5 border border-slate-300 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white dark:bg-dark-card/60 text-slate-800 dark:text-slate-100 transition-colors"
                     />
                   </div>
                 </div>
@@ -217,15 +217,15 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
 
           {activeSection === 'experienceChanges' && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-4">Q10 : Changements d'expérience</h3>
-              <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              <h3 className="font-semibold text-slate-700 dark:text-gray-200 mb-4">Q10 : Changements d'expérience</h3>
+              <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                 <div className="col-span-4">Catégorie</div>
                 <div className="col-span-4 text-green-600 dark:text-green-400">Positif</div>
                 <div className="col-span-4 text-red-600 dark:text-red-400">Négatif</div>
               </div>
               {localData.experienceChanges.map((item, index) => (
                 <div key={`experience-${index}`} className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-4 font-medium text-slate-700 dark:text-slate-200">{item.category}</div>
+                  <div className="col-span-4 font-medium text-slate-700 dark:text-gray-200">{item.category}</div>
                   <div className="col-span-4">
                     <label className="sr-only" htmlFor={`experience-positive-${index}`}>
                       Valeur positive pour {item.category}
@@ -236,7 +236,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                       min="0"
                       value={item.positive}
                       onChange={(e) => handleComparisonUpdate(index, 'positive', e.target.value)}
-                      className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-green-700 dark:text-green-300 bg-white dark:bg-slate-900/50 transition-colors"
+                      className="w-full p-2.5 border border-slate-300 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-green-700 dark:text-green-300 bg-white dark:bg-dark-card/60 transition-colors"
                     />
                   </div>
                   <div className="col-span-4">
@@ -249,7 +249,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                       min="0"
                       value={item.negative}
                       onChange={(e) => handleComparisonUpdate(index, 'negative', e.target.value)}
-                      className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-red-700 dark:text-red-300 bg-white dark:bg-slate-900/50 transition-colors"
+                      className="w-full p-2.5 border border-slate-300 dark:border-dark-border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-red-700 dark:text-red-300 bg-white dark:bg-dark-card/60 transition-colors"
                     />
                   </div>
                 </div>

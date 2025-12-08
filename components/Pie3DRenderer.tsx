@@ -57,12 +57,12 @@ const PieChartComponent: React.FC<PieChartComponentProps> = memo(({ chartData, o
 
   const styles = useMemo(
     () => ({
-      tooltipBackground: isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
-      tooltipColor: isDarkMode ? '#e2e8f0' : '#0f172a',
-      tooltipShadow: isDarkMode ? '0 10px 25px -5px rgba(2,6,23,0.9)' : '0 10px 30px -5px rgba(15,23,42,0.15)',
-      legendColor: isDarkMode ? '#cbd5f5' : '#0f172a',
-      labelColor: isDarkMode ? '#f1f5f9' : '#0f172a',
-      labelLineStroke: isDarkMode ? 'rgba(148,163,184,0.6)' : 'rgba(15,23,42,0.3)',
+      tooltipBackground: isDarkMode ? 'rgba(30,30,30,0.98)' : 'rgba(255,255,255,0.95)',
+      tooltipColor: isDarkMode ? '#e5e5e5' : '#0f172a',
+      tooltipShadow: isDarkMode ? '0 10px 25px -5px rgba(0,0,0,0.9)' : '0 10px 30px -5px rgba(15,23,42,0.15)',
+      legendColor: isDarkMode ? '#d4d4d4' : '#0f172a',
+      labelColor: isDarkMode ? '#f5f5f5' : '#0f172a',
+      labelLineStroke: isDarkMode ? 'rgba(115,115,115,0.6)' : 'rgba(15,23,42,0.3)',
     }),
     [isDarkMode]
   );

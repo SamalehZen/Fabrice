@@ -85,13 +85,13 @@ const AppContent: React.FC = () => {
   }, [activeTab, surveyData, updateSurveyData]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-dark-bg dark:via-dark-bg dark:to-dark-surface pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       
-      <header className="bg-white/80 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 backdrop-blur-xl">
+      <header className="bg-white/80 dark:bg-dark-surface/90 border-b border-slate-200 dark:border-dark-border sticky top-0 z-40 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-brand-600 dark:bg-brand-500/90 p-2 rounded-xl shadow-md shadow-brand-200/70 dark:shadow-brand-900/40">
+            <div className="bg-brand-600 dark:bg-brand-500 p-2 rounded-xl shadow-md shadow-brand-200/70 dark:shadow-brand-900/40">
               <LayoutDashboard className="text-white w-5 h-5" aria-hidden="true" />
             </div>
             <h1 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight leading-none">
@@ -108,8 +108,8 @@ const AppContent: React.FC = () => {
                   aria-current={activeTab === id ? 'page' : undefined}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 ${
                     activeTab === id
-                      ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:ring-brand-400/40'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/70'
+                      ? 'bg-brand-50 text-brand-700 shadow-sm ring-1 ring-brand-200 dark:bg-brand-500/20 dark:text-brand-300 dark:ring-brand-400/40'
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-gray-300 dark:hover:bg-dark-hover/70'
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -123,18 +123,18 @@ const AppContent: React.FC = () => {
             <button
               onClick={toggleTheme}
               aria-label={`Passer en mode ${theme === 'dark' ? 'clair' : 'sombre'}`}
-              className="hidden md:flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 shadow-inner shadow-slate-200/60 dark:shadow-black/40 backdrop-blur transition-all hover:bg-slate-50 dark:hover:bg-slate-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="hidden md:flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200 dark:border-dark-border bg-white/70 dark:bg-dark-surface/90 shadow-inner shadow-slate-200/60 dark:shadow-black/40 backdrop-blur transition-all hover:bg-slate-50 dark:hover:bg-dark-hover/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               <FruitBadge theme={theme} />
               <div className="text-left">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Palette</p>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 dark:text-gray-400">Palette</p>
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
                   {theme === 'dark' ? 'Sombre fruitée' : 'Clair vitaminé'}
                 </p>
               </div>
               <span
                 className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
-                  theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200'
+                  theme === 'dark' ? 'bg-dark-muted' : 'bg-slate-200'
                 }`}
                 aria-hidden="true"
               >
@@ -152,12 +152,12 @@ const AppContent: React.FC = () => {
               <button
                 onClick={toggleTheme}
                 aria-label={`Passer en mode ${theme === 'dark' ? 'clair' : 'sombre'}`}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                className="p-2 rounded-xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-surface/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
               >
                 <FruitBadge theme={theme} />
               </button>
               <button
-                className="p-2 text-slate-600 dark:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                className="p-2 text-slate-600 dark:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-dark-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                 onClick={handleToggleMobileMenu}
                 aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
                 aria-expanded={mobileMenuOpen}
@@ -171,14 +171,14 @@ const AppContent: React.FC = () => {
 
         <div
           id="mobile-menu"
-          className={`md:hidden bg-white/95 dark:bg-slate-950/90 border-t border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-900/10 overflow-hidden transition-all duration-300 ${
+          className={`md:hidden bg-white/95 dark:bg-dark-surface/95 border-t border-slate-100 dark:border-dark-border shadow-lg shadow-slate-900/10 overflow-hidden transition-all duration-300 ${
             mobileMenuOpen ? 'max-h-96 p-4' : 'max-h-0 p-0'
           }`}
           role="navigation"
           aria-label="Navigation mobile"
         >
           <div className="space-y-3">
-            <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-4 py-3">
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50/80 dark:bg-dark-card/80 px-4 py-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Palette fruitée</p>
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -188,7 +188,7 @@ const AppContent: React.FC = () => {
               <button
                 onClick={toggleTheme}
                 aria-label={`Passer en mode ${theme === 'dark' ? 'clair' : 'sombre'}`}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                className="p-2 rounded-xl border border-slate-200 dark:border-dark-border bg-white/90 dark:bg-dark-surface/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
               >
                 <FruitBadge theme={theme} />
               </button>
@@ -201,7 +201,7 @@ const AppContent: React.FC = () => {
                 className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                   activeTab === id
                     ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900/60'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-dark-hover/60'
                 }`}
               >
                 <Icon size={18} aria-hidden="true" />

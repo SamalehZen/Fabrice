@@ -49,15 +49,15 @@ const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
 
   return (
     <div
-      className="bg-white/95 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-slate-800 text-sm text-slate-800 dark:text-slate-100"
+      className="bg-white/95 dark:bg-dark-surface/95 backdrop-blur-md p-4 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border text-sm text-slate-800 dark:text-gray-100"
       role="tooltip"
     >
       <p className="font-bold text-slate-800 dark:text-white mb-1">{label || payload[0].name}</p>
       {payload.map((entry, index) => (
         <div key={index} className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} aria-hidden="true" />
-          <span className="text-slate-500 dark:text-slate-400 capitalize">{entry.name} :</span>
-          <span className="font-mono font-semibold text-slate-700 dark:text-slate-100">{entry.value}</span>
+          <span className="text-slate-500 dark:text-gray-400 capitalize">{entry.name} :</span>
+          <span className="font-mono font-semibold text-slate-700 dark:text-gray-100">{entry.value}</span>
         </div>
       ))}
     </div>
@@ -158,11 +158,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/90 dark:bg-slate-900/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 relative z-20 backdrop-blur">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/90 dark:bg-dark-card/90 p-4 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 relative z-20 backdrop-blur">
         <div>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">Tableau de bord des questions</h2>
           <div className="flex items-center gap-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400">Analyse dynamique des réponses</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400">Analyse dynamique des réponses</p>
             {selectedZone !== 'All' && (
               <span className="bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center">
                 Filtre : {selectedZone}
@@ -172,7 +172,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 dark:bg-slate-900/60 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800/70 border border-slate-200 dark:border-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 dark:bg-dark-card/70 text-slate-600 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-dark-hover/70 border border-slate-200 dark:border-dark-border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             aria-label="Période : 30 derniers jours"
           >
             <Calendar size={16} aria-hidden="true" />
@@ -187,7 +187,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                 selectedZone !== 'All'
                   ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:border-brand-300/40'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 dark:bg-slate-900/60 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-800/80'
+                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 dark:bg-dark-card/70 dark:text-gray-300 dark:border-dark-border dark:hover:bg-dark-hover/80'
               }`}
             >
               <Filter size={16} aria-hidden="true" />
@@ -200,9 +200,9 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                 <ul
                   role="listbox"
                   aria-label="Sélectionner une zone"
-                  className="absolute top-full right-0 mt-2 w-48 bg-white/95 dark:bg-slate-950 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-slate-800 overflow-hidden z-20 py-1"
+                  className="absolute top-full right-0 mt-2 w-48 bg-white/95 dark:bg-dark-surface rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border overflow-hidden z-20 py-1"
                 >
-                  <li className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <li className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
                     Choisir une zone
                   </li>
                   <li>
@@ -210,7 +210,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                       role="option"
                       aria-selected={selectedZone === 'All'}
                       onClick={() => handleZoneSelect('All')}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-slate-900/60 dark:hover:text-brand-200 flex items-center justify-between transition-colors"
+                      className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-200 flex items-center justify-between transition-colors"
                     >
                       <span>Toutes les zones</span>
                       {selectedZone === 'All' && <Check size={14} className="text-brand-600" aria-hidden="true" />}
@@ -222,7 +222,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                         role="option"
                         aria-selected={selectedZone === zone.name}
                         onClick={() => handleZoneSelect(zone.name)}
-                        className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-slate-900/60 dark:hover:text-brand-200 flex items-center justify-between transition-colors"
+                        className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-200 flex items-center justify-between transition-colors"
                       >
                         <span>{zone.name}</span>
                         {selectedZone === zone.name && <Check size={14} className="text-brand-600" aria-hidden="true" />}
@@ -263,7 +263,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </article>
 
-        <article className="relative overflow-hidden bg-white/90 dark:bg-slate-900/70 rounded-xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
+        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-green-50 to-transparent dark:from-green-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-green-50 dark:bg-green-500/20 rounded-xl">
@@ -273,14 +273,14 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <ArrowUpRight size={12} className="mr-1" aria-hidden="true" /> Haut
             </span>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
+          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
           <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.satisfactionRate}%</p>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden" role="progressbar" aria-valuenow={stats.satisfactionRate} aria-valuemin={0} aria-valuemax={100}>
+          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden" role="progressbar" aria-valuenow={stats.satisfactionRate} aria-valuemin={0} aria-valuemax={100}>
             <div className="bg-green-500 dark:bg-green-300 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.satisfactionRate}%` }} />
           </div>
         </article>
 
-        <article className="relative overflow-hidden bg-white/90 dark:bg-slate-900/70 rounded-xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
+        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-purple-50 dark:bg-purple-500/20 rounded-xl">
@@ -288,23 +288,23 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             </div>
             <div className="text-right">
               <span className="text-2xl font-bold text-slate-800 dark:text-white block leading-none">{stats.topZonePercent}%</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">des répondants</span>
+              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des répondants</span>
             </div>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Zone la plus représentée (Q1)</p>
+          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Zone la plus représentée (Q1)</p>
           <p className="text-xl font-bold text-slate-800 dark:text-white truncate" title={stats.topZone.name}>
             {stats.topZone.name}
           </p>
         </article>
 
-        <article className="relative overflow-hidden bg-white/90 dark:bg-slate-900/70 rounded-xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
+        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
           <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent dark:from-orange-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-orange-50 dark:bg-orange-500/20 rounded-xl">
               <Car size={20} className="text-orange-600 dark:text-orange-300" aria-hidden="true" />
             </div>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Mode d'accès dominant (Q2)</p>
+          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Mode d'accès dominant (Q2)</p>
           <p className="text-xl font-bold text-slate-800 dark:text-white truncate">{stats.topTransport?.name || 'N/A'}</p>
           <p className="text-xs text-orange-600 dark:text-orange-300 mt-1 font-medium">Préférence de transport</p>
         </article>
@@ -380,7 +380,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
                 {stats.satisfactionRate}%
               </text>
-              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-slate-500 font-medium uppercase tracking-wide">
+              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
                 Positif
               </text>
             </PieChart>
