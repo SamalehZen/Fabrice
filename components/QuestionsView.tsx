@@ -95,55 +95,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
     <div className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[380px]">
         
-        {/* ROW 1: Heavy Content (Departments) - Full Width */}
-        <ChartCard 
-          title="Q8: Rayons Préférés" 
-          subtitle="Top départements visités (Bento Large)" 
-          className="col-span-1 md:col-span-2 lg:col-span-4"
-        >
-          {/* Custom rendering for the large card to split into 2 pies or a very wide pie */}
-          <div className="flex flex-col md:flex-row h-full items-center justify-center">
-             <div className="w-full h-full">
-               {render3DPie(data.preferredDepartment, COLORS, true, 60)}
-             </div>
-          </div>
-        </ChartCard>
-
-        {/* ROW 2: Medium Content (Reasons & Competitors) */}
-        <ChartCard 
-          title="Q4: Motifs de Venue" 
-          subtitle="Pourquoi venez-vous ?" 
-          className="col-span-1 lg:col-span-2"
-        >
-          {render3DPie(data.visitReason, COLORS, true)}
-        </ChartCard>
-
-        <ChartCard 
-          title="Q5: Concurrents" 
-          subtitle="Magasins fréquentés" 
-          className="col-span-1 lg:col-span-2"
-        >
-          {render3DPie(data.competitors, COLORS, true)}
-        </ChartCard>
-
-        {/* ROW 3: Choices & Satisfaction */}
-        <ChartCard 
-          title="Q6: Raisons du Choix" 
-          subtitle="Critère principal" 
-          className="col-span-1 lg:col-span-2"
-        >
-          {render3DPie(data.choiceReason, COLORS, true)}
-        </ChartCard>
-
-        <ChartCard 
-          title="Q7: Satisfaction Globale" 
-          subtitle="Expérience client" 
-          className="col-span-1 lg:col-span-2"
-        >
-           {render3DPie(data.satisfaction, SATISFACTION_COLORS, true, 40)}
-        </ChartCard>
-
-        {/* ROW 4: Demographics (Small Cards) */}
+        {/* ROW 1: Q0 - Q3 (Demographics - 4 columns) */}
         <ChartCard title="Q0: Âge" subtitle="Tranche d'âge" className="col-span-1">
           {render3DPie(data.ageGroups)}
         </ChartCard>
@@ -160,12 +112,68 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
           {render3DPie(data.frequency)}
         </ChartCard>
 
-        {/* ROW 5: Binary/Small Data */}
-        <ChartCard title="Q9: Changement de Nom" subtitle="Notoriété du changement" className="col-span-1 md:col-span-2">
+        {/* ROW 2: Q4 & Q5 (Medium) */}
+        <ChartCard 
+          title="Q4: Motifs de Venue" 
+          subtitle="Pourquoi venez-vous ?" 
+          className="col-span-1 lg:col-span-2"
+        >
+          {render3DPie(data.visitReason, COLORS, true)}
+        </ChartCard>
+
+        <ChartCard 
+          title="Q5: Concurrents" 
+          subtitle="Magasins fréquentés" 
+          className="col-span-1 lg:col-span-2"
+        >
+          {render3DPie(data.competitors, COLORS, true)}
+        </ChartCard>
+
+        {/* ROW 3: Q6 & Q7 (Medium) */}
+        <ChartCard 
+          title="Q6: Raisons du Choix" 
+          subtitle="Critère principal" 
+          className="col-span-1 lg:col-span-2"
+        >
+          {render3DPie(data.choiceReason, COLORS, true)}
+        </ChartCard>
+
+        <ChartCard 
+          title="Q7: Satisfaction Globale" 
+          subtitle="Expérience client" 
+          className="col-span-1 lg:col-span-2"
+        >
+           {render3DPie(data.satisfaction, SATISFACTION_COLORS, true, 40)}
+        </ChartCard>
+
+        {/* ROW 4: Q8 (Large - Full Width) */}
+        <ChartCard 
+          title="Q8: Rayons Préférés" 
+          subtitle="Top départements visités" 
+          className="col-span-1 md:col-span-2 lg:col-span-4"
+        >
+          {/* Custom rendering for the large card to split into 2 pies or a very wide pie */}
+          <div className="flex flex-col md:flex-row h-full items-center justify-center">
+             <div className="w-full h-full">
+               {render3DPie(data.preferredDepartment, COLORS, true, 60)}
+             </div>
+          </div>
+        </ChartCard>
+
+        {/* ROW 5: Q9 & Q10 (Medium) */}
+        <ChartCard 
+          title="Q9: Changement de Nom" 
+          subtitle="Notoriété du changement" 
+          className="col-span-1 md:col-span-2 lg:col-span-2"
+        >
           {render3DPie(data.nameChangeAwareness, ['#22c55e', '#ef4444'], true)}
         </ChartCard>
 
-        <ChartCard title="Q10: Perception" subtitle="Impact des changements" className="col-span-1 md:col-span-2">
+        <ChartCard 
+          title="Q10: Perception" 
+          subtitle="Impact des changements" 
+          className="col-span-1 md:col-span-2 lg:col-span-2"
+        >
           {render3DPie(q10Data, ['#22c55e', '#ef4444'], true, 40)}
         </ChartCard>
 

@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis 
 } from 'recharts';
-import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { SurveyDataset } from '../types';
-import { COLORS, SATISFACTION_COLORS } from '../constants';
+import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, ArrowUpRight, Check, ChevronDown } from 'lucide-react';
+import { SurveyDataset, SimpleDataPoint } from '../types';
+import { SATISFACTION_COLORS } from '../constants';
 import ChartCard from './ChartCard';
+import * as XLSX from 'xlsx';
 
 interface DashboardProps {
   data: SurveyDataset;
@@ -35,42 +36,173 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ data }) => {
+  const [selectedZone, setSelectedZone] = useState<string>('All');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // --- Filtering Logic ---
+  // Since we have aggregated data, we simulate filtering by weighting the data 
+  // based on the selected zone's proportion of the total population.
+  const filteredData = useMemo(() => {
+    if (selectedZone === 'All') return data;
+
+    // Calculate total respondents and the weight of the selected zone
+    const totalRespondents = data.zones.reduce((acc, curr) => acc + curr.value, 0);
+    const zoneData = data.zones.find(z => z.name === selectedZone);
+    const zoneValue = zoneData ? zoneData.value : 0;
+    
+    // If no data for zone, avoid division by zero
+    if (totalRespondents === 0 || zoneValue === 0) return data;
+
+    const ratio = zoneValue / totalRespondents;
+
+    // Function to scale a dataset
+    const scaleDataset = (dataset: SimpleDataPoint[]) => {
+      return dataset.map(item => ({
+        ...item,
+        value: Math.round(item.value * ratio)
+      }));
+    };
+
+    return {
+      ...data,
+      ageGroups: scaleDataset(data.ageGroups),
+      // For zones, we only show the selected zone in the chart context
+      zones: data.zones.map(z => ({ ...z, value: z.name === selectedZone ? z.value : 0 })), 
+      transport: scaleDataset(data.transport),
+      frequency: scaleDataset(data.frequency),
+      visitReason: scaleDataset(data.visitReason),
+      competitors: scaleDataset(data.competitors),
+      choiceReason: scaleDataset(data.choiceReason),
+      satisfaction: scaleDataset(data.satisfaction),
+      preferredDepartment: scaleDataset(data.preferredDepartment),
+      nameChangeAwareness: scaleDataset(data.nameChangeAwareness),
+      // Complex objects need manual scaling
+      experienceChanges: data.experienceChanges.map(item => ({
+        ...item,
+        positive: Math.round(item.positive * ratio),
+        negative: Math.round(item.negative * ratio)
+      }))
+    };
+  }, [data, selectedZone]);
+
+  // --- Calculations based on Filtered Data ---
+  const totalRespondents = filteredData.ageGroups.reduce((acc, curr) => acc + curr.value, 0);
   
-  // Calculations
-  const totalRespondents = data.ageGroups.reduce((acc, curr) => acc + curr.value, 0);
-  
-  const totalSatisfaction = data.satisfaction.reduce((acc, curr) => acc + curr.value, 0);
-  const positiveSatisfaction = data.satisfaction
+  const totalSatisfaction = filteredData.satisfaction.reduce((acc, curr) => acc + curr.value, 0);
+  const positiveSatisfaction = filteredData.satisfaction
     .filter(s => s.name === 'Satisfait' || s.name === 'Très satisfait')
     .reduce((acc, curr) => acc + curr.value, 0);
   const satisfactionRate = totalSatisfaction > 0 ? Math.round((positiveSatisfaction / totalSatisfaction) * 100) : 0;
 
-  const topZone = [...data.zones].sort((a, b) => b.value - a.value)[0];
-  const topZonePercent = totalRespondents > 0 ? Math.round((topZone.value / totalRespondents) * 100) : 0;
+  // For Top Zone: In 'All' mode, calculate normally. In 'Filter' mode, it's the selected zone.
+  const topZone = selectedZone === 'All' 
+    ? [...filteredData.zones].sort((a, b) => b.value - a.value)[0]
+    : { name: selectedZone, value: totalRespondents }; // In filter mode, the zone is 100% of the view
 
-  const topTransport = [...data.transport].sort((a, b) => b.value - a.value)[0];
+  const topZonePercent = selectedZone === 'All'
+    ? (data.ageGroups.reduce((acc, curr) => acc + curr.value, 0) > 0 
+        ? Math.round((topZone.value / data.ageGroups.reduce((acc, curr) => acc + curr.value, 0)) * 100) 
+        : 0)
+    : 100;
+
+  const topTransport = [...filteredData.transport].sort((a, b) => b.value - a.value)[0];
+
+  // --- Excel Export ---
+  const handleExportXLSX = () => {
+    const wb = XLSX.utils.book_new();
+    const dateStr = new Date().toISOString().split('T')[0];
+
+    // Helper to add a sheet
+    const addSheet = (data: any[], sheetName: string) => {
+      const ws = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    };
+
+    addSheet(filteredData.ageGroups, "Age Groups");
+    addSheet(filteredData.zones, "Residential Zones");
+    addSheet(filteredData.transport, "Transport");
+    addSheet(filteredData.frequency, "Frequency");
+    addSheet(filteredData.visitReason, "Visit Reason");
+    addSheet(filteredData.competitors, "Competitors");
+    addSheet(filteredData.satisfaction, "Satisfaction");
+    addSheet(filteredData.preferredDepartment, "Preferred Depts");
+    addSheet(filteredData.experienceChanges, "Experience Changes");
+
+    XLSX.writeFile(wb, `Bawadi_Mall_Survey_Export_${selectedZone}_${dateStr}.xlsx`);
+  };
 
   return (
     <div className="space-y-6 p-6">
       
       {/* Dashboard Control Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative z-20">
         <div>
           <h2 className="text-lg font-bold text-slate-800">Analytics Overview</h2>
-          <p className="text-xs text-slate-500">Real-time survey insights</p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-slate-500">Real-time survey insights</p>
+            {selectedZone !== 'All' && (
+              <span className="bg-brand-100 text-brand-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center">
+                Filtered: {selectedZone}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
           <button className="flex items-center gap-2 px-3 py-2 bg-slate-50 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-100 border border-slate-200 transition-colors">
             <Calendar size={16} />
             <span>Last 30 Days</span>
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 bg-slate-50 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-100 border border-slate-200 transition-colors">
-            <Filter size={16} />
-            <span>Filter</span>
-          </button>
-          <button className="flex items-center gap-2 px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm shadow-brand-200 transition-all hover:scale-105">
+          
+          {/* Filter Dropdown */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                selectedZone !== 'All' 
+                  ? 'bg-brand-50 text-brand-700 border-brand-200' 
+                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              <Filter size={16} />
+              <span>{selectedZone === 'All' ? 'Filter Zone' : selectedZone}</span>
+              <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isFilterOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)}></div>
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-20 py-1">
+                  <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Select Zone
+                  </div>
+                  <button
+                    onClick={() => { setSelectedZone('All'); setIsFilterOpen(false); }}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 flex items-center justify-between group"
+                  >
+                    <span>All Zones</span>
+                    {selectedZone === 'All' && <Check size={14} className="text-brand-600" />}
+                  </button>
+                  {data.zones.map((zone) => (
+                    <button
+                      key={zone.name}
+                      onClick={() => { setSelectedZone(zone.name); setIsFilterOpen(false); }}
+                      className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-700 flex items-center justify-between"
+                    >
+                      <span>{zone.name}</span>
+                      {selectedZone === zone.name && <Check size={14} className="text-brand-600" />}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <button 
+            onClick={handleExportXLSX}
+            className="flex items-center gap-2 px-3 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm shadow-brand-200 transition-all hover:scale-105"
+          >
             <Download size={16} />
-            <span>Export Report</span>
+            <span>Export XLSX</span>
           </button>
         </div>
       </div>
@@ -86,10 +218,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                  <Users size={20} className="text-white" />
                </div>
                <span className="flex items-center text-xs font-medium bg-green-400/20 text-green-100 px-2 py-1 rounded-full border border-green-400/30">
-                 <TrendingUp size={12} className="mr-1" /> +12%
+                 <TrendingUp size={12} className="mr-1" /> Active
                </span>
              </div>
-             <p className="text-brand-100 text-xs font-medium uppercase tracking-wider mb-1">Total Respondents</p>
+             <p className="text-brand-100 text-xs font-medium uppercase tracking-wider mb-1">
+               {selectedZone === 'All' ? 'Total Respondents' : `Respondents (${selectedZone})`}
+             </p>
              <h3 className="text-4xl font-bold tracking-tight">{totalRespondents}</h3>
            </div>
          </div>
@@ -137,7 +271,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                </div>
              </div>
              <p className="text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">Main Transport</p>
-             <h3 className="text-xl font-bold text-slate-800 truncate">{topTransport.name}</h3>
+             <h3 className="text-xl font-bold text-slate-800 truncate">{topTransport ? topTransport.name : 'N/A'}</h3>
              <p className="text-xs text-orange-600 mt-1 font-medium flex items-center">
                 Most popular choice
              </p>
@@ -150,7 +284,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         {/* Market Share / Competitors - Hero Chart */}
         <ChartCard title="Market Share Analysis" subtitle="Bawadi Mall vs Competitors (Visits)" className="lg:col-span-2">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.competitors} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={filteredData.competitors} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
@@ -166,7 +300,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
               <Tooltip content={<CustomTooltip />} cursor={{fill: '#f8fafc'}} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
-                {data.competitors.map((entry, index) => (
+                {filteredData.competitors.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={entry.name === 'Bawadi Mall' ? 'url(#colorBarHighlight)' : '#cbd5e1'} 
@@ -180,7 +314,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         {/* Demographics Radar - Cool Visualization */}
         <ChartCard title="Demographic Profile" subtitle="Age Distribution Overview">
           <ResponsiveContainer width="100%" height="100%">
-             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data.ageGroups}>
+             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={filteredData.ageGroups}>
               <PolarGrid stroke="#e2e8f0" />
               <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
               <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
@@ -200,7 +334,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         {/* Visit Frequency Trend */}
         <ChartCard title="Visit Frequency" subtitle="Customer retention pattern">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.frequency} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={filteredData.frequency} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorFreq" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
@@ -228,7 +362,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
            <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data.satisfaction}
+                data={filteredData.satisfaction}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -237,7 +371,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                 dataKey="value"
                 stroke="none"
               >
-                {data.satisfaction.map((entry, index) => (
+                {filteredData.satisfaction.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={SATISFACTION_COLORS[index]} />
                 ))}
               </Pie>
@@ -263,7 +397,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
            <ResponsiveContainer width="100%" height="100%">
              <BarChart 
                 layout="vertical" 
-                data={data.transport} 
+                data={filteredData.transport} 
                 margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
@@ -285,7 +419,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
          {/* Preferred Departments - Full Width Bottom */}
          <ChartCard title="Department Popularity" subtitle="Footfall by section" className="lg:col-span-3">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.preferredDepartment} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorDept" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8}/>
