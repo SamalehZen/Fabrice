@@ -44,7 +44,20 @@ export const generateInsight = async (userPrompt: string, currentData?: SurveyDa
     return "La clé API est manquante. Configurez GEMINI_API_KEY ou GOOGLE_GENERATIVE_AI_API_KEY.";
   }
 
-  const dataContext = currentData ? JSON.stringify(currentData) : "Aucune donnée disponible";
+  const totalsMeta = currentData
+    ? {
+        totalRespondentsByResidence: currentData.zones.reduce((acc, curr) => acc + curr.value, 0),
+        totalRespondentsByAge: currentData.ageGroups.reduce((acc, curr) => acc + curr.value, 0),
+        ageGroupsSummary: currentData.ageGroups.map(group => `${group.name} : ${group.value}`).join(', ')
+      }
+    : null;
+
+  const datasetForAI = currentData ? { ...currentData, metadata: totalsMeta } : null;
+
+  const dataContext = datasetForAI ? JSON.stringify(datasetForAI) : "Aucune donnée disponible";
+  const officialTotal = totalsMeta?.totalRespondentsByResidence ?? 0;
+  const ageSummary = totalsMeta?.ageGroupsSummary ?? 'Non renseigné';
+
   const questionGuide = QUESTION_MAPPINGS.map(({ id, text, key }) => `- ${id} : ${text} -> clé JSON "${key}"`).join("\n");
   const chartGuide = QUESTION_MAPPINGS.map(({ id, text, chart }) => `- ${id} ${text} : [[CHART:${chart}]]`).join("\n");
 
@@ -67,6 +80,11 @@ Règles à suivre :
 
 Tags graphiques autorisés :
 ${chartGuide}
+
+Points d'attention essentiels :
+- Le total officiel des répondants correspond à la somme des zones (Q1) = ${officialTotal}.
+- Lorsque vous citez un volume global, précisez qu'il provient des résidences et non de la somme des âges.
+- Les tranches d'âge actuellement enregistrées sont : ${ageSummary}.
 
 Exemple :
 Si l'utilisateur demande "D'où viennent les clients ?", répondez avec l'analyse textuelle puis finissez par : [[CHART:zones]]

@@ -7,8 +7,8 @@ export const SATISFACTION_COLORS = ['#ef4444', '#f97316', '#84cc16', '#22c55e'];
 export const SURVEY_DATA: SurveyDataset = {
   ageGroups: [
     { name: '< 20 ans', value: 17 },
-    { name: '20-30 ans', value: 190 },
-    { name: '30-50 ans', value: 142 },
+    { name: '20-30 ans', value: 185 },
+    { name: '30-50 ans', value: 138 },
     { name: '> 50 ans', value: 33 },
   ],
   zones: [
