@@ -45,11 +45,10 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
   ];
   const dominantPerception = totalPositive >= totalNegative ? 'positive' : 'négative';
   const dominantPercent = totalPositive >= totalNegative ? perceptionHighlights[0].percent : perceptionHighlights[1].percent;
-  const q9Total = data.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0);
-
+  const q9Total = data.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0)
 
   return (
-    <div className="p-6">
+    <div className="p-6 text-slate-800 dark:text-slate-100">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[380px]">
         
         {/* ROW 1: Q0 - Q3 (Demographics - 2 columns per row) */}
@@ -133,14 +132,14 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
               {data.nameChangeAwareness.map((slice, index) => {
                 const percent = q9Total ? Math.round((slice.value / q9Total) * 100) : 0;
                 return (
-                  <div key={`q9-${slice.name}`} className="flex items-center justify-between rounded-2xl border border-slate-200 px-3 py-2">
+                  <div key={`q9-${slice.name}`} className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/60 px-3 py-2">
                     <div className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length] }} />
-                      <span className="font-semibold text-slate-700">{slice.name}</span>
+                      <span className="font-semibold text-slate-700 dark:text-slate-100">{slice.name}</span>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-slate-900 leading-tight">{percent}%</p>
-                      <p className="text-xs text-slate-500">{slice.value} réponses</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{percent}%</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{slice.value} réponses</p>
                     </div>
                   </div>
                 );
@@ -156,25 +155,25 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
         >
           <div className="flex flex-col gap-6 h-full">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="rounded-3xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 lg:col-span-2 flex flex-col sm:flex-row items-center gap-6">
+              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 p-6 lg:col-span-2 flex flex-col sm:flex-row items-center gap-6 shadow-slate-200/30 dark:shadow-black/40">
                 <div className="w-40 h-40 shrink-0">
                   {render3DPie(q10SummaryPie, { colors: POS_NEG_COLORS, innerRadius: 55, showLegend: false })}
                 </div>
-                <div className="space-y-3 text-slate-600">
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Vue globale</p>
-                  <p className="text-3xl font-bold text-slate-900">{dominantPercent}%</p>
+                <div className="space-y-3 text-slate-600 dark:text-slate-300">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400 dark:text-slate-500">Vue globale</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white">{dominantPercent}%</p>
                   <p className="text-sm leading-relaxed">
                     des répondants perçoivent les changements de façon {dominantPerception}.
                   </p>
-                  <p className="text-xs text-slate-500">Total: {perceptionTotal} réponses</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Total: {perceptionTotal} réponses</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                 {perceptionHighlights.map((highlight) => (
-                  <div key={`badge-${highlight.label}`} className="rounded-2xl border border-slate-200 px-4 py-3 bg-white/90">
-                    <p className="text-xs uppercase tracking-wide text-slate-500">{highlight.label}</p>
-                    <p className="text-3xl font-extrabold text-slate-900 mt-2">{highlight.percent}%</p>
-                    <p className="text-xs text-slate-500">{highlight.value} réponses</p>
+                  <div key={`badge-${highlight.label}`} className="rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 bg-white/90 dark:bg-slate-900/60">
+                    <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{highlight.label}</p>
+                    <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">{highlight.percent}%</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{highlight.value} réponses</p>
                   </div>
                 ))}
               </div>
@@ -183,28 +182,28 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
               {q10DetailCharts.map((chart) => {
                 const total = chart.data.reduce((sum, slice) => sum + slice.value, 0);
                 return (
-                  <div key={chart.title} className="rounded-3xl border border-slate-200 bg-white/90 p-5 flex flex-col gap-4">
+                  <div key={chart.title} className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/60 p-5 flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                      <p className="text-lg font-semibold text-slate-900">{chart.title}</p>
-                      <span className="text-xs font-medium text-slate-500">{total} réponses</span>
+                      <p className="text-lg font-semibold text-slate-900 dark:text-white">{chart.title}</p>
+                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{total} réponses</span>
                     </div>
                     <div className="flex items-center gap-5">
                       <div className="w-32 h-32">
                         {render3DPie(chart.data, { colors: POS_NEG_COLORS, innerRadius: 42, showLegend: false, minLabelPercent: 0.12, paddingAngle: 4 })}
                       </div>
-                      <div className="flex-1 space-y-3 text-sm">
+                      <div className="flex-1 space-y-3 text-sm text-slate-700 dark:text-slate-200">
                         {chart.data.map((slice, index) => {
                           const percent = total ? Math.round((slice.value / total) * 100) : 0;
                           return (
                             <div key={slice.name}>
                               <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-2 font-semibold text-slate-700">
+                                <span className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-100">
                                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: POS_NEG_COLORS[index % POS_NEG_COLORS.length] }} />
                                   {slice.name}
                                 </span>
-                                <span className="font-semibold text-slate-900">{percent}%</span>
+                                <span className="font-semibold text-slate-900 dark:text-white">{percent}%</span>
                               </div>
-                              <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                              <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                                 <span
                                   className="block h-full rounded-full"
                                   style={{
