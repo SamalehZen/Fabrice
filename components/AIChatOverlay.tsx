@@ -33,6 +33,21 @@ const extractQuestionIds = (text: string): string[] => {
 const numberFormatter = new Intl.NumberFormat('fr-FR');
 const formatNumber = (value: number) => numberFormatter.format(value);
 const formatPercent = (value: number, decimals = 1) => `${value.toFixed(decimals).replace('.', ',')}%`;
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const MARKDOWN_TABLE_REGEX = /\|[^\n]+\|\n\|(?:\s*:?-+:?\s*\|)+\n(?:\|[^\n]+\|\n?)*/m;
+const containsMarkdownTable = (text: string) => MARKDOWN_TABLE_REGEX.test(text);
+const hasQuestionTable = (text: string, questionId: string) => {
+  if (!text || !questionId) return false;
+  const escaped = escapeRegExp(questionId);
+  const numericId = Number(questionId.replace(/[^0-9]/g, ''));
+  const patternSource = Number.isNaN(numericId) ? escaped : `${escaped}|question\\s*${numericId}`;
+  const pattern = new RegExp(patternSource, 'i');
+  const match = pattern.exec(text);
+  if (!match) return false;
+  const windowStart = Math.max(0, match.index - 200);
+  const windowEnd = Math.min(text.length, match.index + 800);
+  return containsMarkdownTable(text.slice(windowStart, windowEnd));
+};
 
 const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
 const POS_NEG_COLORS = ['#22c55e', '#ef4444'];
@@ -264,10 +279,19 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
       if (!mapping) return;
       const blockTitle = `#### Tableau professionnel – ${questionId}`;
       const chartTag = `[[CHART:${mapping.chart}]]`;
-      if (!enrichedResponse.includes(blockTitle) || !enrichedResponse.includes(chartTag)) {
+      const hasTable = enrichedResponse.includes(blockTitle) || hasQuestionTable(enrichedResponse, questionId);
+      const hasChart = enrichedResponse.includes(chartTag);
+      const additions: string[] = [];
+      if (!hasTable) {
         const table = buildTableForKey(mapping.key);
         const tableContent = table || '_Aucune donnée disponible pour cette question._';
-        enrichedResponse += `\n\n${blockTitle}\n${tableContent}\n${chartTag}`;
+        additions.push(`${blockTitle}\n${tableContent}`);
+      }
+      if (!hasChart) {
+        additions.push(chartTag);
+      }
+      if (additions.length) {
+        enrichedResponse += `\n\n${additions.join('\n')}`;
       }
     });
 
