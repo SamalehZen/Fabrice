@@ -1,27 +1,33 @@
 import React from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Info } from 'lucide-react';
 
 interface ChartCardProps {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   className?: string;
-  fullWidth?: boolean;
+  headerAction?: React.ReactNode;
 }
 
-const ChartCard: React.FC<ChartCardProps> = ({ title, subtitle, children, className = '', fullWidth = false }) => {
+const ChartCard: React.FC<ChartCardProps> = ({ title, subtitle, children, className = '', headerAction }) => {
   return (
-    <div className={`bg-white/90 dark:bg-slate-900/70 rounded-2xl shadow-sm shadow-slate-200/60 dark:shadow-black/40 border border-slate-100 dark:border-slate-800 p-6 flex flex-col transition-all duration-300 hover:shadow-lg dark:hover:shadow-black/60 ${fullWidth ? 'col-span-1 md:col-span-2 lg:col-span-3' : 'col-span-1'} ${className}`}>
-      <div className="flex justify-between items-start mb-6">
+    <div className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300 hover:shadow-md flex flex-col ${className}`}>
+      <div className="flex items-center justify-between p-6 pb-2">
         <div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{title}</h3>
-          {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium uppercase tracking-wide">{subtitle}</p>}
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">{title}</h3>
+          {subtitle && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+          )}
         </div>
-        <button className="text-slate-400 dark:text-slate-500 hover:text-brand-600 dark:hover:text-brand-300 p-1 rounded-full hover:bg-brand-50 dark:hover:bg-slate-800 transition-colors">
-          <MoreHorizontal size={20} />
-        </button>
+        
+        {headerAction ? headerAction : (
+          <button className="text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <MoreHorizontal size={18} />
+          </button>
+        )}
       </div>
-      <div className="flex-grow min-h-[300px] w-full relative">
+      
+      <div className="flex-1 w-full p-4 relative min-h-[300px]">
         {children}
       </div>
     </div>
