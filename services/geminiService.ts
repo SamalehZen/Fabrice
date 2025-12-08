@@ -83,7 +83,7 @@ export const generateInsight = async (userPrompt: string, currentData?: SurveyDa
   const ai = getClient();
 
   if (!ai) {
-    return 'La clé API est manquante. Configurez GEMINI_API_KEY ou GOOGLE_GENERATIVE_AI_API_KEY.';
+    return 'La clé API est manquante. Créez un fichier .env.local avec VITE_GEMINI_API_KEY=votre_clé. Obtenez une clé sur https://aistudio.google.com/apikey';
   }
 
   if (!userPrompt.trim()) {
