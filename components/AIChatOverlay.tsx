@@ -264,10 +264,19 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
       if (!mapping) return;
       const blockTitle = `#### Tableau professionnel – ${questionId}`;
       const chartTag = `[[CHART:${mapping.chart}]]`;
-      if (!enrichedResponse.includes(blockTitle) || !enrichedResponse.includes(chartTag)) {
+      const hasTable = enrichedResponse.includes(blockTitle);
+      const hasChart = enrichedResponse.includes(chartTag);
+      const additions: string[] = [];
+      if (!hasTable) {
         const table = buildTableForKey(mapping.key);
         const tableContent = table || '_Aucune donnée disponible pour cette question._';
-        enrichedResponse += `\n\n${blockTitle}\n${tableContent}\n${chartTag}`;
+        additions.push(`${blockTitle}\n${tableContent}`);
+      }
+      if (!hasChart) {
+        additions.push(chartTag);
+      }
+      if (additions.length) {
+        enrichedResponse += `\n\n${additions.join('\n')}`;
       }
     });
 
