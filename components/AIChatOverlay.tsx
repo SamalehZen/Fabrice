@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Loader2, Maximize2, Minimize2, Copy } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Loader2, Maximize2, Minimize2, Copy, Paperclip, Link2, NotebookPen, AudioLines, ChevronDown, Settings2 } from 'lucide-react';
 import { generateInsight } from '../services/geminiService';
 import { SurveyDataset, SimpleDataPoint, ComparisonDataPoint } from '../types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { COLORS, SATISFACTION_COLORS, QUESTION_MAPPINGS, QuestionMapping } from '../constants';
+import { BorderTrail } from './hyper/BorderTrail';
+import { TextShimmer } from './hyper/TextShimmer';
 import { render3DPie } from './Pie3DRenderer';
 
 const QUESTION_CONFIG_MAP = QUESTION_MAPPINGS.reduce<Record<string, QuestionMapping>>((acc, mapping) => {
@@ -53,6 +55,17 @@ const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
 const POS_NEG_COLORS = ['#22c55e', '#ef4444'];
 const isSummaryPrompt = (text: string) => (text ? SUMMARY_REGEX.test(text) : false);
 
+type AttachmentBadge = {
+  id: string;
+  name: string;
+};
+
+const WORKSPACE_OPTIONS = [
+  { label: "Hypermarché L'Hyper", description: 'Contexte actuel du magasin' },
+  { label: 'Panel satisfaction 2024', description: 'Synthèse trimestrielle' },
+  { label: 'Comparatif concurrents', description: 'Benchmark régional' },
+] as const;
+
 interface AIChatOverlayProps {
   currentData: SurveyDataset;
 }
@@ -66,6 +79,12 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const workspaceRef = useRef<HTMLDivElement>(null);
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [selectedWorkspace, setSelectedWorkspace] = useState(WORKSPACE_OPTIONS[0].label);
+  const [attachedFiles, setAttachedFiles] = useState<AttachmentBadge[]>([]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -73,11 +92,30 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
     }
   }, [messages, isOpen, loading]);
 
+  useEffect(() => {
+    if (!textAreaRef.current) return;
+    textAreaRef.current.style.height = '0px';
+    textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+  }, [input]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const handleClick = (event: MouseEvent) => {
+      if (!workspaceRef.current) return;
+      if (!workspaceRef.current.contains(event.target as Node)) {
+        setWorkspaceOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   const handleSend = async () => {
     if (!input.trim()) return;
     
     const userMsg = input;
     setInput('');
+    setAttachedFiles([]);
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
 
@@ -86,6 +124,43 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
     
     setLoading(false);
     setMessages(prev => [...prev, { role: 'assistant', text: enrichedResponse }]);
+  };
+
+  const handleWorkspaceSelect = (label: string) => {
+    setSelectedWorkspace(label);
+    setWorkspaceOpen(false);
+  };
+
+  const handleAttachmentTrigger = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAttachmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
+    setAttachedFiles((prev) => {
+      const additions = files.map((file) => ({
+        id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name: file.name,
+      }));
+      return [...prev, ...additions].slice(-4);
+    });
+    event.target.value = '';
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setAttachedFiles((prev) => prev.filter((file) => file.id !== id));
+  };
+
+  const handleNoteShortcut = () => {
+    setInput((prev) => (prev.trim().length ? prev : 'Rédige un rapport synthétique pour Hypermarché L\'Hyper.'));
+  };
+
+  const handleTextareaKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -624,24 +699,122 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-white/95 dark:bg-slate-950/80 border-t border-slate-100 dark:border-slate-800 rounded-b-2xl">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Analysez les tendances, comparez les zones..."
-              className="flex-1 bg-slate-100 dark:bg-slate-900/70 border-0 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              className="bg-brand-600 text-white p-3 rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-brand-200/70 dark:shadow-brand-900/40"
-            >
-              <Send size={18} />
-            </button>
+        <div className="px-5 pb-6 pt-4 bg-gradient-to-b from-transparent via-transparent to-slate-950/60 rounded-b-2xl">
+          <div className="flex flex-col items-center gap-4 text-center mb-4">
+            <div className="flex items-center gap-3">
+              <TextShimmer as="span" className="text-3xl sm:text-4xl font-light tracking-[0.15em]">
+                Hyper
+              </TextShimmer>
+              <span className="relative inline-flex items-center px-4 py-1 text-sm font-semibold text-[#2d2019] bg-gradient-to-br from-[#fbe5cf] via-[#e6c6a5] to-[#d5b08d] rounded-full shadow-inner shadow-black/30 ring-1 ring-white/40">
+                Fix
+              </span>
+            </div>
+            <p className="text-sm text-slate-400">
+              Commandez l'IA Hyper : reliez vos données, posez une question, obtenez un plan d'action.
+            </p>
           </div>
+          <div className="relative w-full max-w-3xl mx-auto">
+            <div className="relative rounded-[32px] border border-white/10 bg-[#18171c]/95 px-6 py-5 shadow-[0_25px_120px_rgba(0,0,0,0.55)]">
+              <textarea
+                ref={textAreaRef}
+                rows={1}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleTextareaKeyDown}
+                placeholder="Posez une question..."
+                className="w-full resize-none bg-transparent text-base leading-relaxed text-slate-100 placeholder:text-slate-500 focus:outline-none"
+              />
+              {attachedFiles.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {attachedFiles.map((file) => (
+                    <button
+                      key={file.id}
+                      type="button"
+                      onClick={() => handleRemoveAttachment(file.id)}
+                      className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-slate-200 hover:border-white/40"
+                      title={file.name}
+                    >
+                      {file.name.length > 28 ? `${file.name.slice(0, 25)}…` : file.name}
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-200">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAttachmentTrigger}
+                    className="h-11 w-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+                    title="Importer un fichier"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInput((prev) => (prev.trim().length ? prev : `Analyse ${selectedWorkspace} : `))}
+                    className="h-11 w-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+                    title="Lier une source"
+                  >
+                    <Link2 className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="flex-1 min-w-[200px] flex justify-center">
+                  <div className="relative" ref={workspaceRef}>
+                    <button
+                      type="button"
+                      onClick={() => setWorkspaceOpen((prev) => !prev)}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-white/10 transition-colors"
+                    >
+                      <Settings2 className="h-4 w-4" />
+                      <span className="truncate max-w-[160px]">{selectedWorkspace}</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${workspaceOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {workspaceOpen && (
+                      <div className="absolute left-1/2 top-full z-50 mt-2 w-64 -translate-x-1/2 rounded-2xl border border-white/10 bg-[#0b0b0f]/95 p-2 shadow-2xl backdrop-blur">
+                        {WORKSPACE_OPTIONS.map((option) => (
+                          <button
+                            key={option.label}
+                            type="button"
+                            onClick={() => handleWorkspaceSelect(option.label)}
+                            className={`w-full rounded-xl px-3 py-2 text-left text-sm ${selectedWorkspace === option.label ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5'}`}
+                          >
+                            <p className="font-medium">{option.label}</p>
+                            <p className="text-xs text-slate-400">{option.description}</p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleNoteShortcut}
+                    className="h-11 w-11 rounded-2xl border border-white/10 bg-white/5 text-slate-100 flex items-center justify-center hover:bg-white/10 transition-colors"
+                    title="Préparer une note"
+                  >
+                    <NotebookPen className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSend}
+                    disabled={!input.trim() || loading}
+                    className="h-12 w-12 rounded-full bg-gradient-to-br from-[#fbe0c6] to-[#d6b08a] text-[#2d1c11] font-semibold shadow-lg shadow-[#fbe0c6]/40 hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100 transition-all flex items-center justify-center"
+                    title="Envoyer / activer la voix"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <AudioLines className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <BorderTrail
+              size={120}
+              className="bg-gradient-to-r from-[#fbe0c6] via-[#d7b48c] to-[#f5d1ae] blur-[1px]"
+              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+            />
+          </div>
+          <input ref={fileInputRef} type="file" className="hidden" multiple onChange={handleAttachmentChange} />
         </div>
       </div>
     </>
