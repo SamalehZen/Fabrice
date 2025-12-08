@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SurveyDataset, SimpleDataPoint, ComparisonDataPoint } from '../types';
 import { Save, RefreshCw } from 'lucide-react';
 import { SURVEY_DATA as INITIAL_DATA } from '../constants';
@@ -9,36 +9,42 @@ interface DataEditorProps {
 }
 
 const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
-  const [localData, setLocalData] = useState<SurveyDataset>(data);
+  const [localData, setLocalData] = useState<SurveyDataset>(() => JSON.parse(JSON.stringify(data)));
   const [activeSection, setActiveSection] = useState<string | null>('ageGroups');
 
-  // Helper to handle simple numeric updates
-  const handleSimpleUpdate = (key: keyof SurveyDataset, index: number, field: string, value: string | number) => {
-    const newData = { ...localData };
-    const list = newData[key] as SimpleDataPoint[];
-    if (list && list[index]) {
-      if (field === 'value') {
-        list[index].value = Number(value);
-      } else if (field === 'name') {
-        list[index].name = String(value);
-      }
-      setLocalData(newData);
-    }
+  const handleSimpleUpdate = (key: keyof SurveyDataset, index: number, field: 'name' | 'value', value: string) => {
+    setLocalData(prev => {
+      const currentList = prev[key] as SimpleDataPoint[];
+      if (!currentList) return prev;
+      const updatedList = currentList.map((item, idx) => {
+        if (idx !== index) return item;
+        if (field === 'value') {
+          const nextValue = value === '' ? 0 : Number(value);
+          return { ...item, value: Number.isNaN(nextValue) ? 0 : nextValue };
+        }
+        return { ...item, name: value };
+      });
+      return { ...prev, [key]: updatedList } as SurveyDataset;
+    });
   };
 
-  // Helper to handle comparison updates (Q10)
-  const handleComparisonUpdate = (index: number, field: string, value: number) => {
-    const newData = { ...localData };
-    const list = newData.experienceChanges;
-    if (list && list[index]) {
-       if (field === 'positive') list[index].positive = Number(value);
-       if (field === 'negative') list[index].negative = Number(value);
-       setLocalData(newData);
-    }
+  const handleComparisonUpdate = (index: number, field: 'positive' | 'negative', value: string) => {
+    setLocalData(prev => {
+      const updatedList = prev.experienceChanges.map((item, idx) => {
+        if (idx !== index) return item;
+        const nextValue = value === '' ? 0 : Number(value);
+        return {
+          ...item,
+          [field]: Number.isNaN(nextValue) ? 0 : nextValue
+        } as ComparisonDataPoint;
+      });
+      return { ...prev, experienceChanges: updatedList };
+    });
   };
 
   const saveChanges = () => {
-    onUpdate(localData);
+    const payload = JSON.parse(JSON.stringify(localData));
+    onUpdate(payload);
     alert("Données mises à jour avec succès ! Tableau et graphiques rafraîchis.");
   };
 
@@ -47,6 +53,10 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
     onUpdate(JSON.parse(JSON.stringify(INITIAL_DATA)));
     alert("Données réinitialisées aux valeurs d’origine.");
   };
+
+  useEffect(() => {
+    setLocalData(JSON.parse(JSON.stringify(data)));
+  }, [data]);
 
   const sections: { key: keyof SurveyDataset; label: string }[] = [
     { key: 'ageGroups', label: "Q0 : Tranches d'âge" },
@@ -150,7 +160,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                         <input 
                            type="number" 
                            value={item.positive}
-                           onChange={(e) => handleComparisonUpdate(index, 'positive', Number(e.target.value))}
+                           onChange={(e) => handleComparisonUpdate(index, 'positive', e.target.value)}
                            className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 text-green-700"
                          />
                      </div>
@@ -158,7 +168,7 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
                         <input 
                            type="number" 
                            value={item.negative}
-                           onChange={(e) => handleComparisonUpdate(index, 'negative', Number(e.target.value))}
+                           onChange={(e) => handleComparisonUpdate(index, 'negative', e.target.value)}
                            className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 text-red-700"
                          />
                      </div>
