@@ -189,7 +189,7 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
                     </div>
                     <div className="flex items-center gap-5">
                       <div className="w-32 h-32">
-                        {render3DPie(chart.data, { colors: POS_NEG_COLORS, innerRadius: 42, showLegend: false, minLabelPercent: 0.12, paddingAngle: 4 })}
+                        {render3DPie(chart.data, { colors: POS_NEG_COLORS, innerRadius: 42, showLegend: false, minLabelPercent: 0.12, paddingAngle: 4, labelPosition: 'inside' })}
                       </div>
                       <div className="flex-1 space-y-3 text-sm text-slate-700 dark:text-slate-200">
                         {chart.data.map((slice, index) => {
