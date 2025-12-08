@@ -378,10 +378,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               </Pie>
               <Tooltip content={<CustomTooltip />} />
               <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800">
+              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
                 {satisfactionRate}%
               </text>
-              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 font-medium uppercase tracking-wide">
+              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-slate-500 font-medium uppercase tracking-wide">
                 Positif
               </text>
             </PieChart>

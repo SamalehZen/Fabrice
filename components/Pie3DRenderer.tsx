@@ -17,6 +17,8 @@ interface Render3DPieOptions {
   paddingAngle?: number;
   minLabelPercent?: number;
   isDark?: boolean;
+  labelPosition?: 'inside' | 'outside';
+  labelOffset?: number;
 }
 
 const RADIAN = Math.PI / 180;
@@ -42,6 +44,8 @@ export const render3DPie = (
     paddingAngle = 5,
     minLabelPercent = 0.05,
     isDark,
+    labelPosition = 'outside',
+    labelOffset = 16,
   }: Render3DPieOptions = {}
 ) => {
   if (!chartData || chartData.length === 0) return null;
@@ -59,14 +63,34 @@ export const render3DPie = (
   const renderLabel = (props: PieLabelRenderProps) => {
     const { percent, cx, cy, midAngle, innerRadius: labelInnerRadius, outerRadius: labelOuterRadius } = props;
     if (typeof percent !== 'number' || percent <= minLabelPercent) return null;
-    const effectiveInner = typeof labelInnerRadius === 'number' ? labelInnerRadius : innerRadius;
-    const effectiveOuter = typeof labelOuterRadius === 'number' ? labelOuterRadius : resolvedOuterRadius;
-    const radius = effectiveInner + (effectiveOuter - effectiveInner) * 0.6;
+
     const centerX = typeof cx === 'number' ? cx : Number(cx);
     const centerY = typeof cy === 'number' ? cy : Number(cy);
+    const effectiveOuter = typeof labelOuterRadius === 'number' ? labelOuterRadius : resolvedOuterRadius;
+
+    if (labelPosition === 'inside') {
+      const effectiveInner = typeof labelInnerRadius === 'number' ? labelInnerRadius : innerRadius;
+      const radius = effectiveInner + (effectiveOuter - effectiveInner) * 0.55;
+      const x = centerX + radius * Math.cos(-midAngle * RADIAN);
+      const y = centerY + radius * Math.sin(-midAngle * RADIAN);
+      return (
+        <text
+          x={x}
+          y={y}
+          fill={labelColor}
+          fontSize={12}
+          textAnchor="middle"
+          dominantBaseline="central"
+        >
+          {`${(percent * 100).toFixed(0)}%`}
+        </text>
+      );
+    }
+
+    const offset = typeof labelOffset === 'number' ? labelOffset : 16;
+    const radius = effectiveOuter + offset;
     const x = centerX + radius * Math.cos(-midAngle * RADIAN);
     const y = centerY + radius * Math.sin(-midAngle * RADIAN);
-
     return (
       <text
         x={x}
@@ -74,7 +98,7 @@ export const render3DPie = (
         fill={labelColor}
         fontSize={12}
         textAnchor={x > centerX ? 'start' : 'end'}
-        dominantBaseline="central"
+        dominantBaseline="middle"
       >
         {`${(percent * 100).toFixed(0)}%`}
       </text>
@@ -117,7 +141,7 @@ export const render3DPie = (
           style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }}
           stroke="none"
           label={renderLabel}
-          labelLine={false}
+          labelLine={labelPosition === 'outside' ? { stroke: isDarkMode ? 'rgba(148,163,184,0.6)' : 'rgba(15,23,42,0.3)' } : false}
         >
           {chartData.map((entry, index) => (
             <Cell

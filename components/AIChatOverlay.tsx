@@ -403,6 +403,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
                         showLegend: false,
                         minLabelPercent: 0.12,
                         isDark,
+                        labelPosition: 'inside',
                       })}
                     </div>
                     <div className="flex-1 space-y-2 text-xs">
