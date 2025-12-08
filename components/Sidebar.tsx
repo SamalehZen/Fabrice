@@ -1,9 +1,9 @@
 import React from 'react';
-import { LayoutDashboard, PieChart, Database, Zap, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, PieChart, Database, Zap, LogOut, ChevronLeft, ChevronRight, Settings, Bot } from 'lucide-react';
 
 interface SidebarProps {
-  activeTab: 'dashboard' | 'questions' | 'editor';
-  setActiveTab: (tab: 'dashboard' | 'questions' | 'editor') => void;
+  activeTab: 'dashboard' | 'questions' | 'editor' | 'settings';
+  setActiveTab: (tab: 'dashboard' | 'questions' | 'editor' | 'settings') => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   isMobile: boolean;
@@ -25,11 +25,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
     >
       <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
         <div className={`flex items-center gap-3 transition-opacity duration-200 ${!isOpen && !isMobile ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
-            <Zap className="w-5 h-5 text-white fill-white" />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <Bot className="w-5 h-5 text-white fill-white" />
           </div>
           <span className="font-bold text-xl tracking-tight text-slate-800 dark:text-white">
-            Hyper<span className="text-brand-500">A</span>
+            Fabrice<span className="text-indigo-500">AI</span>
           </span>
         </div>
         
@@ -50,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
             onClick={() => setActiveTab(item.id)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
               ${activeTab === item.id 
-                ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 shadow-sm' 
+                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'}
             `}
           >
@@ -60,10 +60,29 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setI
             </span>
             
             {activeTab === item.id && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-brand-500 rounded-r-full" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-500 rounded-r-full" />
             )}
           </button>
         ))}
+
+        <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+           <button
+            onClick={() => setActiveTab('settings')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden
+              ${activeTab === 'settings' 
+                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'}
+            `}
+          >
+            <Settings size={22} className={`shrink-0 transition-colors ${activeTab === 'settings' ? 'fill-current opacity-20' : ''}`} strokeWidth={1.5} />
+            <span className={`font-medium whitespace-nowrap transition-all duration-300 ${!isOpen && !isMobile ? 'opacity-0 w-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
+              Paramètres
+            </span>
+            {activeTab === 'settings' && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-500 rounded-r-full" />
+            )}
+          </button>
+        </div>
       </nav>
 
       <div className="p-4 border-t border-slate-100 dark:border-slate-800">
