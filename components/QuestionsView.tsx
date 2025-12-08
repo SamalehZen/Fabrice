@@ -11,11 +11,41 @@ interface QuestionsViewProps {
 
 const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
   
-  // Transform Q10 (Experience Changes) for Pie format
-  const q10Data = [
-      { name: 'Positif', value: data.experienceChanges.reduce((acc, curr) => acc + curr.positive, 0) },
-      { name: 'Négatif', value: data.experienceChanges.reduce((acc, curr) => acc + curr.negative, 0) }
+  // Transform Q10 (Experience Changes) to individual pies per category
+  const q10DetailCharts = data.experienceChanges.map((item) => ({
+      title: `Répartition – ${item.category}`,
+      data: [
+        { name: item.labelPositive || 'Positif', value: item.positive },
+        { name: item.labelNegative || 'Négatif', value: item.negative }
+      ]
+  }));
+
+  const POS_NEG_COLORS = ['#22c55e', '#ef4444'];
+  const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
+  const totalPositive = data.experienceChanges.reduce((acc, item) => acc + item.positive, 0);
+  const totalNegative = data.experienceChanges.reduce((acc, item) => acc + item.negative, 0);
+  const perceptionTotal = totalPositive + totalNegative || 1;
+  const q10SummaryPie = [
+      { name: 'Perception positive', value: totalPositive },
+      { name: 'Perception négative', value: totalNegative },
   ];
+  const perceptionHighlights = [
+      {
+        label: 'Perception positive',
+        value: totalPositive,
+        percent: perceptionTotal ? Math.round((totalPositive / perceptionTotal) * 100) : 0,
+        accent: POS_NEG_COLORS[0]
+      },
+      {
+        label: 'Perception négative',
+        value: totalNegative,
+        percent: perceptionTotal ? Math.round((totalNegative / perceptionTotal) * 100) : 0,
+        accent: POS_NEG_COLORS[1]
+      }
+  ];
+  const dominantPerception = totalPositive >= totalNegative ? 'positive' : 'négative';
+  const dominantPercent = totalPositive >= totalNegative ? perceptionHighlights[0].percent : perceptionHighlights[1].percent;
+  const q9Total = data.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0);
 
   // Helper to render the 3D-style Pie Chart
   // isWide determines if we place legend on the right (for Bento span-2 or span-4)
@@ -23,7 +53,8 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
     chartData: {name: string, value: number}[], 
     colors: string[] = COLORS, 
     isWide: boolean = false,
-    innerRadius: number = 0
+    innerRadius: number = 0,
+    showLegend: boolean = true
   ) => (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
@@ -81,12 +112,14 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
             backdropFilter: 'blur(4px)'
           }} 
         />
-        <Legend 
-          layout={isWide ? "vertical" : "horizontal"} 
-          verticalAlign={isWide ? "middle" : "bottom"} 
-          align={isWide ? "right" : "center"}
-          wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
-        />
+        {showLegend && (
+          <Legend 
+            layout={isWide ? "vertical" : "horizontal"} 
+            verticalAlign={isWide ? "middle" : "bottom"} 
+            align={isWide ? "right" : "center"}
+            wrapperStyle={isWide ? { paddingLeft: '20px' } : { paddingTop: '10px' }}
+          />
+        )}
       </PieChart>
     </ResponsiveContainer>
   );
@@ -164,17 +197,108 @@ const QuestionsView: React.FC<QuestionsViewProps> = ({ data }) => {
         <ChartCard 
           title="Q9: Changement de Nom" 
           subtitle="Notoriété du changement" 
-          className="col-span-1 md:col-span-2 lg:col-span-2"
+          className="col-span-1 md:col-span-2 lg:col-span-1"
         >
-          {render3DPie(data.nameChangeAwareness, ['#22c55e', '#ef4444'], true)}
+          <div className="flex flex-col h-full gap-6">
+            <div className="flex-1 flex items-center justify-center min-h-[220px]">
+              <div className="w-40 h-40">
+                {render3DPie(data.nameChangeAwareness, NAME_CHANGE_COLORS, false, 55, false)}
+              </div>
+            </div>
+            <div className="space-y-3 text-sm">
+              {data.nameChangeAwareness.map((slice, index) => {
+                const percent = q9Total ? Math.round((slice.value / q9Total) * 100) : 0;
+                return (
+                  <div key={`q9-${slice.name}`} className="flex items-center justify-between rounded-2xl border border-slate-200 px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length] }} />
+                      <span className="font-semibold text-slate-700">{slice.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-slate-900 leading-tight">{percent}%</p>
+                      <p className="text-xs text-slate-500">{slice.value} réponses</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </ChartCard>
 
         <ChartCard 
           title="Q10: Perception" 
           subtitle="Impact des changements" 
-          className="col-span-1 md:col-span-2 lg:col-span-2"
+          className="col-span-1 md:col-span-2 lg:col-span-3 lg:row-span-2"
         >
-          {render3DPie(q10Data, ['#22c55e', '#ef4444'], true, 40)}
+          <div className="flex flex-col gap-6 h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="rounded-3xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 lg:col-span-2 flex flex-col sm:flex-row items-center gap-6">
+                <div className="w-40 h-40 shrink-0">
+                  {render3DPie(q10SummaryPie, POS_NEG_COLORS, false, 55, false)}
+                </div>
+                <div className="space-y-3 text-slate-600">
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Vue globale</p>
+                  <p className="text-3xl font-bold text-slate-900">{dominantPercent}%</p>
+                  <p className="text-sm leading-relaxed">
+                    des répondants perçoivent les changements de façon {dominantPerception}.
+                  </p>
+                  <p className="text-xs text-slate-500">Total: {perceptionTotal} réponses</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                {perceptionHighlights.map((highlight) => (
+                  <div key={`badge-${highlight.label}`} className="rounded-2xl border border-slate-200 px-4 py-3 bg-white/90">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">{highlight.label}</p>
+                    <p className="text-3xl font-extrabold text-slate-900 mt-2">{highlight.percent}%</p>
+                    <p className="text-xs text-slate-500">{highlight.value} réponses</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+              {q10DetailCharts.map((chart) => {
+                const total = chart.data.reduce((sum, slice) => sum + slice.value, 0);
+                return (
+                  <div key={chart.title} className="rounded-3xl border border-slate-200 bg-white/90 p-5 flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-lg font-semibold text-slate-900">{chart.title}</p>
+                      <span className="text-xs font-medium text-slate-500">{total} réponses</span>
+                    </div>
+                    <div className="flex items-center gap-5">
+                      <div className="w-32 h-32">
+                        {render3DPie(chart.data, POS_NEG_COLORS, false, 42, false)}
+                      </div>
+                      <div className="flex-1 space-y-3 text-sm">
+                        {chart.data.map((slice, index) => {
+                          const percent = total ? Math.round((slice.value / total) * 100) : 0;
+                          return (
+                            <div key={slice.name}>
+                              <div className="flex items-center justify-between">
+                                <span className="flex items-center gap-2 font-semibold text-slate-700">
+                                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: POS_NEG_COLORS[index % POS_NEG_COLORS.length] }} />
+                                  {slice.name}
+                                </span>
+                                <span className="font-semibold text-slate-900">{percent}%</span>
+                              </div>
+                              <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                                <span
+                                  className="block h-full rounded-full"
+                                  style={{
+                                    width: `${percent}%`,
+                                    backgroundColor: POS_NEG_COLORS[index % POS_NEG_COLORS.length]
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </ChartCard>
 
       </div>
