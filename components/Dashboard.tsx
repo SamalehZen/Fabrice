@@ -19,7 +19,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from 'recharts';
-import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, ArrowUpRight, Check, ChevronDown } from 'lucide-react';
+import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
 import { SATISFACTION_COLORS } from '../constants';
 import ChartCard from './ChartCard';
@@ -388,15 +388,64 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q2.title} subtitle={QUESTION_META.q2.subtitle}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart layout="vertical" data={filteredData.transport} margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" width={120} axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 12, fontWeight: 500 }} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-              <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} barSize={24} />
-            </BarChart>
-          </ResponsiveContainer>
+          {(() => {
+            const transportTotal = filteredData.transport.reduce((sum, t) => sum + t.value, 0) || 1;
+            const transportConfig: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
+              'Vehicule Personnel': { icon: Car, color: '#3b82f6', gradient: 'from-blue-500 to-blue-600' },
+              'Taxi/Bus': { icon: Bus, color: '#8b5cf6', gradient: 'from-violet-500 to-purple-600' },
+              'A Pied': { icon: Footprints, color: '#10b981', gradient: 'from-emerald-500 to-teal-600' },
+              'Autre': { icon: CircleDot, color: '#6b7280', gradient: 'from-gray-500 to-gray-600' },
+            };
+            const sortedTransport = [...filteredData.transport].sort((a, b) => b.value - a.value);
+            const topTransport = sortedTransport[0];
+            return (
+              <div className="h-full flex flex-col gap-4">
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-violet-500/10 dark:from-blue-500/5 dark:to-violet-500/5 border border-blue-200/50 dark:border-blue-500/20">
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${transportConfig[topTransport?.name]?.gradient || 'from-blue-500 to-blue-600'} shadow-lg`}>
+                    {(() => { const IconComp = transportConfig[topTransport?.name]?.icon || Car; return <IconComp className="w-6 h-6 text-white" />; })()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wide">Mode dominant</p>
+                    <p className="text-lg font-bold text-slate-800 dark:text-white">{topTransport?.name || 'N/A'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{Math.round((topTransport?.value / transportTotal) * 100)}%</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400">{topTransport?.value} visiteurs</p>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-3 overflow-auto">
+                  {sortedTransport.map((transport, index) => {
+                    const config = transportConfig[transport.name] || { icon: CircleDot, color: '#6b7280', gradient: 'from-gray-500 to-gray-600' };
+                    const IconComp = config.icon;
+                    const percent = (transport.value / transportTotal) * 100;
+                    const isTop = index === 0;
+                    return (
+                      <div key={transport.name} className={`group relative p-4 rounded-xl border transition-all duration-300 hover:shadow-md ${isTop ? 'bg-gradient-to-r from-slate-50 to-blue-50/50 dark:from-dark-card/80 dark:to-blue-500/5 border-blue-200/60 dark:border-blue-500/30' : 'bg-white/60 dark:bg-dark-card/50 border-slate-200/60 dark:border-dark-border hover:border-slate-300 dark:hover:border-dark-hover'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${config.gradient} shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                            <IconComp className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-semibold text-slate-700 dark:text-gray-200 truncate">{transport.name}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold" style={{ color: config.color }}>{percent.toFixed(1)}%</span>
+                                <span className="text-xs text-slate-400 dark:text-gray-500">({transport.value})</span>
+                              </div>
+                            </div>
+                            <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full bg-gradient-to-r ${config.gradient} transition-all duration-700 ease-out`} style={{ width: `${percent}%` }} />
+                            </div>
+                          </div>
+                        </div>
+                        {isTop && <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded-full shadow-md">TOP</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q8.title} subtitle={QUESTION_META.q8.subtitle} className="lg:col-span-3">
