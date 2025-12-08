@@ -3,9 +3,20 @@ import { SurveyDataset } from "../types";
 
 let client: GoogleGenAI | null = null;
 
+const resolveApiKey = (): string => {
+  return (
+    import.meta.env.VITE_GEMINI_API_KEY ||
+    import.meta.env.VITE_GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.API_KEY ||
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    ''
+  );
+};
+
 const getClient = () => {
   if (!client) {
-    const apiKey = process.env.API_KEY;
+    const apiKey = resolveApiKey();
     if (apiKey) {
       client = new GoogleGenAI({ apiKey });
     }
@@ -16,7 +27,7 @@ const getClient = () => {
 export const generateInsight = async (userPrompt: string, currentData?: SurveyDataset): Promise<string> => {
   const ai = getClient();
   if (!ai) {
-    return "La clé API est manquante. Veuillez vous assurer que process.env.API_KEY est configuré.";
+    return "La clé API est manquante. Configurez GEMINI_API_KEY ou GOOGLE_GENERATIVE_AI_API_KEY.";
   }
 
   // Use provided data or fallback
