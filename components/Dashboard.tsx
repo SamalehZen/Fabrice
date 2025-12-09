@@ -357,20 +357,120 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </BentoItem>
 
 
-        {/* Q5: Competitors - Full Width Bar Chart - Restored */}
+        {/* Q5: Competitors - Vertical Bar Chart with Ranking & VIP Design */}
         <BentoItem title="Q5 • Concurrence" subtitle="Parts de marché" icon={Briefcase} accentColor="text-indigo-600" className="col-span-1 md:col-span-2 lg:col-span-3">
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredData.competitors} margin={{ top: 20, right: 20, left: 20, bottom: 0 }} barSize={60}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
-                    <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} interval={0} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" radius={[12, 12, 0, 0]}>
-                         {filteredData.competitors.map((entry, index) => (
-                             <Cell key={`cell-${index}`} fill={entry.name.includes("Bawadi") ? COLORS.primary : '#cbd5e1'} />
-                         ))}
-                    </Bar>
-                </BarChart>
-            </ResponsiveContainer>
+             {/* Main Container */}
+             <div className="relative w-full h-full p-2">
+                
+                {/* VIP Floating Badge for #1 - "Well Placed" (Top Right of the #1 Bar usually, but here fixed top-right of container) */}
+                <div className="absolute top-0 right-4 z-10 hidden sm:flex flex-col items-end animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+                    <div className="bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 text-amber-950 px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 border-b-4 border-amber-600 flex items-center gap-3 transform hover:scale-105 transition-transform cursor-pointer">
+                        <div className="bg-white/30 p-1 rounded-full">
+                            <Star size={16} fill="currentColor" className="text-amber-900" />
+                        </div>
+                        <div className="text-left leading-tight">
+                            <div className="text-[10px] uppercase font-bold tracking-widest opacity-80">Leader du Marché</div>
+                            <div className="font-headings font-black text-sm">BAWADI MALL</div>
+                        </div>
+                    </div>
+                </div>
+
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                        data={[...filteredData.competitors].sort((a,b) => b.value - a.value)} // Sorted for Ranking
+                        margin={{ top: 30, right: 20, left: 20, bottom: 5 }} 
+                        barSize={50}
+                    >
+                        <defs>
+                            {/* Gold/Premium Gradient for N°1 */}
+                            <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#FCD34D" />   {/* amber-300 */}
+                                <stop offset="50%" stopColor="#F59E0B" />   {/* amber-500 */}
+                                <stop offset="100%" stopColor="#B45309" />  {/* amber-700 */}
+                            </linearGradient>
+                            {/* Silver Gradient for N°2 */}
+                            <linearGradient id="silverGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#F1F5F9" />
+                                <stop offset="100%" stopColor="#94A3B8" />
+                            </linearGradient>
+                            {/* Bronze Gradient for N°3 */}
+                            <linearGradient id="bronzeGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#fed7aa" />
+                                <stop offset="100%" stopColor="#c2410c" />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
+                        <XAxis 
+                            dataKey="name" 
+                            tick={({ x, y, payload, index }) => {
+                                // Custom Tick with Ranking Number
+                                const rank = index + 1;
+                                const isTop3 = rank <= 3;
+                                return (
+                                    <g transform={`translate(${x},${y})`}>
+                                        <text 
+                                            x={0} 
+                                            y={20} 
+                                            dy={0} 
+                                            textAnchor="middle" 
+                                            fill={isTop3 ? (rank === 1 ? '#d97706' : '#64748b') : '#94a3b8'}
+                                            className="text-[10px] font-bold uppercase"
+                                        >
+                                            {payload.value.substring(0, 10)}
+                                        </text>
+                                        <rect 
+                                            x={-12} 
+                                            y={32} 
+                                            width={24} 
+                                            height={16} 
+                                            rx={4} 
+                                            fill={rank === 1 ? '#fbbf24' : (rank === 2 ? '#e2e8f0' : (rank === 3 ? '#ffedd5' : '#f1f5f9'))} 
+                                        />
+                                        <text 
+                                            x={0} 
+                                            y={44} 
+                                            textAnchor="middle" 
+                                            fill={rank === 1 ? '#78350f' : '#475569'}
+                                            fontSize={10} 
+                                            fontWeight={900}
+                                        >
+                                            #{rank}
+                                        </text>
+                                    </g>
+                                );
+                            }} 
+                            axisLine={false} 
+                            tickLine={false} 
+                            interval={0}
+                            height={60}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="value" radius={[12, 12, 0, 0]}>
+                             {filteredData.competitors
+                                .sort((a,b) => b.value - a.value)
+                                .map((entry, index) => {
+                                    const rank = index + 1;
+                                    let fillUrl = '#cbd5e1'; // Default Slate
+                                    if (rank === 1) fillUrl = 'url(#goldGradient)';
+                                    else if (rank === 2) fillUrl = 'url(#silverGradient)';
+                                    else if (rank === 3) fillUrl = 'url(#bronzeGradient)';
+                                    else fillUrl = entry.name.includes('Bawadi') ? COLORS.primary : '#cbd5e1';
+
+                                    // Add glow effect for #1
+                                    const style = rank === 1 ? { filter: 'drop-shadow(0px 0px 10px rgba(251, 191, 36, 0.5))' } : {};
+
+                                    return (
+                                        <Cell 
+                                            key={`cell-${index}`} 
+                                            fill={fillUrl} 
+                                            style={style}
+                                        />
+                                    );
+                             })}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+             </div>
         </BentoItem>
 
 
