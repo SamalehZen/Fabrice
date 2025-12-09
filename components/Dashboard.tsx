@@ -32,7 +32,7 @@ interface DashboardProps {
 
 interface TooltipProps {
   active?: boolean;
-  payload?: Array<{ name: string; value: number; color?: string; fill?: string }>;
+  payload?: Array<{ name: string; value: number; color?: string; fill?: string; payload?: Record<string, unknown> }>;
   label?: string;
 }
 
@@ -47,6 +47,7 @@ const QUESTION_META = {
   q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
   q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' },
   q9: { title: 'Q9 • Changement de nom remarqué', subtitle: 'Sensibilité à la nouvelle identité' },
+  q10: { title: 'Q10 • Évolution expérience', subtitle: "Comparaison avec l'année précédente" },
 } as const;
 
 const TRANSPORT_CONFIG: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
@@ -67,6 +68,8 @@ const CHOICE_REASON_STYLES = [
 ];
 
 const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
+const EXPERIENCE_POS_COLOR = '#22c55e';
+const EXPERIENCE_NEG_COLOR = '#ef4444';
 
 const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -84,6 +87,36 @@ const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
           <span className="font-mono font-semibold text-slate-700 dark:text-gray-100">{entry.value}</span>
         </div>
       ))}
+    </div>
+  );
+};
+
+const ExperienceTooltip: React.FC<TooltipProps> = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  const dataPoint = payload[0].payload as { category: string; positive: number; negative: number; labelPositive?: string; labelNegative?: string };
+  const total = (dataPoint?.positive || 0) + (dataPoint?.negative || 0) || 1;
+  const positivePercent = Math.round(((dataPoint?.positive || 0) / total) * 100);
+  const negativePercent = 100 - positivePercent;
+
+  return (
+    <div className="bg-white/95 dark:bg-dark-surface/95 backdrop-blur-md p-4 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border text-sm text-slate-800 dark:text-gray-100">
+      <p className="font-bold text-slate-800 dark:text-white mb-2">{dataPoint?.category}</p>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-slate-500 dark:text-gray-400">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: EXPERIENCE_POS_COLOR }} aria-hidden="true" />
+            {dataPoint?.labelPositive || 'Progression positive'}
+          </span>
+          <span className="font-semibold text-slate-900 dark:text-white">{dataPoint?.positive} ({positivePercent}%)</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-slate-500 dark:text-gray-400">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: EXPERIENCE_NEG_COLOR }} aria-hidden="true" />
+            {dataPoint?.labelNegative || 'Signal négatif'}
+          </span>
+          <span className="font-semibold text-slate-900 dark:text-white">{dataPoint?.negative} ({negativePercent}%)</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -230,6 +263,38 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     const unawarePercent = total ? 100 - awarePercent : 0;
     return { total, awarePercent, unawarePercent };
   }, [filteredData.nameChangeAwareness]);
+
+  const q9Highlights = useMemo(() => {
+    const gap = Math.abs(nameChangeInsights.awarePercent - nameChangeInsights.unawarePercent);
+    return [
+      { label: 'Écart awareness', value: `${gap} pts`, caption: 'Différence Oui vs Non' },
+      { label: 'Panel mesuré', value: nameChangeInsights.total.toString(), caption: 'Réponses exploitables' },
+      { label: 'À convaincre', value: `${nameChangeInsights.unawarePercent}%`, caption: "N'ont pas remarqué" },
+    ];
+  }, [nameChangeInsights]);
+
+  const q10Insights = useMemo(() => {
+    const totalPositive = filteredData.experienceChanges.reduce((acc, item) => acc + item.positive, 0);
+    const totalNegative = filteredData.experienceChanges.reduce((acc, item) => acc + item.negative, 0);
+    const total = totalPositive + totalNegative || 1;
+    const positiveRate = Math.round((totalPositive / total) * 100);
+    const negativeRate = 100 - positiveRate;
+    const netIndex = positiveRate - negativeRate;
+    const chartData = filteredData.experienceChanges.map((item) => {
+      const categoryTotal = item.positive + item.negative || 1;
+      return {
+        category: item.category,
+        positive: item.positive,
+        negative: item.negative,
+        positivePercent: Math.round((item.positive / categoryTotal) * 100),
+        negativePercent: Math.round((item.negative / categoryTotal) * 100),
+        labelPositive: item.labelPositive,
+        labelNegative: item.labelNegative,
+      };
+    });
+    const standout = [...chartData].sort((a, b) => b.positivePercent - a.positivePercent)[0];
+    return { totalPositive, totalNegative, positiveRate, negativeRate, netIndex, chartData, standout };
+  }, [filteredData.experienceChanges]);
 
   const handleExportXLSX = useCallback(() => {
     const wb = XLSX.utils.book_new();
@@ -836,6 +901,90 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   </text>
                 </PieChart>
               </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+              {q9Highlights.map((item) => (
+                <div key={item.label} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 px-3 py-3 flex flex-col gap-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{item.label}</p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white">{item.value}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-400">{item.caption}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ChartCard>
+
+        <ChartCard
+          title={QUESTION_META.q10.title}
+          subtitle={QUESTION_META.q10.subtitle}
+          className="lg:col-span-6 xl:col-span-12"
+          contentHeightClass="min-h-[480px]"
+        >
+          <div className="flex flex-col h-full gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <article className="rounded-2xl border border-emerald-100 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-white to-white dark:from-emerald-500/20 dark:via-transparent dark:to-transparent p-5">
+                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300 uppercase tracking-wide">Perception positive</p>
+                <p className="text-4xl font-black text-emerald-600 dark:text-emerald-300 mt-3">{q10Insights.positiveRate}%</p>
+                <p className="text-xs text-slate-500 dark:text-gray-400">{q10Insights.totalPositive} réponses</p>
+              </article>
+              <article className="rounded-2xl border border-rose-100 dark:border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-white to-white dark:from-rose-500/20 dark:via-transparent dark:to-transparent p-5">
+                <p className="text-xs font-semibold text-rose-600 dark:text-rose-300 uppercase tracking-wide">Perception négative</p>
+                <p className="text-4xl font-black text-rose-600 dark:text-rose-300 mt-3">{q10Insights.negativeRate}%</p>
+                <p className="text-xs text-slate-500 dark:text-gray-400">{q10Insights.totalNegative} réponses</p>
+              </article>
+              <article className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 p-5">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Indice net</p>
+                <p className={`text-4xl font-black mt-3 ${q10Insights.netIndex >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {q10Insights.netIndex > 0 ? '+' : ''}{q10Insights.netIndex} pts
+                </p>
+                <p className="text-xs text-slate-500 dark:text-gray-400">Segment phare : {q10Insights.standout?.category || '—'}</p>
+              </article>
+            </div>
+            <div className="flex flex-col lg:flex-row gap-6 flex-1">
+              <div className="flex-1 min-h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={q10Insights.chartData} layout="vertical" stackOffset="expand" margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="q10Positive" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor={EXPERIENCE_POS_COLOR} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={EXPERIENCE_POS_COLOR} stopOpacity={0.9} />
+                      </linearGradient>
+                      <linearGradient id="q10Negative" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.9} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                    <XAxis type="number" hide domain={[0, 1]} />
+                    <YAxis dataKey="category" type="category" axisLine={false} tickLine={false} width={120} tick={{ fill: '#475569', fontSize: 12 }} />
+                    <Tooltip content={<ExperienceTooltip />} cursor={{ fill: '#f8fafc' }} />
+                    <Bar dataKey="positive" stackId="experience" fill="url(#q10Positive)" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="negative" stackId="experience" fill="url(#q10Negative)" radius={[0, 0, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full lg:w-80 space-y-4">
+                {q10Insights.chartData.map((item) => (
+                  <div key={item.category} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-gray-400">{item.category}</p>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.labelPositive}</p>
+                      </div>
+                      <span className="text-sm font-bold text-emerald-500">{item.positivePercent}%</span>
+                    </div>
+                    <div className="space-y-2 text-xs text-slate-500 dark:text-gray-400">
+                      <div className="h-1.5 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${item.positivePercent}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-emerald-500 font-semibold">{item.labelPositive}: {item.positive}</span>
+                        <span className="text-rose-500 font-semibold">{item.labelNegative}: {item.negative}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </ChartCard>
