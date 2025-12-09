@@ -270,17 +270,78 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </BentoItem>
 
 
-        {/* Q3: Frequency - Radial Bar */}
-        <BentoItem title="Q3 • Fréquence" subtitle="Habitudes de visite" icon={Calendar} accentColor="text-amber-500" className="col-span-1">
-             <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart innerRadius="20%" outerRadius="100%" barSize={15} data={filteredData.frequency}>
-                  <RadialBar label={{ position: 'insideStart', fill: '#fff', fontSize: 10, fontWeight: 700 }} background dataKey="value" cornerRadius={10} />
-                  <Tooltip content={<CustomTooltip />} />
-                  {filteredData.frequency.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={[COLORS.warning, COLORS.primary, COLORS.secondary, COLORS.success][index % 4]} />
-                  ))}
-                </RadialBarChart>
-             </ResponsiveContainer>
+        {/* Q3: Frequency - Radial Bar Improved */}
+        <BentoItem 
+            title="Q3 • Fréquence" 
+            subtitle="Habitudes de visite" 
+            icon={Calendar} 
+            accentColor="text-amber-500" 
+            className="col-span-1 row-span-2 md:row-span-1"
+        >
+             <div className="flex flex-col h-full justify-between">
+                {/* Chart Section */}
+                <div className="flex-1 min-h-[160px] relative -mt-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart 
+                            innerRadius="30%" 
+                            outerRadius="100%" 
+                            barSize={18} 
+                            data={filteredData.frequency} 
+                            startAngle={180} 
+                            endAngle={-180}
+                        >
+                            <PolarAngleAxis type="number" domain={[0, 'auto']} tick={false} />
+                            <RadialBar 
+                                background={{ fill: '#f1f5f9', className: 'dark:fill-white/5' }}
+                                dataKey="value" 
+                                cornerRadius={30} // Rendre les bouts bien ronds et luxueux
+                            >
+                                {filteredData.frequency.map((entry, index) => (
+                                    <Cell 
+                                        key={`cell-${index}`} 
+                                        fill={[
+                                            '#f59e0b', // Amber (Très rarement)
+                                            '#6366f1', // Indigo (1-3 fois)
+                                            '#ec4899', // Pink (1 semaine)
+                                            '#10b981'  // Emerald (Plusieurs fois)
+                                        ][index % 4]} 
+                                    />
+                                ))}
+                            </RadialBar>
+                            <Tooltip content={<CustomTooltip />} />
+                        </RadialBarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Stats Grid Section - Maximum Visibility */}
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                    {filteredData.frequency.map((entry, index) => {
+                        const total = filteredData.frequency.reduce((acc, curr) => acc + curr.value, 0) || 1;
+                        const percent = Math.round((entry.value / total) * 100);
+                        const colors = ['bg-amber-500', 'bg-indigo-500', 'bg-pink-500', 'bg-emerald-500'];
+                        const textColors = ['text-amber-600 dark:text-amber-400', 'text-indigo-600 dark:text-indigo-400', 'text-pink-600 dark:text-pink-400', 'text-emerald-500 dark:text-emerald-400'];
+                        
+                        return (
+                            <div key={index} className="flex flex-col p-2.5 rounded-xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-100 dark:hover:bg-white/10">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className={`w-2 h-2 rounded-full ${colors[index % 4]} shadow-[0_0_8px_rgba(0,0,0,0.3)]`} />
+                                    <span className="text-[10px] font-bold uppercase truncate text-slate-500 dark:text-slate-400 leading-tight tracking-wider">
+                                        {entry.name}
+                                    </span>
+                                </div>
+                                <div className="flex items-baseline justify-between mt-1">
+                                    <span className={`text-2xl font-black ${textColors[index % 4]} tracking-tight`}>
+                                        {percent}<span className="text-sm align-top ml-0.5 opacity-60">%</span>
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 rounded-md">
+                                        {entry.value}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+             </div>
         </BentoItem>
 
 
