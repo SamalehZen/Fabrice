@@ -182,9 +182,20 @@ const AppContent: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{currentPage.title}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">{currentPage.description}</p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="hidden sm:flex p-3 rounded-2xl bg-gradient-to-br from-brand-500/10 to-purple-500/10 dark:from-brand-500/20 dark:to-purple-500/20 border border-brand-200/50 dark:border-brand-500/20">
+              <span className="text-3xl">{activeTab === 'dashboard' ? '📊' : activeTab === 'questions' ? '🥧' : '✏️'}</span>
+            </div>
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 via-slate-700 to-slate-800 dark:from-white dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent">{currentPage.title}</h2>
+              <p className="text-slate-500 dark:text-gray-400 mt-1.5 text-sm sm:text-base max-w-xl leading-relaxed">{currentPage.description}</p>
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 dark:text-gray-500">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span>Données en temps réel</span>
+          </div>
         </div>
         <div className="transition-opacity duration-300">{renderContent}</div>
       </main>

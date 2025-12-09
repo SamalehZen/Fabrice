@@ -353,21 +353,46 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData.frequency} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorFreq" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="value" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorFreq)" />
-            </AreaChart>
-          </ResponsiveContainer>
+          {(() => {
+            const freqTotal = filteredData.frequency.reduce((sum, f) => sum + f.value, 0) || 1;
+            const freqColors = ['#f97316', '#fb923c', '#fdba74', '#fed7aa'];
+            const topFreq = [...filteredData.frequency].sort((a, b) => b.value - a.value)[0];
+            return (
+              <div className="h-full flex flex-col gap-4">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-500/10 dark:to-amber-500/10 border border-orange-200/50 dark:border-orange-500/20">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 shadow-md">
+                      <Calendar className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-gray-400">Fréquence dominante</p>
+                      <p className="font-bold text-slate-800 dark:text-white">{topFreq?.name}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-orange-600 dark:text-orange-400">{Math.round((topFreq?.value / freqTotal) * 100)}%</p>
+                  </div>
+                </div>
+                <div className="flex-1 grid grid-cols-2 gap-3">
+                  {filteredData.frequency.map((freq, index) => {
+                    const percent = (freq.value / freqTotal) * 100;
+                    return (
+                      <div key={freq.name} className="relative p-4 rounded-xl bg-white/60 dark:bg-dark-card/50 border border-slate-200/60 dark:border-dark-border hover:shadow-md transition-all group">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-xs font-medium text-slate-500 dark:text-gray-400 truncate pr-2">{freq.name}</span>
+                          <span className="text-lg font-bold" style={{ color: freqColors[index] }}>{percent.toFixed(0)}%</span>
+                        </div>
+                        <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${percent}%`, backgroundColor: freqColors[index] }} />
+                        </div>
+                        <p className="mt-2 text-xs text-slate-400 dark:text-gray-500">{freq.value} visiteurs</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
