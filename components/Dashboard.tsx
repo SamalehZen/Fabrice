@@ -357,57 +357,20 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </BentoItem>
 
 
-        {/* Q5: Competitors - Full Width Ranking List - REDESIGNED */}
+        {/* Q5: Competitors - Full Width Bar Chart - Restored */}
         <BentoItem title="Q5 • Concurrence" subtitle="Parts de marché" icon={Briefcase} accentColor="text-indigo-600" className="col-span-1 md:col-span-2 lg:col-span-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-full content-center">
-                 {[...filteredData.competitors].sort((a,b) => b.value - a.value).slice(0, 6).map((comp, idx) => {
-                     const isTop1 = idx === 0;
-                     const isTop3 = idx < 3;
-                     const total = filteredData.competitors.reduce((s, c) => s + c.value, 0) || 1;
-                     const percent = Math.round((comp.value / total) * 100);
-
-                     return (
-                        <div key={idx} className={`relative flex items-center p-4 rounded-2xl border transition-all hover:scale-[1.02] ${isTop1 ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent shadow-xl shadow-indigo-500/25' : 'bg-white dark:bg-white/5 border-slate-100 dark:border-white/10 hover:border-indigo-200 dark:hover:border-indigo-500/30'}`}>
-                            
-                            {/* Rank Badge */}
-                            <div className={`
-                                flex items-center justify-center w-12 h-12 rounded-xl font-black text-xl mr-4 shrink-0
-                                ${isTop1 
-                                    ? 'bg-white text-indigo-600 shadow-inner' 
-                                    : isTop3 
-                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
-                                        : 'bg-slate-100 dark:bg-white/5 text-slate-400'
-                                }
-                            `}>
-                                <span className="text-[10px] absolute top-1 left-1 opacity-50">#</span>
-                                {idx + 1}
-                            </div>
-
-                            <div className="flex flex-col flex-1 min-w-0">
-                                <div className="flex items-baseline justify-between mb-1">
-                                    <h4 className={`font-bold truncate ${isTop1 ? 'text-white' : 'text-slate-700 dark:text-white'}`}>{comp.name}</h4>
-                                    <span className={`text-sm font-bold opacity-80 ${isTop1 ? 'text-white' : 'text-indigo-500'}`}>{percent}%</span>
-                                </div>
-                                
-                                {/* Professional Badge Bar */}
-                                <div className={`h-2.5 w-full rounded-full overflow-hidden ${isTop1 ? 'bg-black/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
-                                    <div 
-                                        className={`h-full rounded-full ${isTop1 ? 'bg-white' : 'bg-indigo-500'}`} 
-                                        style={{ width: `${percent}%` }}
-                                    />
-                                </div>
-                            </div>
-
-                            {isTop1 && (
-                                <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-                                    <Star size={10} fill="currentColor" />
-                                    Leader
-                                </div>
-                            )}
-                        </div>
-                     )
-                 })}
-            </div>
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={filteredData.competitors} margin={{ top: 20, right: 20, left: 20, bottom: 0 }} barSize={60}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
+                    <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} interval={0} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[12, 12, 0, 0]}>
+                         {filteredData.competitors.map((entry, index) => (
+                             <Cell key={`cell-${index}`} fill={entry.name.includes("Bawadi") ? COLORS.primary : '#cbd5e1'} />
+                         ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
         </BentoItem>
 
 
