@@ -273,6 +273,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     ];
   }, [nameChangeInsights]);
 
+  const q9HighlightStyles = [
+    'border-emerald-100 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-white to-white dark:from-emerald-500/20 dark:via-transparent dark:to-transparent',
+    'border-sky-100 dark:border-sky-500/30 bg-gradient-to-br from-sky-500/10 via-white to-white dark:from-sky-500/20 dark:via-transparent dark:to-transparent',
+    'border-amber-100 dark:border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-white to-white dark:from-amber-500/20 dark:via-transparent dark:to-transparent',
+  ];
+
   const q10Insights = useMemo(() => {
     const totalPositive = filteredData.experienceChanges.reduce((acc, item) => acc + item.positive, 0);
     const totalNegative = filteredData.experienceChanges.reduce((acc, item) => acc + item.negative, 0);
@@ -871,45 +877,77 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q9.title} subtitle={QUESTION_META.q9.subtitle} className="lg:col-span-3 xl:col-span-4">
+        <ChartCard
+          title={QUESTION_META.q9.title}
+          subtitle={QUESTION_META.q9.subtitle}
+          className="lg:col-span-6 xl:col-span-12"
+          contentHeightClass="min-h-[420px]"
+        >
           <div className="flex flex-col h-full gap-6">
-            <div className="rounded-2xl border border-amber-100 dark:border-amber-500/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-amber-600 dark:text-amber-300 uppercase tracking-wide">Sensibilisés</p>
-                <p className="text-3xl font-black text-amber-600 dark:text-amber-300 mt-2">{nameChangeInsights.awarePercent}%</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Non sensibilisés</p>
-                <p className="text-lg font-bold text-slate-900 dark:text-white mt-2">{nameChangeInsights.unawarePercent}%</p>
-              </div>
-            </div>
-            <div className="flex-1 min-h-[260px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={filteredData.nameChangeAwareness} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" stroke="none">
-                    {filteredData.nameChangeAwareness.map((slice, index) => (
-                      <Cell key={`name-change-${slice.name}`} fill={NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                  <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
-                    {nameChangeInsights.awarePercent}%
-                  </text>
-                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500 dark:fill-gray-400 font-medium uppercase tracking-wide">
-                    ont remarqué
-                  </text>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-              {q9Highlights.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 px-3 py-3 flex flex-col gap-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{item.label}</p>
-                  <p className="text-lg font-black text-slate-900 dark:text-white">{item.value}</p>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-400">{item.caption}</p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {q9Highlights.map((item, index) => (
+                <article
+                  key={item.label}
+                  className={`rounded-2xl border px-5 py-4 text-center ${q9HighlightStyles[index] || 'border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70'}`}
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{item.label}</p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-white mt-2">{item.value}</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400">{item.caption}</p>
+                </article>
               ))}
+            </div>
+            <div className="flex flex-col lg:flex-row gap-6 flex-1">
+              <div className="w-full lg:w-80 mx-auto flex flex-col items-center gap-4">
+                <div className="w-64 h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={filteredData.nameChangeAwareness} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" stroke="none">
+                        {filteredData.nameChangeAwareness.map((slice, index) => (
+                          <Cell key={`name-change-${slice.name}`} fill={NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                      <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-4xl font-bold fill-slate-800 dark:fill-white">
+                        {nameChangeInsights.awarePercent}%
+                      </text>
+                      <text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500 dark:fill-gray-400 font-medium uppercase tracking-wide">
+                        ont remarqué
+                      </text>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="text-sm text-slate-500 dark:text-gray-400 text-center max-w-xs">
+                  {nameChangeInsights.awarePercent}% des répondants déclarent avoir remarqué le changement de nom,
+                  contre {nameChangeInsights.unawarePercent}% qui ne l'ont pas encore perçu.
+                </p>
+              </div>
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredData.nameChangeAwareness.map((slice, index) => {
+                  const percent = nameChangeInsights.total ? Math.round((slice.value / nameChangeInsights.total) * 100) : 0;
+                  const accentColor = NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length];
+                  const barGradient = index === 0 ? 'from-emerald-400 to-emerald-600' : 'from-slate-400 to-slate-500';
+                  const labelTone = index === 0 ? 'text-emerald-500' : 'text-slate-600 dark:text-gray-300';
+                  return (
+                    <article key={slice.name} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: accentColor }} aria-hidden="true" />
+                          <span className="text-sm font-semibold text-slate-800 dark:text-white">{slice.name}</span>
+                        </div>
+                        <span className={`text-sm font-bold ${labelTone}`}>{percent}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full bg-gradient-to-r ${barGradient}`} style={{ width: `${percent}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-gray-400">
+                        <span>{slice.value} réponses</span>
+                        <span>{percent >= 50 ? 'Majoritaire' : 'Minoritaire'}</span>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </ChartCard>
