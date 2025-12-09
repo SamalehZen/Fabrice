@@ -805,62 +805,60 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="lg:col-span-6 xl:col-span-6" contentHeightClass="min-h-[420px]">
-          <div className="flex flex-col xl:flex-row h-full gap-6">
-            <div className="xl:w-2/3 flex flex-col gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-green-100 dark:border-green-500/30 p-5 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/15 dark:to-transparent shadow-sm">
-                  <p className="text-xs font-semibold text-green-600 dark:text-green-300 uppercase tracking-wide">Satisfaction positive</p>
-                  <p className="text-5xl font-black text-green-600 dark:text-green-300 mt-2">{stats.satisfactionRate}%</p>
-                  <p className="text-xs text-slate-500 dark:text-gray-400">Part des avis favorables</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-5 bg-white/85 dark:bg-dark-card/70 shadow-sm">
-                  <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Segment dominant</p>
-                  <p className="text-lg font-bold text-slate-900 dark:text-white mt-2">{topSatisfactionSlice?.name || '—'}</p>
-                  <p className="text-4xl font-black text-slate-900 dark:text-white">{topSatisfactionSlice?.percent ?? 0}%</p>
-                  <p className="text-xs text-slate-500 dark:text-gray-400">{topSatisfactionSlice?.value ?? 0} réponses</p>
-                </div>
+        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="lg:col-span-3 xl:col-span-4">
+          <div className="flex flex-col h-full gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-green-100 dark:border-green-500/30 p-4 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/10 dark:to-transparent">
+                <p className="text-[11px] font-semibold text-green-600 dark:text-green-300 uppercase tracking-wide">Satisfaction positive</p>
+                <p className="text-4xl font-black text-green-600 dark:text-green-300 mt-2">{stats.satisfactionRate}%</p>
+                <p className="text-[11px] text-slate-500 dark:text-gray-400">Avis favorables</p>
               </div>
-              <div className="relative h-[340px] bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-dark-card/60 dark:via-dark-card/40 dark:to-dark-surface/60 rounded-3xl border border-slate-100 dark:border-dark-border overflow-hidden shadow-inner">
-                <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-emerald-200/40 via-transparent to-slate-200/30 dark:from-emerald-500/10 dark:to-transparent" aria-hidden="true" />
+              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/80 dark:bg-dark-card/70">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Segment dominant</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white mt-1">{topSatisfactionSlice?.name || '—'}</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white">{topSatisfactionSlice?.percent ?? 0}%</p>
+                <p className="text-[11px] text-slate-500 dark:text-gray-400">{topSatisfactionSlice?.value ?? 0} réponses</p>
+              </div>
+            </div>
+            <div className="flex-1 flex flex-col gap-3">
+              <div className="relative h-[240px] bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-dark-card/60 dark:via-dark-card/40 dark:to-dark-surface/60 rounded-2xl border border-slate-100 dark:border-dark-border overflow-hidden">
+                <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-emerald-200/40 via-transparent to-slate-200/30 dark:from-emerald-500/10 dark:to-transparent" aria-hidden="true" />
                 <div className="relative h-full flex items-center justify-center">
                   <div className="absolute inset-0">
                     {render3DPie(satisfactionBreakdown, {
                       colors: SATISFACTION_COLORS,
-                      innerRadius: 80,
-                      outerRadius: 150,
+                      innerRadius: 60,
+                      outerRadius: 110,
                       paddingAngle: 4,
                       showLegend: false,
                       labelPosition: 'outside',
-                      labelOffset: 22,
+                      labelOffset: 18,
                     })}
                   </div>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">Positif</p>
-                    <p className="text-5xl font-black text-slate-900 dark:text-white">{stats.satisfactionRate}%</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">{totalSatisfactionResponses} réponses</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">Positif</p>
+                    <p className="text-4xl font-black text-slate-900 dark:text-white">{stats.satisfactionRate}%</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{totalSatisfactionResponses} réponses</p>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="xl:w-1/3 space-y-3 max-h-full overflow-auto pr-1">
-              {satisfactionBreakdown.map((slice) => (
-                <div key={slice.name} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/85 dark:bg-dark-card/70 p-4 flex items-center justify-between shadow-sm">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-gray-400 flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: slice.color }} aria-hidden="true" />
+              <div className="grid grid-cols-2 gap-2">
+                {satisfactionBreakdown.map((slice) => (
+                  <div key={slice.name} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 p-3">
+                    <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: slice.color }} aria-hidden="true" />
                       {slice.name}
                     </p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{slice.percent}%</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">{slice.value} répondants</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xl font-bold text-slate-900 dark:text-white">{slice.percent}%</span>
+                      <span className={`text-[11px] font-semibold ${slice.percent >= 50 ? 'text-emerald-500' : 'text-slate-400 dark:text-gray-500'}`}>
+                        {slice.percent >= 50 ? 'Dominant' : 'Secondaire'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{slice.value} répondants</p>
                   </div>
-                  <div className="text-right">
-                    <p className={`text-xs font-semibold ${slice.percent >= 50 ? 'text-emerald-500' : 'text-slate-400 dark:text-gray-500'}`}>
-                      {slice.percent >= 50 ? 'Dominant' : 'Secondaire'}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </ChartCard>
