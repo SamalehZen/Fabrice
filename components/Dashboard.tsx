@@ -215,7 +215,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {/* Q0: Ages - Radar Chart */}
-        <BentoItem title="Démographie" subtitle="Répartition des âges" icon={Users} accentColor="text-pink-500" className="col-span-1">
+        <BentoItem title="Q0 • Démographie" subtitle="Répartition des âges" icon={Users} accentColor="text-pink-500" className="col-span-1">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={filteredData.ageGroups}>
               <PolarGrid strokeOpacity={0.2} stroke={COLORS.slate} />
@@ -229,7 +229,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 
         {/* Q1: Zone - Improved List UI */}
-        <BentoItem title="Zones Géographiques" subtitle="Provenance des visiteurs" icon={MapPin} accentColor="text-emerald-500" className="col-span-1">
+        <BentoItem title="Q1 • Zones Géographiques" subtitle="Provenance des visiteurs" icon={MapPin} accentColor="text-emerald-500" className="col-span-1">
            <div className="h-full overflow-y-auto pr-2 custom-scrollbar space-y-4">
               {[...filteredData.zones].sort((a,b) => b.value - a.value).map((zone, idx) => {
                  const total = filteredData.zones.reduce((s, z) => s + z.value, 0) || 1;
@@ -254,7 +254,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 
         {/* Q2: Transport - Improved Grid */}
-        <BentoItem title="Transport" subtitle="Moyens d'accès" icon={Car} accentColor="text-blue-500" className="col-span-1">
+        <BentoItem title="Q2 • Transport" subtitle="Moyens d'accès" icon={Car} accentColor="text-blue-500" className="col-span-1">
             <div className="grid grid-cols-2 gap-4 h-full content-center">
                 {filteredData.transport.map((t, i) => {
                     const iconMap: any = { 'Vehicule Personnel': Car, 'Taxi/Bus': Bus, 'A Pied': Footprints };
@@ -273,7 +273,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 
         {/* Q4: Motifs - 2/3 width */}
-        <BentoItem title="Motifs de Visite" subtitle="Pourquoi viennent-ils ?" icon={ShoppingBag} accentColor="text-violet-500" className="col-span-1 md:col-span-2">
+        <BentoItem title="Q4 • Motifs de Visite" subtitle="Pourquoi viennent-ils ?" icon={ShoppingBag} accentColor="text-violet-500" className="col-span-1 md:col-span-2">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={filteredData.visitReason} layout="vertical" margin={{ top: 10, right: 30, left: 60, bottom: 0 }} barSize={32}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} strokeOpacity={0.1} />
@@ -292,7 +292,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
         {/* Q3: Frequency - 1/3 width, keeping it vertical */}
         <BentoItem 
-            title="Fréquence" 
+            title="Q3 • Fréquence" 
             subtitle="Habitudes de visite" 
             icon={Calendar} 
             accentColor="text-amber-500" 
@@ -357,25 +357,62 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </BentoItem>
 
 
-        {/* Q5: Competitors - Full Width Bar Chart */}
-        <BentoItem title="Concurrence" subtitle="Parts de marché" icon={Briefcase} accentColor="text-indigo-600" className="col-span-1 md:col-span-2 lg:col-span-3">
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredData.competitors} margin={{ top: 20, right: 20, left: 20, bottom: 0 }} barSize={60}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
-                    <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} interval={0} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" radius={[12, 12, 0, 0]}>
-                         {filteredData.competitors.map((entry, index) => (
-                             <Cell key={`cell-${index}`} fill={entry.name.includes("Bawadi") ? COLORS.primary : '#cbd5e1'} />
-                         ))}
-                    </Bar>
-                </BarChart>
-            </ResponsiveContainer>
+        {/* Q5: Competitors - Full Width Ranking List - REDESIGNED */}
+        <BentoItem title="Q5 • Concurrence" subtitle="Parts de marché" icon={Briefcase} accentColor="text-indigo-600" className="col-span-1 md:col-span-2 lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-full content-center">
+                 {[...filteredData.competitors].sort((a,b) => b.value - a.value).slice(0, 6).map((comp, idx) => {
+                     const isTop1 = idx === 0;
+                     const isTop3 = idx < 3;
+                     const total = filteredData.competitors.reduce((s, c) => s + c.value, 0) || 1;
+                     const percent = Math.round((comp.value / total) * 100);
+
+                     return (
+                        <div key={idx} className={`relative flex items-center p-4 rounded-2xl border transition-all hover:scale-[1.02] ${isTop1 ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent shadow-xl shadow-indigo-500/25' : 'bg-white dark:bg-white/5 border-slate-100 dark:border-white/10 hover:border-indigo-200 dark:hover:border-indigo-500/30'}`}>
+                            
+                            {/* Rank Badge */}
+                            <div className={`
+                                flex items-center justify-center w-12 h-12 rounded-xl font-black text-xl mr-4 shrink-0
+                                ${isTop1 
+                                    ? 'bg-white text-indigo-600 shadow-inner' 
+                                    : isTop3 
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
+                                        : 'bg-slate-100 dark:bg-white/5 text-slate-400'
+                                }
+                            `}>
+                                <span className="text-[10px] absolute top-1 left-1 opacity-50">#</span>
+                                {idx + 1}
+                            </div>
+
+                            <div className="flex flex-col flex-1 min-w-0">
+                                <div className="flex items-baseline justify-between mb-1">
+                                    <h4 className={`font-bold truncate ${isTop1 ? 'text-white' : 'text-slate-700 dark:text-white'}`}>{comp.name}</h4>
+                                    <span className={`text-sm font-bold opacity-80 ${isTop1 ? 'text-white' : 'text-indigo-500'}`}>{percent}%</span>
+                                </div>
+                                
+                                {/* Professional Badge Bar */}
+                                <div className={`h-2.5 w-full rounded-full overflow-hidden ${isTop1 ? 'bg-black/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                                    <div 
+                                        className={`h-full rounded-full ${isTop1 ? 'bg-white' : 'bg-indigo-500'}`} 
+                                        style={{ width: `${percent}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {isTop1 && (
+                                <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                                    <Star size={10} fill="currentColor" />
+                                    Leader
+                                </div>
+                            )}
+                        </div>
+                     )
+                 })}
+            </div>
         </BentoItem>
 
 
         {/* Q6: Choix - Bubble Cloud */}
-        <BentoItem title="Critères de Choix" subtitle="Facteurs de décision" icon={Tag} accentColor="text-cyan-500" className="col-span-1 lg:col-span-2">
+        <BentoItem title="Q6 • Critères de Choix" subtitle="Facteurs de décision" icon={Tag} accentColor="text-cyan-500" className="col-span-1 lg:col-span-2">
              <div className="flex flex-wrap gap-3 content-start h-full p-2">
                 {[...filteredData.choiceReason].sort((a,b) => b.value - a.value).map((reason, i) => {
                     // Larger default sizes
@@ -399,7 +436,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 
         {/* Q7: Satisfaction - Gauge */}
-        <BentoItem title="Satisfaction" subtitle="Indice de bonheur" icon={Smile} accentColor="text-green-500" className="col-span-1">
+        <BentoItem title="Q7 • Satisfaction" subtitle="Indice de bonheur" icon={Smile} accentColor="text-green-500" className="col-span-1">
             <ResponsiveContainer width="100%" height="100%">
                <PieChart>
                  <Pie
@@ -431,7 +468,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 
         {/* Q8: Rayons - Area Chart */}
-        <BentoItem title="Attractivité Rayons" subtitle="Zones les plus visitées" icon={ShoppingCart} accentColor="text-rose-500" className="col-span-1 md:col-span-2">
+        <BentoItem title="Q8 • Attractivité Rayons" subtitle="Zones les plus visitées" icon={ShoppingCart} accentColor="text-rose-500" className="col-span-1 md:col-span-2">
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                     <defs>
@@ -450,7 +487,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 
         {/* Q9: Nom - Donut Chart */}
-        <BentoItem title="Notoriété Nom" subtitle="Changement de marque" icon={Megaphone} accentColor="text-orange-500" className="col-span-1">
+        <BentoItem title="Q9 • Notoriété Nom" subtitle="Changement de marque" icon={Megaphone} accentColor="text-orange-500" className="col-span-1">
              <div className="flex flex-col items-center justify-center h-full gap-6">
                 <div className="w-48 h-48 relative">
                     <ResponsiveContainer width="100%" height="100%">
@@ -479,7 +516,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
 
         {/* Q10: Experience - Diverging Bar - Full Width for Footer */}
-        <BentoItem title="Perception Client" subtitle="Évolution de l'expérience" icon={Star} accentColor="text-yellow-500" className="col-span-1 md:col-span-2 lg:col-span-3">
+        <BentoItem title="Q10 • Perception Client" subtitle="Évolution de l'expérience" icon={Star} accentColor="text-yellow-500" className="col-span-1 md:col-span-2 lg:col-span-3">
              <div className="flex flex-col h-full justify-center gap-6">
                  {filteredData.experienceChanges.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-6 text-sm font-bold">
