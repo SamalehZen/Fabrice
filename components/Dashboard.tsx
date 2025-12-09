@@ -4,7 +4,6 @@ import {
   Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -18,452 +17,510 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  RadialBarChart,
+  RadialBar,
+  ReferenceLine,
 } from 'recharts';
-import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
+import { 
+  Users, MapPin, Smile, Car, Download, Calendar, Filter, 
+  TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, 
+  CircleDot, ShoppingBag, ShoppingCart, Tag, Megaphone,
+  Briefcase, Heart, Activity, Star
+} from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
-import { SATISFACTION_COLORS } from '../constants';
-import ChartCard from './ChartCard';
-import FrequencyTrendChart from './FrequencyTrendChart';
 import * as XLSX from 'xlsx';
 
+// --- Constants & Config ---
+const COLORS = {
+  primary: '#6366f1',   // Indigo 500
+  secondary: '#8b5cf6', // Violet 500
+  accent: '#ec4899',    // Pink 500
+  success: '#10b981',   // Emerald 500
+  warning: '#f59e0b',   // Amber 500
+  danger: '#ef4444',    // Red 500
+  slate: '#64748b',     // Slate 500
+  dark: '#0f172a',      // Slate 900
+};
+
+const GRADIENTS = {
+  primary: ['#0f172a', '#1e293b'],
+  card: 'bg-white dark:bg-[#0f111a]',
+  glass: 'backdrop-blur-xl bg-white/70 dark:bg-[#0f111a]/80',
+};
+
+// --- Interfaces ---
 interface DashboardProps {
   data: SurveyDataset;
 }
 
-interface TooltipProps {
-  active?: boolean;
-  payload?: Array<{ name: string; value: number; color?: string; fill?: string }>;
-  label?: string;
-}
+// --- Helper Components ---
 
-const QUESTION_META = {
-  q0: { title: 'Q0 • Répartition des âges', subtitle: "Tranches d'âge des répondants" },
-  q2: { title: 'Q2 • Moyen de transport', subtitle: 'Comment les visiteurs se rendent au mall' },
-  q3: { title: 'Q3 • Fréquence de visite', subtitle: "Rythme des achats à l'hypermarché" },
-  q5: { title: 'Q5 • Magasin alimentaire le plus fréquenté', subtitle: 'Part de visite par enseigne' },
-  q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
-  q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' },
-} as const;
+const BentoItem = ({ 
+  children, 
+  title, 
+  subtitle, 
+  className = '', 
+  icon: Icon,
+  accentColor = 'text-indigo-500', 
+  delay = 0 
+}: { 
+  children: React.ReactNode; 
+  title: string; 
+  subtitle: string; 
+  className?: string;
+  icon?: any;
+  accentColor?: string;
+  delay?: number;
+}) => (
+  <div 
+    className={`
+      ${GRADIENTS.card} 
+      rounded-[2rem] 
+      border border-slate-100 dark:border-slate-800 
+      p-6 flex flex-col 
+      shadow-xl shadow-slate-200/50 dark:shadow-black/40 
+      transition-all duration-500 
+      hover:shadow-2xl hover:scale-[1.01] hover:border-slate-300 dark:hover:border-slate-700
+      relative overflow-hidden group
+      ${className}
+    `}
+    style={{ animationDelay: `${delay}ms` }}
+  >
+    {/* Background Gradient Blob */}
+    <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 dark:bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-slate-100 dark:group-hover:bg-white/10 transition-colors duration-700" />
+    
+    <div className="flex justify-between items-start mb-6 relative z-10">
+      <div>
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+          {Icon && <Icon size={18} className={accentColor} />}
+          {title}
+        </h3>
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">{subtitle}</p>
+      </div>
+    </div>
+    
+    <div className="flex-1 min-h-[200px] w-full relative z-10">
+      {children}
+    </div>
+  </div>
+);
 
-const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
-
   return (
-    <div
-      className="bg-white/95 dark:bg-dark-surface/95 backdrop-blur-md p-4 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border text-sm text-slate-800 dark:text-gray-100"
-      role="tooltip"
-    >
-      <p className="font-bold text-slate-800 dark:text-white mb-1">{label || payload[0].name}</p>
-      {payload.map((entry, index) => (
+    <div className="bg-slate-900/95 backdrop-blur-xl p-3 rounded-lg shadow-2xl border border-white/10 text-xs text-white">
+      <p className="font-bold mb-1 opacity-80">{label || payload[0].name}</p>
+      {payload.map((entry: any, index: number) => (
         <div key={index} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} aria-hidden="true" />
-          <span className="text-slate-500 dark:text-gray-400 capitalize">{entry.name} :</span>
-          <span className="font-mono font-semibold text-slate-700 dark:text-gray-100">{entry.value}</span>
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
+          <span className="opacity-70">{entry.name}:</span>
+          <span className="font-mono font-bold">{entry.value}</span>
         </div>
       ))}
     </div>
   );
 };
 
+// --- Main Dashboard Component ---
+
 const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const [selectedZone, setSelectedZone] = useState<string>('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const scaleDataset = useCallback((dataset: SimpleDataPoint[], ratio: number): SimpleDataPoint[] => {
-    return dataset.map((item) => ({
-      ...item,
-      value: Math.round(item.value * ratio),
-    }));
-  }, []);
-
+  // --- Filtering Logic (Reused & Optimized) ---
   const filteredData = useMemo(() => {
     if (selectedZone === 'All') return data;
-
     const totalRespondents = data.zones.reduce((acc, curr) => acc + curr.value, 0);
     const zoneData = data.zones.find((z) => z.name === selectedZone);
     const zoneValue = zoneData?.value || 0;
-
     if (totalRespondents === 0 || zoneValue === 0) return data;
-
     const ratio = zoneValue / totalRespondents;
+    
+    const scale = (d: SimpleDataPoint[]) => d.map(i => ({ ...i, value: Math.round(i.value * ratio) }));
 
     return {
       ...data,
-      ageGroups: scaleDataset(data.ageGroups, ratio),
-      zones: data.zones.map((z) => ({ ...z, value: z.name === selectedZone ? z.value : 0 })),
-      transport: scaleDataset(data.transport, ratio),
-      frequency: scaleDataset(data.frequency, ratio),
-      visitReason: scaleDataset(data.visitReason, ratio),
-      competitors: scaleDataset(data.competitors, ratio),
-      choiceReason: scaleDataset(data.choiceReason, ratio),
-      satisfaction: scaleDataset(data.satisfaction, ratio),
-      preferredDepartment: scaleDataset(data.preferredDepartment, ratio),
-      nameChangeAwareness: scaleDataset(data.nameChangeAwareness, ratio),
-      experienceChanges: data.experienceChanges.map((item) => ({
+      ageGroups: scale(data.ageGroups),
+      zones: data.zones.map(z => ({ ...z, value: z.name === selectedZone ? z.value : 0 })),
+      transport: scale(data.transport),
+      frequency: scale(data.frequency),
+      visitReason: scale(data.visitReason),
+      competitors: scale(data.competitors),
+      choiceReason: scale(data.choiceReason),
+      satisfaction: scale(data.satisfaction),
+      preferredDepartment: scale(data.preferredDepartment),
+      nameChangeAwareness: scale(data.nameChangeAwareness),
+      experienceChanges: data.experienceChanges.map(item => ({
         ...item,
         positive: Math.round(item.positive * ratio),
         negative: Math.round(item.negative * ratio),
       })),
     };
-  }, [data, selectedZone, scaleDataset]);
+  }, [data, selectedZone]);
 
-  const stats = useMemo(() => {
-    const totalRespondents = filteredData.zones.reduce((acc, curr) => acc + curr.value, 0);
-    const totalSatisfaction = filteredData.satisfaction.reduce((acc, curr) => acc + curr.value, 0);
-    const positiveSatisfaction = filteredData.satisfaction
-      .filter((s) => s.name === 'Satisfait' || s.name === 'Très satisfait')
-      .reduce((acc, curr) => acc + curr.value, 0);
-    const satisfactionRate = totalSatisfaction > 0 ? Math.round((positiveSatisfaction / totalSatisfaction) * 100) : 0;
-
-    const topZone = [...filteredData.zones].sort((a, b) => b.value - a.value)[0] || { name: 'N/A', value: 0 };
-    const totalZones = data.zones.reduce((acc, curr) => acc + curr.value, 0);
-    const topZonePercent = selectedZone === 'All' ? (totalZones > 0 ? Math.round((topZone.value / totalZones) * 100) : 0) : 100;
-
-    const topTransport = [...filteredData.transport].sort((a, b) => b.value - a.value)[0];
-    const totalTransport = filteredData.transport.reduce((acc, curr) => acc + curr.value, 0);
-    const topTransportPercent = totalTransport > 0 && topTransport ? Math.round((topTransport.value / totalTransport) * 100) : 0;
-
-    return { totalRespondents, satisfactionRate, topZone, topZonePercent, topTransport, topTransportPercent };
-  }, [filteredData, data.zones, selectedZone]);
-
+  // --- Export Logic ---
   const handleExportXLSX = useCallback(() => {
     const wb = XLSX.utils.book_new();
     const dateStr = new Date().toISOString().split('T')[0];
-
-    const addSheet = (rows: SimpleDataPoint[] | typeof filteredData.experienceChanges, name: string) => {
+    const addSheet = (rows: any[], name: string) => {
       const ws = XLSX.utils.json_to_sheet(rows);
       XLSX.utils.book_append_sheet(wb, ws, name);
     };
-
-    addSheet(filteredData.ageGroups, 'Q0_Ages');
-    addSheet(filteredData.zones, 'Q1_Zones');
-    addSheet(filteredData.transport, 'Q2_Transport');
-    addSheet(filteredData.frequency, 'Q3_Frequence');
-    addSheet(filteredData.visitReason, 'Q4_Motifs');
-    addSheet(filteredData.competitors, 'Q5_Magasins');
-    addSheet(filteredData.choiceReason, 'Q6_Raisons');
-    addSheet(filteredData.satisfaction, 'Q7_Satisfaction');
-    addSheet(filteredData.preferredDepartment, 'Q8_Rayons');
-    addSheet(filteredData.nameChangeAwareness, 'Q9_Nom');
-    addSheet(filteredData.experienceChanges, 'Q10_Experience');
-
-    XLSX.writeFile(wb, `Hyper_Analyse_${selectedZone}_${dateStr}.xlsx`);
+    Object.keys(filteredData).forEach((key, idx) => {
+        if (Array.isArray((filteredData as any)[key])) {
+            addSheet((filteredData as any)[key], `Q${idx}`);
+        }
+    });
+    XLSX.writeFile(wb, `Fabrice_Report_${selectedZone}_${dateStr}.xlsx`);
   }, [filteredData, selectedZone]);
 
-  const handleZoneSelect = useCallback((zone: string) => {
-    setSelectedZone(zone);
-    setIsFilterOpen(false);
-  }, []);
-
-  const closeFilter = useCallback(() => {
-    setIsFilterOpen(false);
-  }, []);
-
+  // --- Render ---
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gradient-to-r from-white via-white to-slate-50/80 dark:from-dark-card/95 dark:via-dark-card/90 dark:to-dark-surface/80 p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-sm relative z-20 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex p-3 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/25">
-            <TrendingUp size={22} className="text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Tableau de bord</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-sm text-slate-500 dark:text-gray-400">Analyse dynamique des réponses</p>
-              {selectedZone !== 'All' && (
-                <span className="bg-brand-100 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
-                  {selectedZone}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-          <div className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl text-sm font-medium border border-emerald-200/60 dark:border-emerald-500/20">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <Calendar size={14} />
-            <span>15 derniers jours</span>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              aria-expanded={isFilterOpen}
-              aria-haspopup="listbox"
-              aria-label="Filtrer par zone"
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                selectedZone !== 'All'
-                  ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-500/15 dark:text-brand-300 dark:border-brand-400/30 shadow-sm'
-                  : 'bg-white dark:bg-dark-card/80 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-dark-hover'
-              }`}
-            >
-              <MapPin size={15} />
-              <span>{selectedZone === 'All' ? 'Toutes zones' : selectedZone}</span>
-              <ChevronDown size={14} className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {isFilterOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={closeFilter} aria-hidden="true" />
-                <ul
-                  role="listbox"
-                  aria-label="Sélectionner une zone"
-                  className="absolute top-full right-0 mt-2 w-52 bg-white dark:bg-dark-surface rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border overflow-hidden z-20 py-1"
+    <div className="space-y-8 font-sans text-slate-900 dark:text-slate-100">
+      
+      {/* --- Filter & Action Toolbar --- */}
+      <div className="flex flex-col sm:flex-row justify-end items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-2 rounded-2xl border border-white/20 dark:border-white/5">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
+                <button 
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-semibold px-4 py-2.5 rounded-xl flex items-center justify-between gap-2 transition-all shadow-sm border border-slate-200 dark:border-slate-700"
                 >
-                  <li className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
-                    Filtrer par zone
-                  </li>
-                  <li>
-                    <button
-                      role="option"
-                      aria-selected={selectedZone === 'All'}
-                      onClick={() => handleZoneSelect('All')}
-                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-300 flex items-center justify-between transition-colors"
-                    >
-                      <span>Toutes les zones</span>
-                      {selectedZone === 'All' && <Check size={14} className="text-brand-600" />}
-                    </button>
-                  </li>
-                  {data.zones.map((zone) => (
-                    <li key={zone.name}>
-                      <button
-                        role="option"
-                        aria-selected={selectedZone === zone.name}
-                        onClick={() => handleZoneSelect(zone.name)}
-                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-300 flex items-center justify-between transition-colors"
-                      >
-                        <span>{zone.name}</span>
-                        {selectedZone === zone.name && <Check size={14} className="text-brand-600" />}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-          <button
-            onClick={handleExportXLSX}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-sm font-medium hover:from-brand-700 hover:to-brand-800 shadow-md shadow-brand-500/25 dark:shadow-brand-900/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-            aria-label="Exporter les données au format Excel"
-          >
-            <Download size={16} />
-            <span className="hidden sm:inline">Exporter</span>
-          </button>
+                    <span className="flex items-center gap-2">
+                        <Filter size={16} className="text-indigo-500" />
+                        {selectedZone === 'All' ? 'Toutes les zones' : selectedZone}
+                    </span>
+                    <ChevronDown size={14} className={`transition-transform text-slate-400 ${isFilterOpen ? 'rotate-180': ''}`} />
+                </button>
+                {isFilterOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden py-1">
+                        <button onClick={() => { setSelectedZone('All'); setIsFilterOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700">Toutes les zones</button>
+                        {data.zones.map(z => (
+                            <button key={z.name} onClick={() => { setSelectedZone(z.name); setIsFilterOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700">{z.name}</button>
+                        ))}
+                    </div>
+                )}
+            </div>
+            <button onClick={handleExportXLSX} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-500/20 transition-all">
+                <Download size={16} />
+                <span className="hidden sm:inline">Export</span>
+            </button>
         </div>
       </div>
 
+
+      {/* --- BENTO GRID LAYOUT --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <article className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl p-6 text-white shadow-lg shadow-brand-200 dark:shadow-brand-900/50 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute -right-6 -top-6 bg-white/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-white/20 transition-all" aria-hidden="true" />
-          <div className="relative z-10">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                <Users size={20} className="text-white" aria-hidden="true" />
-              </div>
-              <span className="flex items-center text-xs font-medium bg-green-400/20 text-green-100 px-2 py-1 rounded-full border border-green-400/30">
-                <TrendingUp size={12} className="mr-1" aria-hidden="true" /> Actif
-              </span>
-            </div>
-            <p className="text-brand-100 text-xs font-medium uppercase tracking-wider mb-1">
-              {selectedZone === 'All' ? 'Répondants totaux' : `Répondants – ${selectedZone}`}
-            </p>
-            <p className="text-4xl font-bold tracking-tight">{stats.totalRespondents}</p>
-          </div>
-        </article>
 
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-green-50 to-transparent dark:from-green-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-green-50 dark:bg-green-500/20 rounded-xl">
-              <Smile size={20} className="text-green-600 dark:text-green-300" aria-hidden="true" />
-            </div>
-            <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-500/20 px-2 py-1 rounded-full">
-              <ArrowUpRight size={12} className="mr-1" aria-hidden="true" /> Haut
-            </span>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.satisfactionRate}%</p>
-          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden" role="progressbar" aria-valuenow={stats.satisfactionRate} aria-valuemin={0} aria-valuemax={100}>
-            <div className="bg-green-500 dark:bg-green-300 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.satisfactionRate}%` }} />
-          </div>
-        </article>
-
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-purple-50 dark:bg-purple-500/20 rounded-xl">
-              <MapPin size={20} className="text-purple-600 dark:text-purple-300" aria-hidden="true" />
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-slate-800 dark:text-white block leading-none">{stats.topZonePercent}%</span>
-              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des répondants</span>
-            </div>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Zone la plus représentée (Q1)</p>
-          <p className="text-xl font-bold text-slate-800 dark:text-white truncate" title={stats.topZone.name}>
-            {stats.topZone.name}
-          </p>
-        </article>
-
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent dark:from-orange-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-orange-50 dark:bg-orange-500/20 rounded-xl">
-              <Car size={20} className="text-orange-600 dark:text-orange-300" aria-hidden="true" />
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-orange-600 dark:text-orange-400 block leading-none">{stats.topTransportPercent}%</span>
-              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des visiteurs</span>
-            </div>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Mode d'accès dominant (Q2)</p>
-          <p className="text-xl font-bold text-slate-800 dark:text-white truncate">{stats.topTransport?.name || 'N/A'}</p>
-          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden">
-            <div className="bg-orange-500 dark:bg-orange-400 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.topTransportPercent}%` }} />
-          </div>
-        </article>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <ChartCard title={QUESTION_META.q5.title} subtitle={QUESTION_META.q5.subtitle} className="lg:col-span-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={filteredData.competitors} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <defs>
-                <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0.3} />
-                </linearGradient>
-                <linearGradient id="colorBarHighlight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0ea5e9" stopOpacity={1} />
-                  <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.6} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
-                {filteredData.competitors.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.name === 'Bawadi Mall' ? 'url(#colorBarHighlight)' : '#cbd5e1'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle}>
+        {/* Q0: Ages - Radar Chart */}
+        <BentoItem title="Q0 • Démographie" subtitle="Répartition des âges" icon={Users} accentColor="text-pink-500" className="col-span-1">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={filteredData.ageGroups}>
-              <PolarGrid stroke="#e2e8f0" />
-              <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
+              <PolarGrid strokeOpacity={0.2} />
+              <PolarAngleAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} />
               <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
-              <Radar name="Répondants" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fill="#8b5cf6" fillOpacity={0.4} />
+              <Radar name="Ages" dataKey="value" stroke="#ec4899" strokeWidth={3} fill="#ec4899" fillOpacity={0.5} />
               <Tooltip content={<CustomTooltip />} />
             </RadarChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </BentoItem>
 
-        <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle}>
-          <FrequencyTrendChart data={filteredData.frequency} />
-        </ChartCard>
 
-        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={filteredData.satisfaction} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
-                {filteredData.satisfaction.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={SATISFACTION_COLORS[index]} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
-                {stats.satisfactionRate}%
-              </text>
-              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
-                Positif
-              </text>
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title={QUESTION_META.q2.title} subtitle={QUESTION_META.q2.subtitle}>
-          {(() => {
-            const transportTotal = filteredData.transport.reduce((sum, t) => sum + t.value, 0) || 1;
-            const transportConfig: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
-              'Vehicule Personnel': { icon: Car, color: '#3b82f6', gradient: 'from-blue-500 to-blue-600' },
-              'Taxi/Bus': { icon: Bus, color: '#8b5cf6', gradient: 'from-violet-500 to-purple-600' },
-              'A Pied': { icon: Footprints, color: '#10b981', gradient: 'from-emerald-500 to-teal-600' },
-              'Autre': { icon: CircleDot, color: '#6b7280', gradient: 'from-gray-500 to-gray-600' },
-            };
-            const sortedTransport = [...filteredData.transport].sort((a, b) => b.value - a.value);
-            const topTransport = sortedTransport[0];
-            return (
-              <div className="h-full flex flex-col gap-4">
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-violet-500/10 dark:from-blue-500/5 dark:to-violet-500/5 border border-blue-200/50 dark:border-blue-500/20">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${transportConfig[topTransport?.name]?.gradient || 'from-blue-500 to-blue-600'} shadow-lg`}>
-                    {(() => { const IconComp = transportConfig[topTransport?.name]?.icon || Car; return <IconComp className="w-6 h-6 text-white" />; })()}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wide">Mode dominant</p>
-                    <p className="text-lg font-bold text-slate-800 dark:text-white">{topTransport?.name || 'N/A'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{Math.round((topTransport?.value / transportTotal) * 100)}%</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">{topTransport?.value} visiteurs</p>
-                  </div>
-                </div>
-                <div className="flex-1 space-y-3 overflow-auto">
-                  {sortedTransport.map((transport, index) => {
-                    const config = transportConfig[transport.name] || { icon: CircleDot, color: '#6b7280', gradient: 'from-gray-500 to-gray-600' };
-                    const IconComp = config.icon;
-                    const percent = (transport.value / transportTotal) * 100;
-                    const isTop = index === 0;
-                    return (
-                      <div key={transport.name} className={`group relative p-4 rounded-xl border transition-all duration-300 hover:shadow-md ${isTop ? 'bg-gradient-to-r from-slate-50 to-blue-50/50 dark:from-dark-card/80 dark:to-blue-500/5 border-blue-200/60 dark:border-blue-500/30' : 'bg-white/60 dark:bg-dark-card/50 border-slate-200/60 dark:border-dark-border hover:border-slate-300 dark:hover:border-dark-hover'}`}>
-                        <div className="flex items-center gap-4">
-                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${config.gradient} shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                            <IconComp className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-semibold text-slate-700 dark:text-gray-200 truncate">{transport.name}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold" style={{ color: config.color }}>{percent.toFixed(1)}%</span>
-                                <span className="text-xs text-slate-400 dark:text-gray-500">({transport.value})</span>
-                              </div>
-                            </div>
-                            <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
-                              <div className={`h-full rounded-full bg-gradient-to-r ${config.gradient} transition-all duration-700 ease-out`} style={{ width: `${percent}%` }} />
-                            </div>
-                          </div>
+        {/* Q1: Zone - Horizontal list styled as bars */}
+        <BentoItem title="Q1 • Zones" subtitle="Provenance des visiteurs" icon={MapPin} accentColor="text-emerald-500" className="col-span-1">
+           <div className="h-full overflow-y-auto pr-2 custom-scrollbar space-y-3">
+              {[...filteredData.zones].sort((a,b) => b.value - a.value).map((zone, idx) => {
+                 const total = filteredData.zones.reduce((s, z) => s + z.value, 0) || 1;
+                 const pct = Math.round((zone.value / total) * 100);
+                 return (
+                    <div key={zone.name} className="relative group">
+                        <div className="flex justify-between text-xs font-bold mb-1 opacity-80 z-10 relative">
+                            <span>{zone.name}</span>
+                            <span>{pct}%</span>
                         </div>
-                        {isTop && <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded-full shadow-md">TOP</div>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-        </ChartCard>
+                        <div className="pl-0 h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+                             <div 
+                                className="absolute left-0 top-0 h-full bg-emerald-500 rounded-full transition-all duration-1000 group-hover:bg-emerald-400" 
+                                style={{ width: `${pct}%` }} 
+                             />
+                        </div>
+                    </div>
+                 )
+              })}
+           </div>
+        </BentoItem>
 
-        <ChartCard title={QUESTION_META.q8.title} subtitle={QUESTION_META.q8.subtitle} className="lg:col-span-3">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorDept" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="value" stroke="#ec4899" strokeWidth={3} fill="url(#colorDept)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
+
+        {/* Q2: Transport - Styled Icons */}
+        <BentoItem title="Q2 • Transport" subtitle="Moyens d'accès" icon={Car} accentColor="text-blue-500" className="col-span-1">
+            <div className="grid grid-cols-2 gap-3 h-full content-center">
+                {filteredData.transport.map((t, i) => {
+                    const iconMap: any = { 'Vehicule Personnel': Car, 'Taxi/Bus': Bus, 'A Pied': Footprints };
+                    const Icon = iconMap[t.name] || CircleDot;
+                    const isTop = i === selectedZone.length % filteredData.transport.length; // Just a visual variance
+                    return (
+                        <div key={t.name} className={`p-3 rounded-2xl flex flex-col items-center justify-center gap-1 text-center transition-all ${t.value > 100 ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
+                            <Icon size={20} className="mb-1" />
+                            <span className="text-[10px] uppercase font-bold tracking-wide opacity-80">{t.name}</span>
+                            <span className="text-xl font-bold">{t.value}</span>
+                        </div>
+                    )
+                })}
+            </div>
+        </BentoItem>
+
+
+        {/* Q3: Frequency - Radial Bar Improved */}
+        <BentoItem 
+            title="Q3 • Fréquence" 
+            subtitle="Habitudes de visite" 
+            icon={Calendar} 
+            accentColor="text-amber-500" 
+            className="col-span-1 row-span-2 md:row-span-1"
+        >
+             <div className="flex flex-col h-full justify-between">
+                {/* Chart Section */}
+                <div className="flex-1 min-h-[160px] relative -mt-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart 
+                            innerRadius="30%" 
+                            outerRadius="100%" 
+                            barSize={18} 
+                            data={filteredData.frequency} 
+                            startAngle={180} 
+                            endAngle={-180}
+                        >
+                            <PolarAngleAxis type="number" domain={[0, 'auto']} tick={false} />
+                            <RadialBar 
+                                background={{ fill: '#f1f5f9', className: 'dark:fill-white/5' }}
+                                dataKey="value" 
+                                cornerRadius={30} // Rendre les bouts bien ronds et luxueux
+                            >
+                                {filteredData.frequency.map((entry, index) => (
+                                    <Cell 
+                                        key={`cell-${index}`} 
+                                        fill={[
+                                            '#f59e0b', // Amber (Très rarement)
+                                            '#6366f1', // Indigo (1-3 fois)
+                                            '#ec4899', // Pink (1 semaine)
+                                            '#10b981'  // Emerald (Plusieurs fois)
+                                        ][index % 4]} 
+                                    />
+                                ))}
+                            </RadialBar>
+                            <Tooltip content={<CustomTooltip />} />
+                        </RadialBarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Stats Grid Section - Maximum Visibility */}
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                    {filteredData.frequency.map((entry, index) => {
+                        const total = filteredData.frequency.reduce((acc, curr) => acc + curr.value, 0) || 1;
+                        const percent = Math.round((entry.value / total) * 100);
+                        const colors = ['bg-amber-500', 'bg-indigo-500', 'bg-pink-500', 'bg-emerald-500'];
+                        const textColors = ['text-amber-600 dark:text-amber-400', 'text-indigo-600 dark:text-indigo-400', 'text-pink-600 dark:text-pink-400', 'text-emerald-500 dark:text-emerald-400'];
+                        
+                        return (
+                            <div key={index} className="flex flex-col p-2.5 rounded-xl bg-slate-50/50 dark:bg-white/5 border border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-100 dark:hover:bg-white/10">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className={`w-2 h-2 rounded-full ${colors[index % 4]} shadow-[0_0_8px_rgba(0,0,0,0.3)]`} />
+                                    <span className="text-[10px] font-bold uppercase truncate text-slate-500 dark:text-slate-400 leading-tight tracking-wider">
+                                        {entry.name}
+                                    </span>
+                                </div>
+                                <div className="flex items-baseline justify-between mt-1">
+                                    <span className={`text-2xl font-black ${textColors[index % 4]} tracking-tight`}>
+                                        {percent}<span className="text-sm align-top ml-0.5 opacity-60">%</span>
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 rounded-md">
+                                        {entry.value}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+             </div>
+        </BentoItem>
+
+
+        {/* Q4: Motifs (Visit Reason) - Treemap/Bar Hybrid - Spanning 2 cols */}
+        <BentoItem title="Q4 • Motifs" subtitle="Pourquoi viennent-ils ?" icon={ShoppingBag} accentColor="text-violet-500" className="col-span-1 md:col-span-2">
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={filteredData.visitReason} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} strokeOpacity={0.1} />
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" width={100} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={20}>
+                        {filteredData.visitReason.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS.secondary} fillOpacity={0.8 + (index * 0.05)} /> // Gradient effect
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        </BentoItem>
+
+
+        {/* Q5: Competitors - Vertical Bar - Spanning 2 cols */}
+        <BentoItem title="Q5 • Concurrence" subtitle="Parts de marché" icon={Briefcase} accentColor="text-indigo-600" className="col-span-1 md:col-span-2">
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={filteredData.competitors} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
+                    <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} dy={10} interval={0} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                         {filteredData.competitors.map((entry, index) => (
+                             <Cell key={`cell-${index}`} fill={entry.name.includes("Bawadi") ? COLORS.primary : '#cbd5e1'} />
+                         ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
+        </BentoItem>
+
+
+        {/* Q6: Choix - Bubble Cloud Style */}
+        <BentoItem title="Q6 • Critères" subtitle="Facteurs de choix" icon={Tag} accentColor="text-cyan-500" className="col-span-1">
+             <div className="flex flex-wrap gap-2 content-start h-full overflow-hidden p-2">
+                {[...filteredData.choiceReason].sort((a,b) => b.value - a.value).map((reason, i) => {
+                    const sizes = ['text-lg px-4 py-2', 'text-sm px-3 py-1.5', 'text-xs px-2 py-1', 'text-xs px-2 py-1', 'text-[10px] px-2 py-0.5'];
+                    const styles = [
+                        'bg-cyan-500 text-white shadow-cyan-500/40',
+                        'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300',
+                        'border border-cyan-200 text-cyan-600 dark:border-cyan-800 dark:text-cyan-400',
+                        'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+                        'bg-slate-50 text-slate-400 dark:bg-slate-900 dark:text-slate-500'
+                    ];
+                    return (
+                        <div key={reason.name} className={`rounded-xl font-bold shadow-sm flex items-center gap-2 ${sizes[Math.min(i, 4)]} ${styles[Math.min(i, 4)]} hover:scale-105 transition-transform`}>
+                            {reason.name}
+                            <span className="opacity-60 font-mono text-[0.8em]">{reason.value}</span>
+                        </div>
+                    );
+                })}
+             </div>
+        </BentoItem>
+
+
+        {/* Q7: Satisfaction - Gauge */}
+        <BentoItem title="Q7 • Satisfaction" subtitle="Indice de bonheur" icon={Smile} accentColor="text-green-500" className="col-span-1">
+            <ResponsiveContainer width="100%" height="100%">
+               <PieChart>
+                 <Pie
+                    data={filteredData.satisfaction}
+                    cx="50%" cy="70%"
+                    startAngle={180}
+                    endAngle={0}
+                    innerRadius="60%"
+                    outerRadius="100%"
+                    paddingAngle={5}
+                    dataKey="value"
+                 >
+                    {filteredData.satisfaction.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={['#ef4444', '#f97316', '#84cc16', '#22c55e'][index]} />
+                    ))}
+                 </Pie>
+                 <Tooltip content={<CustomTooltip />} />
+                 <text x="50%" y="65%" textAnchor="middle" className="text-3xl font-black fill-slate-800 dark:fill-white">
+                     {(() => {
+                        const total = filteredData.satisfaction.reduce((a,c) => a+c.value, 0) || 1;
+                        const pos = filteredData.satisfaction.filter(s => s.name.includes('atisfait') && !s.name.includes('Pas')).reduce((a,c) => a+c.value, 0);
+                        return Math.round(pos/total * 100) + '%';
+                     })()}
+                 </text>
+                 <text x="50%" y="80%" textAnchor="middle" className="text-[10px] uppercase font-bold fill-slate-400">Taux positif</text>
+               </PieChart>
+            </ResponsiveContainer>
+        </BentoItem>
+
+
+        {/* Q8: Rayons - Area Chart - Large */}
+        <BentoItem title="Q8 • Attractivité" subtitle="Rayons les plus visités" icon={ShoppingCart} accentColor="text-rose-500" className="col-span-1 md:col-span-2">
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorRayon" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
+                    <Tooltip content={<CustomTooltip />} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
+                    <XAxis dataKey="name" tick={{fontSize: 10, fill: '#94a3b8'}} interval={1} />
+                    <Area type="monotone" dataKey="value" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorRayon)" />
+                </AreaChart>
+            </ResponsiveContainer>
+        </BentoItem>
+
+
+        {/* Q9: Nom - Donut Chart - Simple */}
+        <BentoItem title="Q9 • Notoriété" subtitle="Changement de nom" icon={Megaphone} accentColor="text-orange-500" className="col-span-1">
+             <div className="flex flex-row items-center h-full">
+                <div className="w-1/2 h-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie data={filteredData.nameChangeAwareness} innerRadius={30} outerRadius={50} dataKey="value" stroke="none">
+                                <Cell fill="#f97316" />
+                                <Cell fill="#e2e8f0" />
+                            </Pie>
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+                <div className="w-1/2 space-y-2">
+                    {filteredData.nameChangeAwareness.map(item => (
+                        <div key={item.name} className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg border-l-4" style={{ borderColor: item.name === 'Oui' ? '#f97316' : '#94a3b8' }}>
+                             <div className="text-[10px] uppercase text-slate-400 w-full">{item.name}</div>
+                             <div className="text-lg font-bold">{item.value}</div>
+                        </div>
+                    ))}
+                </div>
+             </div>
+        </BentoItem>
+
+
+        {/* Q10: Experience - Diverging Bar Chart - Wide */}
+        <BentoItem title="Q10 • Perception" subtitle="Évolution de l'expérience" icon={Star} accentColor="text-yellow-500" className="col-span-1 md:col-span-3">
+             <div className="flex flex-col h-full justify-center gap-4">
+                 {filteredData.experienceChanges.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-4 text-xs font-bold">
+                        <div className="w-20 text-right opacity-70">{item.labelNegative}</div>
+                        <div className="flex-1 flex items-center h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+                             {/* Center Line */}
+                             <div className="absolute left-1/2 top-0 bottom-0 w-px bg-slate-300 dark:bg-slate-600 z-10" />
+                             
+                             {/* Negative Bar (Right aligned in left half) */}
+                             <div className="w-1/2 flex justify-end">
+                                 <div 
+                                    className="h-full bg-red-400/80 rounded-l-full" 
+                                    style={{ width: `${(item.negative / (item.positive + item.negative)) * 100}%`, minWidth: '4px' }}
+                                 />
+                             </div>
+
+                             {/* Positive Bar (Left aligned in right half) */}
+                             <div className="w-1/2 flex justify-start">
+                                 <div 
+                                    className="h-full bg-emerald-400/80 rounded-r-full" 
+                                    style={{ width: `${(item.positive / (item.positive + item.negative)) * 100}%`, minWidth: '4px' }}
+                                 />
+                             </div>
+                        </div>
+                        <div className="w-20 text-left opacity-70">{item.labelPositive}</div>
+                    </div>
+                 ))}
+                 <div className="flex justify-center gap-8 mt-2 text-[10px] uppercase tracking-widest text-slate-400">
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-400"></div> Négatif</div>
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400"></div> Positif</div>
+                 </div>
+             </div>
+        </BentoItem>
+
+
+      </div>    
+      
+      <footer className="text-center text-slate-400 dark:text-slate-600 text-xs mt-8">
+        Propulsé par Hyper Analyse AI • Données temps réel
+      </footer>
     </div>
   );
 };
