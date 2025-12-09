@@ -27,6 +27,7 @@ import { SATISFACTION_COLORS } from '../constants';
 import ChartCard from './ChartCard';
 import FrequencyTrendChart from './FrequencyTrendChart';
 import * as XLSX from 'xlsx';
+import { LabelList } from 'recharts';
 
 interface DashboardProps {
   data: SurveyDataset;
@@ -429,32 +430,32 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </ResponsiveContainer>
         </ChartCard>
 
-         {/* Row 4: Q7, Q9, Q10 */}
-        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
+         {/* Row 4: Q7, Q9 (Split) */}
+        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="md:col-span-1 lg:col-span-2">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={filteredData.satisfaction} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
+              <Pie data={filteredData.satisfaction} cx="50%" cy="50%" innerRadius={80} outerRadius={100} paddingAngle={2} dataKey="value" stroke="none">
                 {filteredData.satisfaction.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={SATISFACTION_COLORS[index] || '#cbd5e1'} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
+              <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-4xl font-bold fill-slate-800 dark:fill-white">
                 {stats.satisfactionRate}%
               </text>
-              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
+              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-sm fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
                 Indice Positif
               </text>
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q9.title} subtitle={QUESTION_META.q9.subtitle}>
+        <ChartCard title={QUESTION_META.q9.title} subtitle={QUESTION_META.q9.subtitle} className="md:col-span-1 lg:col-span-1">
            <div className="flex flex-col items-center justify-center h-full">
-             <ResponsiveContainer width="100%" height={200}>
+             <ResponsiveContainer width="100%" height="100%" minHeight={180}>
                 <PieChart>
-                   <Pie data={filteredData.nameChangeAwareness} cx="50%" cy="50%" outerRadius={80} dataKey="value">
+                   <Pie data={filteredData.nameChangeAwareness} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value">
                       {filteredData.nameChangeAwareness.map((entry, index) => (
                          <Cell key={`cell-${index}`} fill={entry.name.toLowerCase().includes('oui') ? '#10b981' : '#f43f5e'} />
                       ))}
@@ -463,41 +464,17 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                    <Legend verticalAlign="bottom" />
                 </PieChart>
              </ResponsiveContainer>
-             <div className="mt-4 text-center">
-                 <p className="text-sm text-slate-500">Notoriété globale</p>
-                 <div className="flex justify-center gap-4 mt-2">
+             <div className="mt-2 text-center">
+                 <div className="flex justify-center gap-6 mt-1">
                      {filteredData.nameChangeAwareness.map((item) => (
-                         <div key={item.name} className="flex flex-col">
-                             <span className="text-lg font-bold text-slate-800 dark:text-white">{item.value}</span>
-                             <span className="text-xs text-slate-400 uppercase">{item.name}</span>
+                         <div key={item.name} className="flex flex-col items-center p-2 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 min-w-[80px]">
+                             <span className="text-xl font-bold text-slate-800 dark:text-white">{item.value}</span>
+                             <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{item.name}</span>
                          </div>
                      ))}
                  </div>
              </div>
            </div>
-        </ChartCard>
-
-        <ChartCard title={QUESTION_META.q10.title} subtitle={QUESTION_META.q10.subtitle}>
-            <ResponsiveContainer width="100%" height="100%">
-               <BarChart data={filteredData.experienceChanges} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="category" type="category" width={80} tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <Tooltip content={({ active, payload, label }) => {
-                      if (!active || !payload?.length) return null;
-                      return (
-                          <div className="bg-white p-3 shadow-lg rounded-lg border text-xs">
-                             <p className="font-bold mb-1">{label}</p>
-                             <p className="text-green-600">Amélioration: {payload[0].value}</p>
-                             <p className="text-red-500">Dégradation: {payload[1].value}</p>
-                          </div>
-                      );
-                  }} />
-                  <Legend wrapperStyle={{ fontSize: '10px' }} />
-                  <Bar dataKey="positive" name="Mieux" stackId="a" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} />
-                  <Bar dataKey="negative" name="Moins bien" stackId="a" fill="#f43f5e" radius={[4, 0, 0, 4]} barSize={20} />
-               </BarChart>
-            </ResponsiveContainer>
         </ChartCard>
 
         {/* Row 5: Q8 (Major Full Width) */}
@@ -511,12 +488,84 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="value" stroke="#ec4899" strokeWidth={3} fill="url(#colorDept)" />
             </AreaChart>
           </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Row 6: Q10 (Major Full Width - Incredible Detail) */}
+        <ChartCard title={QUESTION_META.q10.title} subtitle={QUESTION_META.q10.subtitle} className="md:col-span-2 lg:col-span-3 min-h-[500px]">
+            <div className="h-full flex flex-col">
+                <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                     {[
+                         { label: 'Indicateur le plus positif', data: [...filteredData.experienceChanges].sort((a,b) => b.positive - a.positive)[0], color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                         { label: 'Indicateur le plus négatif', data: [...filteredData.experienceChanges].sort((a,b) => b.negative - a.negative)[0], color: 'text-rose-600', bg: 'bg-rose-50' },
+                         { label: 'Plus grand volume de retours', data: [...filteredData.experienceChanges].sort((a,b) => (b.positive+b.negative) - (a.positive+a.negative))[0], color: 'text-blue-600', bg: 'bg-blue-50' }
+                     ].map((insight, idx) => (
+                         <div key={idx} className={`p-4 rounded-xl ${insight.bg} dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center gap-4`}>
+                             <div className={`p-2 rounded-full bg-white dark:bg-white/10 shadow-sm`}>
+                                 <Activity className={`w-5 h-5 ${insight.color}`} />
+                             </div>
+                             <div>
+                                 <p className="text-xs text-slate-500 dark:text-gray-400 font-medium uppercase mb-0.5">{insight.label}</p>
+                                 <p className="font-bold text-slate-800 dark:text-white capitalize">{insight.data?.category || 'N/A'}</p>
+                             </div>
+                         </div>
+                     ))}
+                </div>
+                <ResponsiveContainer width="100%" height="100%">
+                   <BarChart data={filteredData.experienceChanges} layout="vertical" margin={{ top: 0, right: 30, left: 100, bottom: 0 }} barGap={2}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={true} stroke="#f1f5f9" />
+                      <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
+                      <YAxis dataKey="category" type="category" width={90} tick={{ fill: '#475569', fontSize: 13, fontWeight: 600 }} tickLine={false} axisLine={false} />
+                      <Tooltip 
+                        cursor={{fill: '#f8fafc'}}
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload?.length) return null;
+                          const pos = payload.find(p => p.name === 'Mieux')?.value || 0;
+                          const neg = payload.find(p => p.name === 'Moins bien')?.value || 0;
+                          return (
+                              <div className="bg-white/95 dark:bg-dark-surface/90 backdrop-blur shadow-xl rounded-xl p-4 border border-slate-100 dark:border-dark-border">
+                                 <h4 className="font-bold text-lg mb-3 flex items-center gap-2">
+                                     {label}
+                                     <span className="text-xs font-normal text-slate-400 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-dark-muted">Total: {pos + neg}</span>
+                                 </h4>
+                                 <div className="space-y-3 min-w-[200px]">
+                                     <div className="space-y-1">
+                                         <div className="flex justify-between text-sm">
+                                             <span className="text-emerald-600 font-medium">Amélioration</span>
+                                             <span className="font-bold">{pos}</span>
+                                         </div>
+                                         <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
+                                             <div className="h-full bg-emerald-500" style={{ width: `${(pos/(pos+neg))*100}%` }} />
+                                         </div>
+                                     </div>
+                                     <div className="space-y-1">
+                                          <div className="flex justify-between text-sm">
+                                             <span className="text-rose-600 font-medium">Dégradation</span>
+                                             <span className="font-bold">{neg}</span>
+                                         </div>
+                                         <div className="h-2 bg-rose-100 rounded-full overflow-hidden">
+                                             <div className="h-full bg-rose-500" style={{ width: `${(neg/(pos+neg))*100}%` }} />
+                                         </div>
+                                     </div>
+                                 </div>
+                              </div>
+                          );
+                      }} />
+                      <Legend verticalAlign="top" height={40} iconType="circle" />
+                      <Bar dataKey="positive" name="Mieux" stackId="a" fill="#10b981" radius={[0, 4, 4, 0]} barSize={24}>
+                        <LabelList dataKey="positive" position="right" fill="#10b981" fontSize={12} formatter={(val: number) => val > 0 ? val : ''} />
+                      </Bar>
+                      <Bar dataKey="negative" name="Moins bien" stackId="b" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={24}>
+                        <LabelList dataKey="negative" position="right" fill="#f43f5e" fontSize={12} formatter={(val: number) => val > 0 ? val : ''} />
+                      </Bar>
+                   </BarChart>
+                </ResponsiveContainer>
+            </div>
         </ChartCard>
 
       </div>
