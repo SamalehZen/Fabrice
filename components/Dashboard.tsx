@@ -19,9 +19,9 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from 'recharts';
-import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
+import { Users, MapPin, Smile, Car, Download, Calendar, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
-import { SATISFACTION_COLORS } from '../constants';
+import { SATISFACTION_COLORS, COLORS } from '../constants';
 import ChartCard from './ChartCard';
 import FrequencyTrendChart from './FrequencyTrendChart';
 import * as XLSX from 'xlsx';
@@ -38,12 +38,35 @@ interface TooltipProps {
 
 const QUESTION_META = {
   q0: { title: 'Q0 • Répartition des âges', subtitle: "Tranches d'âge des répondants" },
+  q1: { title: 'Q1 • Zone de résidence', subtitle: 'Origine géographique des visiteurs' },
   q2: { title: 'Q2 • Moyen de transport', subtitle: 'Comment les visiteurs se rendent au mall' },
   q3: { title: 'Q3 • Fréquence de visite', subtitle: "Rythme des achats à l'hypermarché" },
+  q4: { title: 'Q4 • Motivation principale', subtitle: 'Pourquoi ils choisissent le mall aujourd’hui' },
   q5: { title: 'Q5 • Magasin alimentaire le plus fréquenté', subtitle: 'Part de visite par enseigne' },
+  q6: { title: 'Q6 • Raison du choix', subtitle: "Critères d'arbitrage des visiteurs" },
   q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
   q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' },
+  q9: { title: 'Q9 • Changement de nom remarqué', subtitle: 'Sensibilité à la nouvelle identité' },
 } as const;
+
+const TRANSPORT_CONFIG: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
+  'Vehicule Personnel': { icon: Car, color: '#0ea5e9', gradient: 'from-blue-500 to-blue-600' },
+  'Taxi/Bus': { icon: Bus, color: '#8b5cf6', gradient: 'from-violet-500 to-purple-600' },
+  'A Pied': { icon: Footprints, color: '#10b981', gradient: 'from-emerald-500 to-teal-500' },
+  Autre: { icon: CircleDot, color: '#6b7280', gradient: 'from-slate-500 to-slate-600' },
+  default: { icon: Car, color: '#0ea5e9', gradient: 'from-blue-500 to-blue-600' },
+};
+
+const CHOICE_REASON_STYLES = [
+  { gradient: 'from-emerald-400 to-emerald-600', text: '#059669' },
+  { gradient: 'from-sky-400 to-blue-600', text: '#0284c7' },
+  { gradient: 'from-amber-400 to-orange-500', text: '#d97706' },
+  { gradient: 'from-rose-400 to-pink-500', text: '#e11d48' },
+  { gradient: 'from-purple-400 to-indigo-500', text: '#7c3aed' },
+  { gradient: 'from-slate-400 to-slate-500', text: '#475569' },
+];
+
+const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
 
 const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -125,6 +148,88 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
     return { totalRespondents, satisfactionRate, topZone, topZonePercent, topTransport, topTransportPercent };
   }, [filteredData, data.zones, selectedZone]);
+
+  const zoneInsights = useMemo(() => {
+    const sorted = [...filteredData.zones].sort((a, b) => b.value - a.value);
+    const total = sorted.reduce((sum, zone) => sum + zone.value, 0);
+    const leader = sorted[0];
+    const runnerUp = sorted[1];
+    const leaderShare = total ? Math.round(((leader?.value ?? 0) / total) * 100) : 0;
+    const gap = runnerUp && leader ? leader.value - runnerUp.value : leader?.value ?? 0;
+    return { sorted, total, leader, runnerUp, leaderShare, gap };
+  }, [filteredData.zones]);
+
+  const ageInsights = useMemo(() => {
+    const sorted = [...filteredData.ageGroups].sort((a, b) => b.value - a.value);
+    const leader = sorted[0];
+    const total = sorted.reduce((sum, group) => sum + group.value, 0);
+    const leaderShare = total ? Math.round(((leader?.value ?? 0) / total) * 100) : 0;
+    return { leader, leaderShare };
+  }, [filteredData.ageGroups]);
+
+  const frequencyInsights = useMemo(() => {
+    const sorted = [...filteredData.frequency].sort((a, b) => b.value - a.value);
+    const leader = sorted[0];
+    const tail = sorted[sorted.length - 1];
+    const total = sorted.reduce((sum, item) => sum + item.value, 0);
+    const leaderShare = total ? Math.round(((leader?.value ?? 0) / total) * 100) : 0;
+    const tailShare = total ? Math.round(((tail?.value ?? 0) / total) * 100) : 0;
+    return { leader, tail, leaderShare, tailShare };
+  }, [filteredData.frequency]);
+
+  const transportInsights = useMemo(() => {
+    const sorted = [...filteredData.transport].sort((a, b) => b.value - a.value);
+    const total = sorted.reduce((sum, entry) => sum + entry.value, 0);
+    const top = sorted[0];
+    const topShare = total ? Math.round(((top?.value ?? 0) / total) * 100) : 0;
+    return { sorted, total, top, topShare };
+  }, [filteredData.transport]);
+
+  const visitReasonInsights = useMemo(() => {
+    const sorted = [...filteredData.visitReason].sort((a, b) => b.value - a.value);
+    const total = sorted.reduce((sum, item) => sum + item.value, 0);
+    const leader = sorted[0];
+    const leaderShare = total ? Math.round(((leader?.value ?? 0) / total) * 100) : 0;
+    const top3Share = total ? Math.round((sorted.slice(0, 3).reduce((sum, item) => sum + item.value, 0) / total) * 100) : 0;
+    return { sorted, total, leader, leaderShare, top3Share };
+  }, [filteredData.visitReason]);
+
+  const choiceReasonInsights = useMemo(() => {
+    const sorted = [...filteredData.choiceReason].sort((a, b) => b.value - a.value);
+    const total = sorted.reduce((sum, item) => sum + item.value, 0);
+    const leader = sorted[0];
+    const leaderShare = total ? Math.round(((leader?.value ?? 0) / total) * 100) : 0;
+    return { sorted, total, leader, leaderShare };
+  }, [filteredData.choiceReason]);
+
+  const competitorInsights = useMemo(() => {
+    const sorted = [...filteredData.competitors].sort((a, b) => b.value - a.value);
+    const total = sorted.reduce((sum, item) => sum + item.value, 0);
+    const leader = sorted[0];
+    const runnerUp = sorted[1];
+    const leaderShare = total ? Math.round(((leader?.value ?? 0) / total) * 100) : 0;
+    const runnerUpShare = total && runnerUp ? Math.round((runnerUp.value / total) * 100) : 0;
+    const gap = runnerUp && leader ? leader.value - runnerUp.value : leader?.value ?? 0;
+    return { sorted, total, leader, runnerUp, leaderShare, runnerUpShare, gap };
+  }, [filteredData.competitors]);
+
+  const departmentInsights = useMemo(() => {
+    const sorted = [...filteredData.preferredDepartment].sort((a, b) => b.value - a.value);
+    const total = sorted.reduce((sum, item) => sum + item.value, 0);
+    const topThree = sorted.slice(0, 3).map((item) => ({
+      ...item,
+      percent: total ? Math.round((item.value / total) * 100) : 0,
+    }));
+    return { sorted, total, topThree };
+  }, [filteredData.preferredDepartment]);
+
+  const nameChangeInsights = useMemo(() => {
+    const total = filteredData.nameChangeAwareness.reduce((sum, slice) => sum + slice.value, 0);
+    const aware = filteredData.nameChangeAwareness.find((slice) => slice.name.toLowerCase().includes('oui')) ?? filteredData.nameChangeAwareness[0];
+    const awarePercent = total ? Math.round(((aware?.value ?? 0) / total) * 100) : 0;
+    const unawarePercent = total ? 100 - awarePercent : 0;
+    return { total, awarePercent, unawarePercent };
+  }, [filteredData.nameChangeAwareness]);
 
   const handleExportXLSX = useCallback(() => {
     const wb = XLSX.utils.book_new();
@@ -256,10 +361,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-4">
               <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                <Users size={20} className="text-white" aria-hidden="true" />
+                <Users size={20} className="text-white" />
               </div>
               <span className="flex items-center text-xs font-medium bg-green-400/20 text-green-100 px-2 py-1 rounded-full border border-green-400/30">
-                <TrendingUp size={12} className="mr-1" aria-hidden="true" /> Actif
+                <TrendingUp size={12} className="mr-1" /> Actif
               </span>
             </div>
             <p className="text-brand-100 text-xs font-medium uppercase tracking-wider mb-1">
@@ -273,10 +378,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-green-50 to-transparent dark:from-green-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-green-50 dark:bg-green-500/20 rounded-xl">
-              <Smile size={20} className="text-green-600 dark:text-green-300" aria-hidden="true" />
+              <Smile size={20} className="text-green-600 dark:text-green-300" />
             </div>
             <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-500/20 px-2 py-1 rounded-full">
-              <ArrowUpRight size={12} className="mr-1" aria-hidden="true" /> Haut
+              <ArrowUpRight size={12} className="mr-1" /> Haut
             </span>
           </div>
           <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
@@ -290,7 +395,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-purple-50 dark:bg-purple-500/20 rounded-xl">
-              <MapPin size={20} className="text-purple-600 dark:text-purple-300" aria-hidden="true" />
+              <MapPin size={20} className="text-purple-600 dark:text-purple-300" />
             </div>
             <div className="text-right">
               <span className="text-2xl font-bold text-slate-800 dark:text-white block leading-none">{stats.topZonePercent}%</span>
@@ -307,7 +412,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent dark:from-orange-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-orange-50 dark:bg-orange-500/20 rounded-xl">
-              <Car size={20} className="text-orange-600 dark:text-orange-300" aria-hidden="true" />
+              <Car size={20} className="text-orange-600 dark:text-orange-300" />
             </div>
             <div className="text-right">
               <span className="text-2xl font-bold text-orange-600 dark:text-orange-400 block leading-none">{stats.topTransportPercent}%</span>
@@ -322,146 +427,417 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </article>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <ChartCard title={QUESTION_META.q5.title} subtitle={QUESTION_META.q5.subtitle} className="lg:col-span-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={filteredData.competitors} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <defs>
-                <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0.3} />
-                </linearGradient>
-                <linearGradient id="colorBarHighlight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0ea5e9" stopOpacity={1} />
-                  <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.6} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
-                {filteredData.competitors.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.name === 'Bawadi Mall' ? 'url(#colorBarHighlight)' : '#cbd5e1'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-12 gap-6 auto-rows-[minmax(320px,auto)]">
+        <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle} className="lg:col-span-3 xl:col-span-4">
+          <div className="flex flex-col h-full gap-4">
+            <div className="rounded-2xl border border-purple-100 dark:border-purple-500/30 bg-gradient-to-br from-purple-50 to-white dark:from-purple-500/10 dark:to-transparent p-4">
+              <p className="text-xs font-semibold text-purple-500 dark:text-purple-200 uppercase tracking-wide">Segment dominant</p>
+              <p className="text-lg font-bold text-slate-800 dark:text-white mt-1">{ageInsights.leader?.name || 'N/A'}</p>
+              <div className="flex items-end justify-between mt-4">
+                <span className="text-3xl font-black text-purple-600 dark:text-purple-300">{ageInsights.leaderShare}%</span>
+                <span className="text-xs text-slate-500 dark:text-gray-400">{ageInsights.leader?.value ?? 0} répondants</span>
+              </div>
+            </div>
+            <div className="flex-1 min-h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={filteredData.ageGroups}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
+                  <Radar name="Répondants" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fill="#8b5cf6" fillOpacity={0.4} />
+                  <Tooltip content={<CustomTooltip />} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={filteredData.ageGroups}>
-              <PolarGrid stroke="#e2e8f0" />
-              <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
-              <Radar name="Répondants" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fill="#8b5cf6" fillOpacity={0.4} />
-              <Tooltip content={<CustomTooltip />} />
-            </RadarChart>
-          </ResponsiveContainer>
+        <ChartCard title={QUESTION_META.q1.title} subtitle={QUESTION_META.q1.subtitle} className="lg:col-span-3 xl:col-span-4">
+          <div className="flex flex-col h-full gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-blue-100 dark:border-blue-500/30 bg-gradient-to-br from-blue-50 to-white dark:from-blue-500/10 dark:to-transparent p-4">
+                <p className="text-xs font-semibold text-blue-500 dark:text-blue-200 uppercase tracking-wide">Zone leader</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{zoneInsights.leader?.name || 'N/A'}</p>
+                <p className="text-3xl font-black text-blue-600 dark:text-blue-300 mt-3">{zoneInsights.leaderShare}%</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/70 dark:bg-dark-card/70">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Écart vs n°2</p>
+                <p className="text-2xl font-black text-slate-800 dark:text-white mt-2">{zoneInsights.gap}</p>
+                <p className="text-[11px] text-slate-500 dark:text-gray-400">répondants</p>
+              </div>
+            </div>
+            <div className="flex-1 min-h-[240px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={zoneInsights.sorted} layout="vertical" margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="q1ZoneFill" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={90} tick={{ fill: '#475569', fontSize: 12 }} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                  <Bar dataKey="value" radius={[6, 6, 6, 6]} barSize={18}>
+                    {zoneInsights.sorted.map((zone) => (
+                      <Cell key={zone.name} fill={zone.name === zoneInsights.leader?.name ? 'url(#q1ZoneFill)' : '#cbd5f5'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle}>
-          <FrequencyTrendChart data={filteredData.frequency} />
-        </ChartCard>
-
-        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={filteredData.satisfaction} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
-                {filteredData.satisfaction.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={SATISFACTION_COLORS[index]} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
-                {stats.satisfactionRate}%
-              </text>
-              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
-                Positif
-              </text>
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title={QUESTION_META.q2.title} subtitle={QUESTION_META.q2.subtitle}>
-          {(() => {
-            const transportTotal = filteredData.transport.reduce((sum, t) => sum + t.value, 0) || 1;
-            const transportConfig: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
-              'Vehicule Personnel': { icon: Car, color: '#3b82f6', gradient: 'from-blue-500 to-blue-600' },
-              'Taxi/Bus': { icon: Bus, color: '#8b5cf6', gradient: 'from-violet-500 to-purple-600' },
-              'A Pied': { icon: Footprints, color: '#10b981', gradient: 'from-emerald-500 to-teal-600' },
-              'Autre': { icon: CircleDot, color: '#6b7280', gradient: 'from-gray-500 to-gray-600' },
-            };
-            const sortedTransport = [...filteredData.transport].sort((a, b) => b.value - a.value);
-            const topTransport = sortedTransport[0];
-            return (
-              <div className="h-full flex flex-col gap-4">
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-violet-500/10 dark:from-blue-500/5 dark:to-violet-500/5 border border-blue-200/50 dark:border-blue-500/20">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${transportConfig[topTransport?.name]?.gradient || 'from-blue-500 to-blue-600'} shadow-lg`}>
-                    {(() => { const IconComp = transportConfig[topTransport?.name]?.icon || Car; return <IconComp className="w-6 h-6 text-white" />; })()}
+        <ChartCard title={QUESTION_META.q2.title} subtitle={QUESTION_META.q2.subtitle} className="lg:col-span-6 xl:col-span-4" contentHeightClass="min-h-[360px]">
+          <div className="flex flex-col h-full gap-4">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 to-violet-500/10 dark:from-blue-500/5 dark:to-violet-500/5 border border-blue-200/50 dark:border-blue-500/20">
+              {(() => {
+                const topStyle = TRANSPORT_CONFIG[transportInsights.top?.name || 'default'] || TRANSPORT_CONFIG.default;
+                const IconComp = topStyle.icon;
+                return (
+                  <div className={`p-3 rounded-2xl bg-gradient-to-br ${topStyle.gradient} shadow-lg`}>
+                    <IconComp className="w-6 h-6 text-white" />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wide">Mode dominant</p>
-                    <p className="text-lg font-bold text-slate-800 dark:text-white">{topTransport?.name || 'N/A'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{Math.round((topTransport?.value / transportTotal) * 100)}%</p>
-                    <p className="text-xs text-slate-500 dark:text-gray-400">{topTransport?.value} visiteurs</p>
-                  </div>
-                </div>
-                <div className="flex-1 space-y-3 overflow-auto">
-                  {sortedTransport.map((transport, index) => {
-                    const config = transportConfig[transport.name] || { icon: CircleDot, color: '#6b7280', gradient: 'from-gray-500 to-gray-600' };
-                    const IconComp = config.icon;
-                    const percent = (transport.value / transportTotal) * 100;
-                    const isTop = index === 0;
-                    return (
-                      <div key={transport.name} className={`group relative p-4 rounded-xl border transition-all duration-300 hover:shadow-md ${isTop ? 'bg-gradient-to-r from-slate-50 to-blue-50/50 dark:from-dark-card/80 dark:to-blue-500/5 border-blue-200/60 dark:border-blue-500/30' : 'bg-white/60 dark:bg-dark-card/50 border-slate-200/60 dark:border-dark-border hover:border-slate-300 dark:hover:border-dark-hover'}`}>
-                        <div className="flex items-center gap-4">
-                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${config.gradient} shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                            <IconComp className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-semibold text-slate-700 dark:text-gray-200 truncate">{transport.name}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold" style={{ color: config.color }}>{percent.toFixed(1)}%</span>
-                                <span className="text-xs text-slate-400 dark:text-gray-500">({transport.value})</span>
-                              </div>
-                            </div>
-                            <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
-                              <div className={`h-full rounded-full bg-gradient-to-r ${config.gradient} transition-all duration-700 ease-out`} style={{ width: `${percent}%` }} />
-                            </div>
+                );
+              })()}
+              <div className="flex-1">
+                <p className="text-xs font-medium text-slate-500 dark:text-gray-400 uppercase tracking-wide">Mode dominant</p>
+                <p className="text-lg font-bold text-slate-800 dark:text-white">{transportInsights.top?.name || 'N/A'}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{transportInsights.topShare}%</p>
+                <p className="text-xs text-slate-500 dark:text-gray-400">{transportInsights.top?.value ?? 0} visiteurs</p>
+              </div>
+            </div>
+            <div className="flex-1 space-y-3 overflow-auto pr-1">
+              {transportInsights.sorted.map((mode, index) => {
+                const config = TRANSPORT_CONFIG[mode.name] || TRANSPORT_CONFIG.default;
+                const percent = transportInsights.total ? Math.round((mode.value / transportInsights.total) * 100) : 0;
+                const isTop = transportInsights.top?.name === mode.name;
+                const IconComp = config.icon;
+                return (
+                  <div
+                    key={mode.name}
+                    className={`group relative p-4 rounded-2xl border transition-all duration-300 ${
+                      isTop
+                        ? 'bg-gradient-to-r from-blue-50 to-violet-50 dark:from-dark-card/70 dark:to-blue-500/10 border-blue-200/80 dark:border-blue-500/40 shadow-lg shadow-blue-500/10'
+                        : 'bg-white/70 dark:bg-dark-card/70 border-slate-200/70 dark:border-dark-border hover:border-slate-300 dark:hover:border-dark-hover'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`p-2.5 rounded-xl bg-gradient-to-br ${config.gradient} shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                        <IconComp className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-slate-700 dark:text-gray-200 truncate">{mode.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold" style={{ color: config.color }}>{percent}%</span>
+                            <span className="text-xs text-slate-400 dark:text-gray-500">({mode.value})</span>
                           </div>
                         </div>
-                        {isTop && <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded-full shadow-md">TOP</div>}
+                        <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full bg-gradient-to-r ${config.gradient} transition-all duration-700 ease-out`} style={{ width: `${percent}%` }} />
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
+                    </div>
+                    {isTop && <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded-full shadow-md">TOP</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q8.title} subtitle={QUESTION_META.q8.subtitle} className="lg:col-span-3">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorDept" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="value" stroke="#ec4899" strokeWidth={3} fill="url(#colorDept)" />
-            </AreaChart>
-          </ResponsiveContainer>
+        <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle} className="lg:col-span-3 xl:col-span-5">
+          <div className="flex flex-col h-full gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-amber-100 dark:border-amber-500/30 bg-gradient-to-br from-amber-50 to-white dark:from-amber-500/10 dark:to-transparent p-4">
+                <p className="text-xs font-semibold text-amber-500 dark:text-amber-200 uppercase tracking-wide">Rythme dominant</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{frequencyInsights.leader?.name || 'N/A'}</p>
+                <p className="text-3xl font-black text-amber-600 dark:text-amber-300 mt-3">{frequencyInsights.leaderShare}%</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/70 dark:bg-dark-card/70">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Levier à renforcer</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{frequencyInsights.tail?.name || 'N/A'}</p>
+                <p className="text-2xl font-black text-slate-800 dark:text-white mt-3">{frequencyInsights.tailShare}%</p>
+              </div>
+            </div>
+            <div className="flex-1">
+              <FrequencyTrendChart data={filteredData.frequency} />
+            </div>
+          </div>
+        </ChartCard>
+
+        <ChartCard title={QUESTION_META.q4.title} subtitle={QUESTION_META.q4.subtitle} className="lg:col-span-3 xl:col-span-7">
+          <div className="flex flex-col h-full gap-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-rose-100 dark:border-rose-500/30 bg-gradient-to-br from-rose-50 to-white dark:from-rose-500/10 dark:to-transparent p-4">
+                <p className="text-xs font-semibold text-rose-500 dark:text-rose-200 uppercase tracking-wide">Motif dominant</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{visitReasonInsights.leader?.name || 'N/A'}</p>
+                <p className="text-3xl font-black text-rose-600 dark:text-rose-300 mt-3">{visitReasonInsights.leaderShare}%</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/80 dark:bg-dark-card/70">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Top 3 cumulés</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white mt-3">{visitReasonInsights.top3Share}%</p>
+                <p className="text-xs text-slate-500 dark:text-gray-400">des répondants</p>
+              </div>
+            </div>
+            <div className="flex-1 min-h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={visitReasonInsights.sorted} cx="50%" cy="50%" innerRadius={70} outerRadius={110} paddingAngle={3} dataKey="value" stroke="none">
+                    {visitReasonInsights.sorted.map((entry, index) => (
+                      <Cell key={`reason-${entry.name}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend verticalAlign="bottom" height={40} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                  <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
+                    {visitReasonInsights.leaderShare}%
+                  </text>
+                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500 dark:fill-gray-400 font-medium uppercase tracking-wide">
+                    {visitReasonInsights.leader?.name || ''}
+                  </text>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </ChartCard>
+
+        <ChartCard
+          title={QUESTION_META.q5.title}
+          subtitle={QUESTION_META.q5.subtitle}
+          className="lg:col-span-6 xl:col-span-12"
+          contentHeightClass="min-h-[420px]"
+        >
+          <div className="flex flex-col xl:flex-row gap-6 h-full">
+            <div className="w-full xl:max-w-sm space-y-4">
+              <div className="rounded-2xl border border-violet-200 dark:border-violet-500/40 bg-gradient-to-br from-violet-50 to-white dark:from-violet-500/10 dark:to-transparent p-5">
+                <p className="text-xs font-semibold text-violet-500 dark:text-violet-200 uppercase tracking-wide">Enseigne leader</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white mt-2">{competitorInsights.leader?.name || 'N/A'}</p>
+                <div className="flex items-end justify-between mt-6">
+                  <div>
+                    <p className="text-[11px] uppercase text-slate-500 dark:text-gray-400">Part de visite</p>
+                    <p className="text-4xl font-black text-violet-600 dark:text-violet-300">{competitorInsights.leaderShare}%</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] uppercase text-slate-500 dark:text-gray-400">Volume</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">{competitorInsights.leader?.value ?? 0} clients</p>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-5 bg-white/90 dark:bg-dark-card/70">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Écart vs n°2</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white mt-2">+{competitorInsights.gap}</p>
+                <p className="text-sm text-slate-500 dark:text-gray-400">{competitorInsights.runnerUp?.name || 'N/A'} à {competitorInsights.runnerUpShare}%</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/80 dark:bg-dark-card/70">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide mb-3">Top 3 enseignes</p>
+                <ul className="space-y-3">
+                  {competitorInsights.sorted.slice(0, 3).map((comp, index) => {
+                    const percent = competitorInsights.total ? Math.round((comp.value / competitorInsights.total) * 100) : 0;
+                    return (
+                      <li key={comp.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-slate-700 dark:text-gray-200">
+                          <span className="text-xs font-black text-slate-400 dark:text-gray-500">#{index + 1}</span>
+                          <span className="font-semibold">{comp.name}</span>
+                        </div>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">{percent}%</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+            <div className="flex-1 min-h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={competitorInsights.sorted} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="q5Bar" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.3} />
+                    </linearGradient>
+                    <linearGradient id="q5BarHighlight" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={1} />
+                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
+                    {competitorInsights.sorted.map((entry) => (
+                      <Cell key={entry.name} fill={entry.name === competitorInsights.leader?.name ? 'url(#q5BarHighlight)' : 'url(#q5Bar)'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </ChartCard>
+
+        <ChartCard title={QUESTION_META.q6.title} subtitle={QUESTION_META.q6.subtitle} className="lg:col-span-3 xl:col-span-5">
+          <div className="flex flex-col h-full gap-4">
+            <div className="rounded-2xl border border-emerald-100 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/10 dark:to-transparent p-4">
+              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300 uppercase tracking-wide">Critère n°1</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{choiceReasonInsights.leader?.name || 'N/A'}</p>
+              <p className="text-3xl font-black text-emerald-600 dark:text-emerald-300 mt-3">{choiceReasonInsights.leaderShare}%</p>
+            </div>
+            <div className="flex-1 space-y-3 overflow-auto pr-1">
+              {choiceReasonInsights.sorted.map((reason, index) => {
+                const percent = choiceReasonInsights.total ? Math.round((reason.value / choiceReasonInsights.total) * 100) : 0;
+                const palette = CHOICE_REASON_STYLES[index % CHOICE_REASON_STYLES.length];
+                return (
+                  <div key={reason.name} className="p-3 rounded-xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-700 dark:text-gray-100">{reason.name}</span>
+                      <span className="text-sm font-bold" style={{ color: palette.text }}>{percent}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 dark:bg-dark-muted rounded-full mt-2 overflow-hidden">
+                      <div className={`h-full rounded-full bg-gradient-to-r ${palette.gradient}`} style={{ width: `${percent}%` }} />
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">{reason.value} citations</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </ChartCard>
+
+        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="lg:col-span-3 xl:col-span-4">
+          <div className="flex flex-col h-full gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-green-100 dark:border-green-500/30 p-4 bg-gradient-to-br from-green-50 to-white dark:from-green-500/10 dark:to-transparent">
+                <p className="text-xs font-semibold text-green-600 dark:text-green-300 uppercase tracking-wide">Satisfaction positive</p>
+                <p className="text-3xl font-black text-green-600 dark:text-green-300 mt-2">{stats.satisfactionRate}%</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/80 dark:bg-dark-card/70">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Neutre ou négatif</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white mt-2">{100 - stats.satisfactionRate}%</p>
+              </div>
+            </div>
+            <div className="flex-1 min-h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={filteredData.satisfaction} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                    {filteredData.satisfaction.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={SATISFACTION_COLORS[index]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                  <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
+                    {stats.satisfactionRate}%
+                  </text>
+                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
+                    Positif
+                  </text>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </ChartCard>
+
+        <ChartCard
+          title={QUESTION_META.q8.title}
+          subtitle={QUESTION_META.q8.subtitle}
+          className="lg:col-span-6 xl:col-span-12"
+          contentHeightClass="min-h-[460px]"
+        >
+          <div className="flex flex-col h-full gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {departmentInsights.topThree.map((dept, index) => (
+                <div
+                  key={dept.name}
+                  className={`rounded-2xl border p-5 bg-gradient-to-br ${
+                    index === 0
+                      ? 'from-rose-500/10 to-rose-500/0 border-rose-200/70 dark:border-rose-500/40'
+                      : index === 1
+                        ? 'from-indigo-500/10 to-indigo-500/0 border-indigo-200/70 dark:border-indigo-500/40'
+                        : 'from-emerald-500/10 to-emerald-500/0 border-emerald-200/70 dark:border-emerald-500/40'
+                  }`}
+                >
+                  <p className="text-xs font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wide">Top #{index + 1}</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{dept.name}</p>
+                  <p className="text-4xl font-black text-slate-900 dark:text-white mt-4">{dept.percent}%</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{dept.value} visites</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col lg:flex-row gap-6 flex-1">
+              <div className="flex-1 min-h-[260px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="q8Dept" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#ec4899" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} dy={10} interval={0} angle={-25} textAnchor="end" height={70} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area type="monotone" dataKey="value" stroke="#ec4899" strokeWidth={3} fill="url(#q8Dept)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full lg:w-72 space-y-3 overflow-auto pr-1">
+                {departmentInsights.sorted.slice(3, 9).map((dept, index) => {
+                  const percent = departmentInsights.total ? Math.round((dept.value / departmentInsights.total) * 100) : 0;
+                  return (
+                    <div key={dept.name} className="p-3 rounded-xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-700 dark:text-gray-100">{dept.name}</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">{percent}%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 dark:bg-dark-muted rounded-full mt-2 overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-rose-400 to-pink-500" style={{ width: `${percent}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </ChartCard>
+
+        <ChartCard title={QUESTION_META.q9.title} subtitle={QUESTION_META.q9.subtitle} className="lg:col-span-3 xl:col-span-4">
+          <div className="flex flex-col h-full gap-6">
+            <div className="rounded-2xl border border-amber-100 dark:border-amber-500/40 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-amber-600 dark:text-amber-300 uppercase tracking-wide">Sensibilisés</p>
+                <p className="text-3xl font-black text-amber-600 dark:text-amber-300 mt-2">{nameChangeInsights.awarePercent}%</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Non sensibilisés</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white mt-2">{nameChangeInsights.unawarePercent}%</p>
+              </div>
+            </div>
+            <div className="flex-1 min-h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={filteredData.nameChangeAwareness} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" stroke="none">
+                    {filteredData.nameChangeAwareness.map((slice, index) => (
+                      <Cell key={`name-change-${slice.name}`} fill={NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                  <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
+                    {nameChangeInsights.awarePercent}%
+                  </text>
+                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500 dark:fill-gray-400 font-medium uppercase tracking-wide">
+                    ont remarqué
+                  </text>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
       </div>
     </div>
