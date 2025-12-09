@@ -19,7 +19,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from 'recharts';
-import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
+import { Users, MapPin, Smile, Car, Download, Calendar, Filter, TrendingUp, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
 import { SATISFACTION_COLORS } from '../constants';
 import ChartCard from './ChartCard';
@@ -38,12 +38,20 @@ interface TooltipProps {
 
 const QUESTION_META = {
   q0: { title: 'Q0 • Répartition des âges', subtitle: "Tranches d'âge des répondants" },
+  q1: { title: 'Q1 • Zone de résidence', subtitle: 'Lieu d\'habitation des visiteurs' },
   q2: { title: 'Q2 • Moyen de transport', subtitle: 'Comment les visiteurs se rendent au mall' },
   q3: { title: 'Q3 • Fréquence de visite', subtitle: "Rythme des achats à l'hypermarché" },
+  q4: { title: 'Q4 • Motifs de visite', subtitle: 'Pourquoi les clients viennent-ils ?' },
   q5: { title: 'Q5 • Magasin alimentaire le plus fréquenté', subtitle: 'Part de visite par enseigne' },
+  q6: { title: 'Q6 • Raisons du choix', subtitle: 'Critères de décision principaux' },
   q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
   q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' },
+  q9: { title: 'Q9 • Changement de nom', subtitle: 'Notoriété de la nouvelle identité' },
+  q10: { title: 'Q10 • Évolution de l\'expérience', subtitle: 'Comparaison avant/après' },
 } as const;
+
+const COLORS = ['#0ea5e9', '#22c55e', '#eab308', '#f97316', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
+const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
 
 const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -109,22 +117,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
   const stats = useMemo(() => {
     const totalRespondents = filteredData.zones.reduce((acc, curr) => acc + curr.value, 0);
-    const totalSatisfaction = filteredData.satisfaction.reduce((acc, curr) => acc + curr.value, 0);
-    const positiveSatisfaction = filteredData.satisfaction
-      .filter((s) => s.name === 'Satisfait' || s.name === 'Très satisfait')
-      .reduce((acc, curr) => acc + curr.value, 0);
-    const satisfactionRate = totalSatisfaction > 0 ? Math.round((positiveSatisfaction / totalSatisfaction) * 100) : 0;
-
-    const topZone = [...filteredData.zones].sort((a, b) => b.value - a.value)[0] || { name: 'N/A', value: 0 };
-    const totalZones = data.zones.reduce((acc, curr) => acc + curr.value, 0);
-    const topZonePercent = selectedZone === 'All' ? (totalZones > 0 ? Math.round((topZone.value / totalZones) * 100) : 0) : 100;
-
-    const topTransport = [...filteredData.transport].sort((a, b) => b.value - a.value)[0];
-    const totalTransport = filteredData.transport.reduce((acc, curr) => acc + curr.value, 0);
-    const topTransportPercent = totalTransport > 0 && topTransport ? Math.round((topTransport.value / totalTransport) * 100) : 0;
-
-    return { totalRespondents, satisfactionRate, topZone, topZonePercent, topTransport, topTransportPercent };
-  }, [filteredData, data.zones, selectedZone]);
+    return { totalRespondents };
+  }, [filteredData]);
 
   const handleExportXLSX = useCallback(() => {
     const wb = XLSX.utils.book_new();
@@ -161,6 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Header & Filter Section */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gradient-to-r from-white via-white to-slate-50/80 dark:from-dark-card/95 dark:via-dark-card/90 dark:to-dark-surface/80 p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-sm relative z-20 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex p-3 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/25">
@@ -250,11 +245,14 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </div>
       </div>
 
+      {/* Main Grid: KPI + Q0 - Q10 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <article className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl p-6 text-white shadow-lg shadow-brand-200 dark:shadow-brand-900/50 group transition-all hover:shadow-xl hover:-translate-y-1">
+        
+        {/* KPI: Total Respondents */}
+        <article className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl p-6 text-white shadow-lg shadow-brand-200 dark:shadow-brand-900/50 group transition-all hover:shadow-xl hover:-translate-y-1 col-span-1">
           <div className="absolute -right-6 -top-6 bg-white/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-white/20 transition-all" aria-hidden="true" />
-          <div className="relative z-10">
-            <div className="flex justify-between items-start mb-4">
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <div className="flex justify-between items-start">
               <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
                 <Users size={20} className="text-white" aria-hidden="true" />
               </div>
@@ -262,94 +260,17 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                 <TrendingUp size={12} className="mr-1" aria-hidden="true" /> Actif
               </span>
             </div>
-            <p className="text-brand-100 text-xs font-medium uppercase tracking-wider mb-1">
-              {selectedZone === 'All' ? 'Répondants totaux' : `Répondants – ${selectedZone}`}
-            </p>
-            <p className="text-4xl font-bold tracking-tight">{stats.totalRespondents}</p>
+            <div>
+              <p className="text-brand-100 text-xs font-medium uppercase tracking-wider mb-1">
+                {selectedZone === 'All' ? 'Répondants totaux' : `Répondants – ${selectedZone}`}
+              </p>
+              <p className="text-4xl font-bold tracking-tight">{stats.totalRespondents}</p>
+            </div>
           </div>
         </article>
 
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-green-50 to-transparent dark:from-green-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-green-50 dark:bg-green-500/20 rounded-xl">
-              <Smile size={20} className="text-green-600 dark:text-green-300" aria-hidden="true" />
-            </div>
-            <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-500/20 px-2 py-1 rounded-full">
-              <ArrowUpRight size={12} className="mr-1" aria-hidden="true" /> Haut
-            </span>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.satisfactionRate}%</p>
-          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden" role="progressbar" aria-valuenow={stats.satisfactionRate} aria-valuemin={0} aria-valuemax={100}>
-            <div className="bg-green-500 dark:bg-green-300 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.satisfactionRate}%` }} />
-          </div>
-        </article>
-
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-purple-50 dark:bg-purple-500/20 rounded-xl">
-              <MapPin size={20} className="text-purple-600 dark:text-purple-300" aria-hidden="true" />
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-slate-800 dark:text-white block leading-none">{stats.topZonePercent}%</span>
-              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des répondants</span>
-            </div>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Zone la plus représentée (Q1)</p>
-          <p className="text-xl font-bold text-slate-800 dark:text-white truncate" title={stats.topZone.name}>
-            {stats.topZone.name}
-          </p>
-        </article>
-
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent dark:from-orange-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-orange-50 dark:bg-orange-500/20 rounded-xl">
-              <Car size={20} className="text-orange-600 dark:text-orange-300" aria-hidden="true" />
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-orange-600 dark:text-orange-400 block leading-none">{stats.topTransportPercent}%</span>
-              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des visiteurs</span>
-            </div>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Mode d'accès dominant (Q2)</p>
-          <p className="text-xl font-bold text-slate-800 dark:text-white truncate">{stats.topTransport?.name || 'N/A'}</p>
-          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden">
-            <div className="bg-orange-500 dark:bg-orange-400 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.topTransportPercent}%` }} />
-          </div>
-        </article>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <ChartCard title={QUESTION_META.q5.title} subtitle={QUESTION_META.q5.subtitle} className="lg:col-span-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={filteredData.competitors} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <defs>
-                <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0.3} />
-                </linearGradient>
-                <linearGradient id="colorBarHighlight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0ea5e9" stopOpacity={1} />
-                  <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.6} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
-                {filteredData.competitors.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.name === 'Bawadi Mall' ? 'url(#colorBarHighlight)' : '#cbd5e1'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle}>
+        {/* Q0: Ages (Radar) */}
+        <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle} className="col-span-1">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={filteredData.ageGroups}>
               <PolarGrid stroke="#e2e8f0" />
@@ -361,31 +282,23 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle}>
-          <FrequencyTrendChart data={filteredData.frequency} />
-        </ChartCard>
-
-        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
+        {/* Q1: Zones (Pie - New) */}
+        <ChartCard title={QUESTION_META.q1.title} subtitle={QUESTION_META.q1.subtitle} className="col-span-1 md:col-span-2">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={filteredData.satisfaction} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
-                {filteredData.satisfaction.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={SATISFACTION_COLORS[index]} />
+              <Pie data={filteredData.zones} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                {filteredData.zones.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
-                {stats.satisfactionRate}%
-              </text>
-              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
-                Positif
-              </text>
+              <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q2.title} subtitle={QUESTION_META.q2.subtitle}>
+        {/* Q2: Transport (List) */}
+        <ChartCard title={QUESTION_META.q2.title} subtitle={QUESTION_META.q2.subtitle} className="col-span-1 md:col-span-2">
           {(() => {
             const transportTotal = filteredData.transport.reduce((sum, t) => sum + t.value, 0) || 1;
             const transportConfig: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
@@ -446,9 +359,96 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           })()}
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q8.title} subtitle={QUESTION_META.q8.subtitle} className="lg:col-span-3">
+        {/* Q3: Frequency (Area) */}
+        <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle} className="col-span-1 md:col-span-2">
+          <FrequencyTrendChart data={filteredData.frequency} />
+        </ChartCard>
+
+        {/* Q4: Visit Reason (Pie - New) */}
+        <ChartCard title={QUESTION_META.q4.title} subtitle={QUESTION_META.q4.subtitle} className="col-span-1 md:col-span-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+             <PieChart>
+              <Pie data={filteredData.visitReason} cx="50%" cy="50%" innerRadius={40} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
+                {filteredData.visitReason.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Q5: Competitors (Bar) */}
+        <ChartCard title={QUESTION_META.q5.title} subtitle={QUESTION_META.q5.subtitle} className="col-span-1 md:col-span-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={filteredData.competitors} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
+              <defs>
+                <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0.3} />
+                </linearGradient>
+                <linearGradient id="colorBarHighlight" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0ea5e9" stopOpacity={1} />
+                  <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.6} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} dy={10} interval={0} angle={-10} textAnchor="end" height={40} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={30}>
+                {filteredData.competitors.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.name === 'Bawadi Mall' ? 'url(#colorBarHighlight)' : '#cbd5e1'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Q6: Choice Reason (Bar - New) */}
+        <ChartCard title={QUESTION_META.q6.title} subtitle={QUESTION_META.q6.subtitle} className="col-span-1 md:col-span-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={filteredData.choiceReason} layout="vertical" margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+              <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} tick={{ fill: '#64748b', fontSize: 11 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={20} fill="#f59e0b" />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+         {/* Q7: Satisfaction (Pie) */}
+        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="col-span-1 md:col-span-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={filteredData.satisfaction} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                {filteredData.satisfaction.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={SATISFACTION_COLORS[index]} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
+                {stats.totalRespondents > 0 
+                  ? Math.round(
+                      (filteredData.satisfaction.filter(s => s.name.includes('Satisfait')).reduce((acc, curr) => acc + curr.value, 0) / 
+                      filteredData.satisfaction.reduce((acc, curr) => acc + curr.value, 0) || 1) * 100
+                    ) 
+                  : 0}%
+              </text>
+              <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-400 dark:fill-gray-500 font-medium uppercase tracking-wide">
+                Positif
+              </text>
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Q8: Departments (Area) */}
+        <ChartCard title={QUESTION_META.q8.title} subtitle={QUESTION_META.q8.subtitle} className="col-span-1 md:col-span-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={filteredData.preferredDepartment} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorDept" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8} />
@@ -463,6 +463,54 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
+
+        {/* Q9: Name Change (Pie - New) */}
+        <ChartCard title={QUESTION_META.q9.title} subtitle={QUESTION_META.q9.subtitle} className="col-span-1">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={filteredData.nameChangeAwareness} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={5} dataKey="value" stroke="none">
+                {filteredData.nameChangeAwareness.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={NAME_CHANGE_COLORS[index % NAME_CHANGE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Q10: Experience (Bar Comparison - New) */}
+        <ChartCard title={QUESTION_META.q10.title} subtitle={QUESTION_META.q10.subtitle} className="col-span-1 md:col-span-3">
+          <ResponsiveContainer width="100%" height="100%">
+             <BarChart data={filteredData.experienceChanges} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="category" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+              <Tooltip 
+                cursor={{ fill: '#f8fafc' }}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div className="bg-white/95 p-3 rounded-xl shadow-lg border border-slate-100 text-sm">
+                      <p className="font-bold mb-1">{label}</p>
+                      {payload.map((entry: any, index: number) => (
+                        <div key={index} className="flex items-center gap-2">
+                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.fill }} />
+                           <span className="text-slate-500">{entry.name === 'positive' ? 'Positif' : 'Négatif'}:</span>
+                           <span className="font-mono font-bold">{entry.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }}
+              />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }}  formatter={(value) => value === 'positive' ? 'Perception Positive' : 'Perception Négative'}/>
+              <Bar dataKey="positive" name="positive" fill="#22c55e" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="negative" name="negative" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
       </div>
     </div>
   );
