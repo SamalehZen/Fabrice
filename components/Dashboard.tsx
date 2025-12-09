@@ -158,41 +158,44 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/90 dark:bg-dark-card/90 p-4 rounded-xl border border-slate-200 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 relative z-20 backdrop-blur">
-        <div>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">Tableau de bord des questions</h2>
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-slate-500 dark:text-gray-400">Analyse dynamique des réponses</p>
-            {selectedZone !== 'All' && (
-              <span className="bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center">
-                Filtre : {selectedZone}
-              </span>
-            )}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gradient-to-r from-white via-white to-slate-50/80 dark:from-dark-card/95 dark:via-dark-card/90 dark:to-dark-surface/80 p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-sm relative z-20 backdrop-blur-sm">
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex p-3 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/25">
+            <TrendingUp size={22} className="text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Tableau de bord</h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-sm text-slate-500 dark:text-gray-400">Analyse dynamique des réponses</p>
+              {selectedZone !== 'All' && (
+                <span className="bg-brand-100 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                  {selectedZone}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 dark:bg-dark-card/70 text-slate-600 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-dark-hover/70 border border-slate-200 dark:border-dark-border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-            aria-label="Période : 30 derniers jours"
-          >
-            <Calendar size={16} aria-hidden="true" />
-            <span className="hidden sm:inline">30 derniers jours</span>
-          </button>
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl text-sm font-medium border border-emerald-200/60 dark:border-emerald-500/20">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <Calendar size={14} />
+            <span>15 derniers jours</span>
+          </div>
           <div className="relative">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               aria-expanded={isFilterOpen}
               aria-haspopup="listbox"
               aria-label="Filtrer par zone"
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                 selectedZone !== 'All'
-                  ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-500/20 dark:text-brand-100 dark:border-brand-300/40'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 dark:bg-dark-card/70 dark:text-gray-300 dark:border-dark-border dark:hover:bg-dark-hover/80'
+                  ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-500/15 dark:text-brand-300 dark:border-brand-400/30 shadow-sm'
+                  : 'bg-white dark:bg-dark-card/80 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-dark-hover'
               }`}
             >
-              <Filter size={16} aria-hidden="true" />
-              <span className="hidden sm:inline">{selectedZone === 'All' ? 'Filtrer par zone' : selectedZone}</span>
-              <ChevronDown size={14} className={`transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+              <MapPin size={15} />
+              <span>{selectedZone === 'All' ? 'Toutes zones' : selectedZone}</span>
+              <ChevronDown size={14} className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
             </button>
             {isFilterOpen && (
               <>
@@ -200,20 +203,20 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                 <ul
                   role="listbox"
                   aria-label="Sélectionner une zone"
-                  className="absolute top-full right-0 mt-2 w-48 bg-white/95 dark:bg-dark-surface rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border overflow-hidden z-20 py-1"
+                  className="absolute top-full right-0 mt-2 w-52 bg-white dark:bg-dark-surface rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border overflow-hidden z-20 py-1"
                 >
                   <li className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
-                    Choisir une zone
+                    Filtrer par zone
                   </li>
                   <li>
                     <button
                       role="option"
                       aria-selected={selectedZone === 'All'}
                       onClick={() => handleZoneSelect('All')}
-                      className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-200 flex items-center justify-between transition-colors"
+                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-300 flex items-center justify-between transition-colors"
                     >
                       <span>Toutes les zones</span>
-                      {selectedZone === 'All' && <Check size={14} className="text-brand-600" aria-hidden="true" />}
+                      {selectedZone === 'All' && <Check size={14} className="text-brand-600" />}
                     </button>
                   </li>
                   {data.zones.map((zone) => (
@@ -222,10 +225,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                         role="option"
                         aria-selected={selectedZone === zone.name}
                         onClick={() => handleZoneSelect(zone.name)}
-                        className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-200 flex items-center justify-between transition-colors"
+                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-300 flex items-center justify-between transition-colors"
                       >
                         <span>{zone.name}</span>
-                        {selectedZone === zone.name && <Check size={14} className="text-brand-600" aria-hidden="true" />}
+                        {selectedZone === zone.name && <Check size={14} className="text-brand-600" />}
                       </button>
                     </li>
                   ))}
@@ -235,11 +238,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
           <button
             onClick={handleExportXLSX}
-            className="flex items-center gap-2 px-3 py-2 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 shadow-sm shadow-brand-200/80 dark:shadow-brand-900/40 transition-all hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-sm font-medium hover:from-brand-700 hover:to-brand-800 shadow-md shadow-brand-500/25 dark:shadow-brand-900/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             aria-label="Exporter les données au format Excel"
           >
-            <Download size={16} aria-hidden="true" />
-            <span className="hidden sm:inline">Exporter XLSX</span>
+            <Download size={16} />
+            <span className="hidden sm:inline">Exporter</span>
           </button>
         </div>
       </div>
