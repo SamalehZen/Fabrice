@@ -361,47 +361,42 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle}>
-          {(() => {
-            const freqTotal = filteredData.frequency.reduce((sum, f) => sum + f.value, 0) || 1;
-            const sortedFreq = [...filteredData.frequency].sort((a, b) => b.value - a.value);
-            const freqIcons = ['🔥', '📅', '🕐', '💤'];
-            const freqGradients = [
-              'from-orange-500 to-red-500',
-              'from-amber-500 to-orange-500', 
-              'from-yellow-500 to-amber-500',
-              'from-slate-400 to-slate-500'
-            ];
-            return (
-              <div className="h-full flex flex-col">
-                <div className="flex-1 space-y-3">
-                  {sortedFreq.map((freq, index) => {
-                    const percent = (freq.value / freqTotal) * 100;
-                    const isTop = index === 0;
-                    return (
-                      <div key={freq.name} className={`relative flex items-center gap-4 p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${isTop ? 'bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-500/15 dark:via-amber-500/10 dark:to-yellow-500/5 border-2 border-orange-200 dark:border-orange-500/30 shadow-md' : 'bg-slate-50/80 dark:bg-dark-card/60 border border-slate-200/60 dark:border-dark-border'}`}>
-                        <div className={`flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${freqGradients[index]} shadow-lg text-xl`}>
-                          {freqIcons[index]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className={`font-semibold truncate ${isTop ? 'text-slate-800 dark:text-white' : 'text-slate-600 dark:text-gray-300'}`}>{freq.name}</span>
-                            <span className={`text-xl font-bold ${isTop ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-gray-400'}`}>{percent.toFixed(0)}%</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 h-2.5 bg-slate-200 dark:bg-dark-muted rounded-full overflow-hidden">
-                              <div className={`h-full rounded-full bg-gradient-to-r ${freqGradients[index]} transition-all duration-1000`} style={{ width: `${percent}%` }} />
-                            </div>
-                            <span className="text-xs text-slate-400 dark:text-gray-500 whitespace-nowrap">{freq.value}</span>
-                          </div>
-                        </div>
-                        {isTop && <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold rounded-full shadow-md">N°1</div>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={filteredData.frequency} margin={{ top: 30, right: 40, left: 20, bottom: 20 }}>
+              <defs>
+                <linearGradient id="colorFreq" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f97316" stopOpacity={0.8} />
+                  <stop offset="50%" stopColor="#fb923c" stopOpacity={0.45} />
+                  <stop offset="100%" stopColor="#fed7aa" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" opacity={0.6} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 400, dy: 5 }} 
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#94a3b8', fontSize: 12 }} 
+                width={35}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#fef2f2', opacity: 0.4 }} />
+              <Area 
+                type="natural" 
+                dataKey="value" 
+                stroke="#ea580c" 
+                strokeWidth={3.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="url(#colorFreq)" 
+                dot={{ fill: '#ea580c', r: 4, strokeWidth: 2, stroke: '#ffffff' }}
+                activeDot={{ r: 6, fill: '#ea580c', stroke: '#ffffff', strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
