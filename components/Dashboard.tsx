@@ -820,42 +820,40 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                 <p className="text-[11px] text-slate-500 dark:text-gray-400">{topSatisfactionSlice?.value ?? 0} réponses</p>
               </div>
             </div>
-            <div className="flex-1 flex flex-col gap-3">
-              <div className="relative h-[240px] bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-dark-card/60 dark:via-dark-card/40 dark:to-dark-surface/60 rounded-2xl border border-slate-100 dark:border-dark-border overflow-hidden">
-                <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-emerald-200/40 via-transparent to-slate-200/30 dark:from-emerald-500/10 dark:to-transparent" aria-hidden="true" />
-                <div className="relative h-full flex items-center justify-center">
-                  <div className="absolute inset-0">
-                    {render3DPie(satisfactionBreakdown, {
-                      colors: SATISFACTION_COLORS,
-                      innerRadius: 60,
-                      outerRadius: 110,
-                      paddingAngle: 4,
-                      showLegend: false,
-                      labelPosition: 'outside',
-                      labelOffset: 18,
-                    })}
-                  </div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">Positif</p>
-                    <p className="text-4xl font-black text-slate-900 dark:text-white">{stats.satisfactionRate}%</p>
-                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{totalSatisfactionResponses} réponses</p>
-                  </div>
+            <div className="flex-1 flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-1/2 h-56 relative rounded-2xl border border-slate-100 dark:border-dark-border bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-dark-card/50 dark:via-dark-card/40 dark:to-dark-surface/60 overflow-hidden">
+                <div className="absolute inset-0 blur-2xl bg-gradient-to-r from-emerald-200/30 via-transparent to-slate-200/30 dark:from-emerald-500/10 dark:to-transparent" aria-hidden="true" />
+                <div className="absolute inset-0">
+                  {render3DPie(satisfactionBreakdown, {
+                    colors: SATISFACTION_COLORS,
+                    innerRadius: 55,
+                    outerRadius: 105,
+                    paddingAngle: 4,
+                    showLegend: false,
+                    labelPosition: 'outside',
+                    labelOffset: 16,
+                  })}
+                </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">Positif</p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-white">{stats.satisfactionRate}%</p>
+                  <p className="text-[11px] text-slate-500 dark:text-gray-400">{totalSatisfactionResponses} réponses</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="w-full sm:w-1/2 space-y-2">
                 {satisfactionBreakdown.map((slice) => (
-                  <div key={slice.name} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 p-3">
-                    <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: slice.color }} aria-hidden="true" />
-                      {slice.name}
-                    </p>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xl font-bold text-slate-900 dark:text-white">{slice.percent}%</span>
-                      <span className={`text-[11px] font-semibold ${slice.percent >= 50 ? 'text-emerald-500' : 'text-slate-400 dark:text-gray-500'}`}>
-                        {slice.percent >= 50 ? 'Dominant' : 'Secondaire'}
-                      </span>
+                  <div key={slice.name} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/85 dark:bg-dark-card/70 p-3 flex items-center justify-between">
+                    <div>
+                      <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: slice.color }} aria-hidden="true" />
+                        {slice.name}
+                      </p>
+                      <p className="text-xl font-bold text-slate-900 dark:text-white">{slice.percent}%</p>
+                      <p className="text-[11px] text-slate-500 dark:text-gray-400">{slice.value} répondants</p>
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{slice.value} répondants</p>
+                    <p className={`text-[11px] font-semibold ${slice.percent >= 50 ? 'text-emerald-500' : 'text-slate-400 dark:text-gray-500'}`}>
+                      {slice.percent >= 50 ? 'Dominant' : 'Secondaire'}
+                    </p>
                   </div>
                 ))}
               </div>
