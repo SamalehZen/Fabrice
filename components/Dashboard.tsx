@@ -44,6 +44,17 @@ const QUESTION_META = {
   q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' },
 } as const;
 
+type FrequencyPoint = SimpleDataPoint & { label: string };
+
+const FREQUENCY_ORDER = ['Très rarement', '1-3 fois/mois', '1 fois/semaine', 'Plusieurs fois/semaine'] as const;
+
+const FREQUENCY_LABELS: Record<string, string> = {
+  'Très rarement': 'Très rarement',
+  '1-3 fois/mois': '1–3 fois/mois',
+  '1 fois/semaine': '1 fois/semaine',
+  'Plusieurs fois/semaine': 'Plusieurs fois/semaine',
+};
+
 const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
 
@@ -105,6 +116,22 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       })),
     };
   }, [data, selectedZone, scaleDataset]);
+
+  const { frequencySeries, peakFrequency, frequencyTotal, peakFrequencyShare } = useMemo(() => {
+    const points: FrequencyPoint[] = FREQUENCY_ORDER.map((name) => {
+      const entry = filteredData.frequency.find((item) => item.name === name);
+      return {
+        name,
+        label: FREQUENCY_LABELS[name] || name,
+        value: entry?.value ?? 0,
+      };
+    });
+    const basePoint: FrequencyPoint = points[0] || { name: '', label: '', value: 0 };
+    const peak = points.reduce((acc, curr) => (curr.value > acc.value ? curr : acc), basePoint);
+    const total = points.reduce((sum, item) => sum + item.value, 0);
+    const share = total > 0 ? Math.round((peak.value / total) * 100) : 0;
+    return { frequencySeries: points, peakFrequency: peak, frequencyTotal: total, peakFrequencyShare: share };
+  }, [filteredData.frequency]);
 
   const stats = useMemo(() => {
     const totalRespondents = filteredData.zones.reduce((acc, curr) => acc + curr.value, 0);
@@ -361,47 +388,65 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle}>
-          {(() => {
-            const freqTotal = filteredData.frequency.reduce((sum, f) => sum + f.value, 0) || 1;
-            const sortedFreq = [...filteredData.frequency].sort((a, b) => b.value - a.value);
-            const freqIcons = ['🔥', '📅', '🕐', '💤'];
-            const freqGradients = [
-              'from-orange-500 to-red-500',
-              'from-amber-500 to-orange-500', 
-              'from-yellow-500 to-amber-500',
-              'from-slate-400 to-slate-500'
-            ];
-            return (
-              <div className="h-full flex flex-col">
-                <div className="flex-1 space-y-3">
-                  {sortedFreq.map((freq, index) => {
-                    const percent = (freq.value / freqTotal) * 100;
-                    const isTop = index === 0;
-                    return (
-                      <div key={freq.name} className={`relative flex items-center gap-4 p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${isTop ? 'bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-500/15 dark:via-amber-500/10 dark:to-yellow-500/5 border-2 border-orange-200 dark:border-orange-500/30 shadow-md' : 'bg-slate-50/80 dark:bg-dark-card/60 border border-slate-200/60 dark:border-dark-border'}`}>
-                        <div className={`flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${freqGradients[index]} shadow-lg text-xl`}>
-                          {freqIcons[index]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className={`font-semibold truncate ${isTop ? 'text-slate-800 dark:text-white' : 'text-slate-600 dark:text-gray-300'}`}>{freq.name}</span>
-                            <span className={`text-xl font-bold ${isTop ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-gray-400'}`}>{percent.toFixed(0)}%</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 h-2.5 bg-slate-200 dark:bg-dark-muted rounded-full overflow-hidden">
-                              <div className={`h-full rounded-full bg-gradient-to-r ${freqGradients[index]} transition-all duration-1000`} style={{ width: `${percent}%` }} />
-                            </div>
-                            <span className="text-xs text-slate-400 dark:text-gray-500 whitespace-nowrap">{freq.value}</span>
-                          </div>
-                        </div>
-                        {isTop && <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold rounded-full shadow-md">N°1</div>}
-                      </div>
-                    );
-                  })}
+          <div className="h-full flex flex-col gap-6">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.45em] text-orange-300 dark:text-orange-200/60">Rythme cumulé</p>
+                <p className="text-4xl font-light leading-tight text-slate-900 dark:text-white">{peakFrequency.label || '—'}</p>
+                <p className="text-sm text-slate-500 dark:text-gray-400">{frequencyTotal} répondants cumulés</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-gray-500">Pic d'affluence</p>
+                <p className="text-4xl font-semibold text-orange-500 dark:text-orange-300">{peakFrequencyShare}%</p>
+                <p className="text-xs text-slate-400 dark:text-gray-500">{peakFrequency.value} visites</p>
+              </div>
+            </div>
+            <div className="flex-1 relative rounded-3xl border border-orange-100/70 dark:border-dark-border bg-white dark:bg-dark-surface/70 overflow-hidden shadow-inner shadow-orange-100/70 dark:shadow-black/30">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-orange-50/80 via-white to-white dark:from-white/0 dark:via-dark-card/30 dark:to-dark-surface/30" />
+              <div className="pointer-events-none absolute -left-16 top-6 w-48 h-48 bg-orange-200/40 blur-3xl rounded-full dark:bg-orange-500/15" />
+              <div className="pointer-events-none absolute -right-10 bottom-0 w-40 h-40 bg-amber-200/50 blur-3xl rounded-full dark:bg-amber-500/15" />
+              <div className="relative h-full w-full px-3 pb-4 pt-6 sm:px-6 sm:pb-6">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={frequencySeries} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
+                    <defs>
+                      <linearGradient id="frequencyArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#fb923c" stopOpacity={0.55} />
+                        <stop offset="65%" stopColor="#fed7aa" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="#fff7ed" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="frequencyStroke" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#f97316" />
+                        <stop offset="100%" stopColor="#fb923c" />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 12" vertical={false} stroke="#fed7aa" opacity={0.8} />
+                    <XAxis
+                      dataKey="label"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#ea580c', fontSize: 12, fontWeight: 500 }}
+                      tickMargin={16}
+                    />
+                    <YAxis hide />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#fb923c', strokeOpacity: 0.4, strokeWidth: 1, strokeDasharray: '3 3' }} />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="url(#frequencyStroke)"
+                      strokeWidth={4}
+                      fill="url(#frequencyArea)"
+                      dot={{ r: 5, fill: '#fb923c', stroke: '#fff7ed', strokeWidth: 2 }}
+                      activeDot={{ r: 9, fill: '#ea580c', stroke: '#fed7aa', strokeWidth: 3 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-x-8 bottom-6 flex items-center justify-between text-[10px] uppercase tracking-[0.5em] text-orange-200/90 dark:text-orange-200/40">
+                  <span>Rare</span>
+                  <span>Habitué</span>
                 </div>
               </div>
-            );
-          })()}
+            </div>
+          </div>
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
