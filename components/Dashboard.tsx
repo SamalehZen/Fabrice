@@ -119,8 +119,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     const topZonePercent = selectedZone === 'All' ? (totalZones > 0 ? Math.round((topZone.value / totalZones) * 100) : 0) : 100;
 
     const topTransport = [...filteredData.transport].sort((a, b) => b.value - a.value)[0];
+    const totalTransport = filteredData.transport.reduce((acc, curr) => acc + curr.value, 0);
+    const topTransportPercent = totalTransport > 0 && topTransport ? Math.round((topTransport.value / totalTransport) * 100) : 0;
 
-    return { totalRespondents, satisfactionRate, topZone, topZonePercent, topTransport };
+    return { totalRespondents, satisfactionRate, topZone, topZonePercent, topTransport, topTransportPercent };
   }, [filteredData, data.zones, selectedZone]);
 
   const handleExportXLSX = useCallback(() => {
@@ -306,10 +308,16 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             <div className="p-2 bg-orange-50 dark:bg-orange-500/20 rounded-xl">
               <Car size={20} className="text-orange-600 dark:text-orange-300" aria-hidden="true" />
             </div>
+            <div className="text-right">
+              <span className="text-2xl font-bold text-orange-600 dark:text-orange-400 block leading-none">{stats.topTransportPercent}%</span>
+              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des visiteurs</span>
+            </div>
           </div>
           <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Mode d'accès dominant (Q2)</p>
           <p className="text-xl font-bold text-slate-800 dark:text-white truncate">{stats.topTransport?.name || 'N/A'}</p>
-          <p className="text-xs text-orange-600 dark:text-orange-300 mt-1 font-medium">Préférence de transport</p>
+          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden">
+            <div className="bg-orange-500 dark:bg-orange-400 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.topTransportPercent}%` }} />
+          </div>
         </article>
       </div>
 
@@ -353,21 +361,47 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q3.title} subtitle={QUESTION_META.q3.subtitle}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData.frequency} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorFreq" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="value" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorFreq)" />
-            </AreaChart>
-          </ResponsiveContainer>
+          {(() => {
+            const freqTotal = filteredData.frequency.reduce((sum, f) => sum + f.value, 0) || 1;
+            const sortedFreq = [...filteredData.frequency].sort((a, b) => b.value - a.value);
+            const freqIcons = ['🔥', '📅', '🕐', '💤'];
+            const freqGradients = [
+              'from-orange-500 to-red-500',
+              'from-amber-500 to-orange-500', 
+              'from-yellow-500 to-amber-500',
+              'from-slate-400 to-slate-500'
+            ];
+            return (
+              <div className="h-full flex flex-col">
+                <div className="flex-1 space-y-3">
+                  {sortedFreq.map((freq, index) => {
+                    const percent = (freq.value / freqTotal) * 100;
+                    const isTop = index === 0;
+                    return (
+                      <div key={freq.name} className={`relative flex items-center gap-4 p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${isTop ? 'bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-500/15 dark:via-amber-500/10 dark:to-yellow-500/5 border-2 border-orange-200 dark:border-orange-500/30 shadow-md' : 'bg-slate-50/80 dark:bg-dark-card/60 border border-slate-200/60 dark:border-dark-border'}`}>
+                        <div className={`flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${freqGradients[index]} shadow-lg text-xl`}>
+                          {freqIcons[index]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className={`font-semibold truncate ${isTop ? 'text-slate-800 dark:text-white' : 'text-slate-600 dark:text-gray-300'}`}>{freq.name}</span>
+                            <span className={`text-xl font-bold ${isTop ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-gray-400'}`}>{percent.toFixed(0)}%</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2.5 bg-slate-200 dark:bg-dark-muted rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full bg-gradient-to-r ${freqGradients[index]} transition-all duration-1000`} style={{ width: `${percent}%` }} />
+                            </div>
+                            <span className="text-xs text-slate-400 dark:text-gray-500 whitespace-nowrap">{freq.value}</span>
+                          </div>
+                        </div>
+                        {isTop && <div className="absolute -top-2 -right-2 px-2 py-0.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold rounded-full shadow-md">N°1</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </ChartCard>
 
         <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle}>
