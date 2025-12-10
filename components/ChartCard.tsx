@@ -7,9 +7,10 @@ interface ChartCardProps {
   children: React.ReactNode;
   className?: string;
   fullWidth?: boolean;
+  contentHeightClass?: string;
 }
 
-const ChartCard: React.FC<ChartCardProps> = memo(({ title, subtitle, children, className = '', fullWidth = false }) => {
+const ChartCard: React.FC<ChartCardProps> = memo(({ title, subtitle, children, className = '', fullWidth = false, contentHeightClass = 'min-h-[300px]' }) => {
   return (
     <article
       className={`bg-white/90 dark:bg-dark-card/80 rounded-xl shadow-sm shadow-slate-200/60 dark:shadow-black/40 border border-slate-100 dark:border-dark-border p-6 flex flex-col transition-all duration-300 hover:shadow-lg dark:hover:shadow-black/60 ${
@@ -30,7 +31,7 @@ const ChartCard: React.FC<ChartCardProps> = memo(({ title, subtitle, children, c
           <MoreHorizontal size={20} aria-hidden="true" />
         </button>
       </div>
-      <div className="flex-grow min-h-[300px] w-full relative">{children}</div>
+      <div className={`flex-grow w-full relative ${contentHeightClass}`}>{children}</div>
     </article>
   );
 });

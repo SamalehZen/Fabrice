@@ -84,7 +84,7 @@ export const SURVEY_DATA: SurveyDataset = {
     { name: 'Très satisfait', value: 123 },
   ],
   preferredDepartment: [
-    { name: 'Bazar/Non-Alim', value: 40 },
+    { name: 'Bazar', value: 40 },
     { name: 'Epicerie', value: 40 },
     { name: 'Boissons', value: 60 },
     { name: 'Beauté/Soin', value: 50 },

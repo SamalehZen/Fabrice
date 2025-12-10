@@ -19,6 +19,7 @@ interface Render3DPieOptions {
   isDark?: boolean;
   labelPosition?: 'inside' | 'outside';
   labelOffset?: number;
+  showLabels?: boolean;
 }
 
 const RADIAN = Math.PI / 180;
@@ -50,6 +51,7 @@ const PieChartComponent: React.FC<PieChartComponentProps> = memo(({ chartData, o
     isDark,
     labelPosition = 'outside',
     labelOffset = 16,
+    showLabels = true,
   } = options;
 
   const resolvedOuterRadius = useMemo(() => (typeof outerRadius === 'number' ? outerRadius : isWide ? 100 : 80), [outerRadius, isWide]);
@@ -128,8 +130,8 @@ const PieChartComponent: React.FC<PieChartComponentProps> = memo(({ chartData, o
           dataKey="value"
           style={{ filter: 'drop-shadow(3px 5px 4px rgba(0,0,0,0.3))' }}
           stroke="none"
-          label={renderLabel}
-          labelLine={labelPosition === 'outside' ? { stroke: styles.labelLineStroke } : false}
+          label={showLabels ? renderLabel : false}
+          labelLine={showLabels && labelPosition === 'outside' ? { stroke: styles.labelLineStroke } : false}
         >
           {chartData.map((entry, index) => (
             <Cell key={`cell-${entry.name}-${index}`} fill={colors[index % colors.length]} stroke="rgba(255,255,255,0.2)" strokeWidth={1} />
