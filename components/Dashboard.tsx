@@ -19,7 +19,7 @@ import {
   PolarRadiusAxis,
   LabelList,
 } from 'recharts';
-import { Users, MapPin, Smile, Car, Download, Calendar, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
+import { Users, MapPin, Smile, Car, Download, Calendar, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot, Filter } from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
 import { SATISFACTION_COLORS, COLORS } from '../constants';
 import ChartCard from './ChartCard';
