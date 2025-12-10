@@ -72,8 +72,6 @@ const CHOICE_REASON_STYLES = [
 const NAME_CHANGE_COLORS = ['#0ea5e9', '#94a3b8'];
 const EXPERIENCE_POS_COLOR = '#22c55e';
 const EXPERIENCE_NEG_COLOR = '#ef4444';
-const VISIT_REASON_LABEL_THRESHOLD = 0.12;
-const DEG_TO_RAD = Math.PI / 180;
 
 const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -190,57 +188,6 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
     <text x={centerX} y={safeY - 2} fill="#475569" fontSize={11} fontWeight={600} textAnchor="middle">
       #{rank}
     </text>
-  );
-};
-
-const renderVisitReasonLabel = (props: any) => {
-  const { cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, percent = 0, name = '' } = props;
-  if (!percent || percent < VISIT_REASON_LABEL_THRESHOLD) return null;
-  const effectiveOuter = typeof outerRadius === 'number' ? outerRadius : innerRadius;
-  const pointerRadius = (effectiveOuter || 0) + 8;
-  const labelRadius = (effectiveOuter || 0) + 32;
-  const pointerX = cx + pointerRadius * Math.cos(-midAngle * DEG_TO_RAD);
-  const pointerY = cy + pointerRadius * Math.sin(-midAngle * DEG_TO_RAD);
-  const labelX = cx + labelRadius * Math.cos(-midAngle * DEG_TO_RAD);
-  const labelY = cy + labelRadius * Math.sin(-midAngle * DEG_TO_RAD);
-  const textAnchor = labelX >= cx ? 'start' : 'end';
-  const percentValue = Math.round(percent * 100);
-  const labelText = `${percentValue}% · ${name}`;
-
-  return (
-    <g>
-      <line
-        x1={pointerX}
-        y1={pointerY}
-        x2={labelX + (textAnchor === 'start' ? -10 : 10)}
-        y2={labelY}
-        stroke="rgba(148,163,184,0.55)"
-        strokeWidth={1.5}
-      />
-      <circle cx={pointerX} cy={pointerY} r={3} fill="#94a3b8" stroke="#f8fafc" strokeWidth={1} />
-      <text
-        x={labelX}
-        y={labelY}
-        dominantBaseline="middle"
-        textAnchor={textAnchor}
-        stroke="rgba(15,23,42,0.65)"
-        strokeWidth={4}
-        strokeLinejoin="round"
-      >
-        {labelText}
-      </text>
-      <text
-        x={labelX}
-        y={labelY}
-        dominantBaseline="middle"
-        textAnchor={textAnchor}
-        fill="#f8fafc"
-        fontSize={12}
-        fontWeight={700}
-      >
-        {labelText}
-      </text>
-    </g>
   );
 };
 
@@ -812,18 +759,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             <div className="flex-1 min-h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={visitReasonInsights.sorted}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={70}
-                    outerRadius={115}
-                    paddingAngle={3}
-                    dataKey="value"
-                    stroke="none"
-                    labelLine={false}
-                    label={renderVisitReasonLabel}
-                  >
+                  <Pie data={visitReasonInsights.sorted} cx="50%" cy="50%" innerRadius={70} outerRadius={110} paddingAngle={3} dataKey="value" stroke="none">
                     {visitReasonInsights.sorted.map((entry, index) => (
                       <Cell key={`reason-${entry.name}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -833,7 +769,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
                     {visitReasonInsights.leaderShare}%
                   </text>
-                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500 dark:fill-gray-400 font-medium uppercase tracking-wide">
+                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-sm font-semibold fill-slate-800 dark:fill-white">
                     {visitReasonInsights.leader?.name || ''}
                   </text>
                 </PieChart>
