@@ -777,7 +777,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q6.title} subtitle={QUESTION_META.q6.subtitle} className="lg:col-span-3 xl:col-span-5">
+        <ChartCard title={QUESTION_META.q6.title} subtitle={QUESTION_META.q6.subtitle} className="lg:col-span-3 xl:col-span-6">
           <div className="flex flex-col h-full gap-4">
             <div className="rounded-2xl border border-emerald-100 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/10 dark:to-transparent p-4">
               <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300 uppercase tracking-wide">Critère n°1</p>
@@ -805,7 +805,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="lg:col-span-3 xl:col-span-4">
+        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="lg:col-span-3 xl:col-span-6">
           <div className="flex flex-col h-full gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-2xl border border-green-100 dark:border-green-500/30 p-4 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/10 dark:to-transparent">
