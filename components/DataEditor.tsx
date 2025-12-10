@@ -3,6 +3,7 @@ import { SurveyDataset, SimpleDataPoint, ComparisonDataPoint } from '../types';
 import { Save, RefreshCw, AlertTriangle } from 'lucide-react';
 import { SURVEY_DATA as INITIAL_DATA } from '../constants';
 import { useApp } from '../context/AppContext';
+import { safeClone } from '../utils/safeClone';
 
 interface DataEditorProps {
   data: SurveyDataset;
@@ -30,13 +31,13 @@ const SECTIONS: Section[] = [
 
 const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
   const { showToast } = useApp();
-  const [localData, setLocalData] = useState<SurveyDataset>(() => structuredClone(data));
+  const [localData, setLocalData] = useState<SurveyDataset>(() => safeClone(data));
   const [activeSection, setActiveSection] = useState<keyof SurveyDataset>('ageGroups');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    setLocalData(structuredClone(data));
+    setLocalData(safeClone(data));
     setHasChanges(false);
   }, [data]);
 
@@ -73,14 +74,14 @@ const DataEditor: React.FC<DataEditorProps> = ({ data, onUpdate }) => {
   }, []);
 
   const saveChanges = useCallback(() => {
-    onUpdate(structuredClone(localData));
+    onUpdate(safeClone(localData));
     setHasChanges(false);
     showToast('Données mises à jour avec succès !', 'success');
   }, [localData, onUpdate, showToast]);
 
   const resetData = useCallback(() => {
-    setLocalData(structuredClone(INITIAL_DATA));
-    onUpdate(structuredClone(INITIAL_DATA));
+    setLocalData(safeClone(INITIAL_DATA));
+    onUpdate(safeClone(INITIAL_DATA));
     setHasChanges(false);
     setShowResetConfirm(false);
     showToast("Données réinitialisées aux valeurs d'origine.", 'info');

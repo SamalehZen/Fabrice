@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { SurveyDataset } from '../types';
 import { SURVEY_DATA } from '../constants';
+import { safeClone } from '../utils/safeClone';
 
 const THEME_STORAGE_KEY = 'hyper-analyse-theme';
 type ThemeMode = 'light' | 'dark';
@@ -33,7 +34,7 @@ const resolveInitialTheme = (): ThemeMode => {
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeMode>(() => resolveInitialTheme());
-  const [surveyData, setSurveyData] = useState<SurveyDataset>(() => structuredClone(SURVEY_DATA));
+  const [surveyData, setSurveyData] = useState<SurveyDataset>(() => safeClone(SURVEY_DATA));
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
@@ -49,11 +50,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   const updateSurveyData = useCallback((data: SurveyDataset) => {
-    setSurveyData(structuredClone(data));
+    setSurveyData(safeClone(data));
   }, []);
 
   const resetSurveyData = useCallback(() => {
-    setSurveyData(structuredClone(SURVEY_DATA));
+    setSurveyData(safeClone(SURVEY_DATA));
   }, []);
 
   const showToast = useCallback((message: string, type: Toast['type'] = 'info') => {
