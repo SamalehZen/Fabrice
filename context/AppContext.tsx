@@ -3,6 +3,9 @@ import { SurveyDataset } from '../types';
 import { SURVEY_DATA } from '../constants';
 import { safeClone } from '../utils/safeClone';
 
+console.log('[DEBUG] AppContext.tsx loading...');
+console.log('[DEBUG] SURVEY_DATA:', SURVEY_DATA);
+
 const THEME_STORAGE_KEY = 'hyper-analyse-theme';
 type ThemeMode = 'light' | 'dark';
 
@@ -33,8 +36,17 @@ const resolveInitialTheme = (): ThemeMode => {
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeMode>(() => resolveInitialTheme());
-  const [surveyData, setSurveyData] = useState<SurveyDataset>(() => safeClone(SURVEY_DATA));
+  console.log('[DEBUG] AppProvider initializing...');
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    console.log('[DEBUG] Resolving initial theme...');
+    return resolveInitialTheme();
+  });
+  const [surveyData, setSurveyData] = useState<SurveyDataset>(() => {
+    console.log('[DEBUG] Cloning SURVEY_DATA...');
+    const cloned = safeClone(SURVEY_DATA);
+    console.log('[DEBUG] Cloned data:', cloned);
+    return cloned;
+  });
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
@@ -80,6 +92,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dismissToast,
   }), [theme, toggleTheme, surveyData, updateSurveyData, resetSurveyData, toasts, showToast, dismissToast]);
 
+  console.log('[DEBUG] AppProvider rendering with value:', value);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 

@@ -1,4 +1,6 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, Component, ErrorInfo, ReactNode } from 'react';
+
+console.log('[DEBUG] App.tsx loading...');
 import { AppProvider, useApp, ThemeMode } from './context/AppContext';
 import { ToastContainer } from './components/Toast';
 import Dashboard from './components/Dashboard';
@@ -205,10 +207,60 @@ const AppContent: React.FC = () => {
   );
 };
 
-const App: React.FC = () => (
-  <AppProvider>
-    <AppContent />
-  </AppProvider>
-);
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+}
+
+class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    this.setState({ errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', fontFamily: 'monospace', background: '#fee', color: '#c00', border: '2px solid #c00', margin: '20px', borderRadius: '8px' }}>
+          <h2 style={{ margin: '0 0 10px' }}>Erreur React</h2>
+          <p><strong>{this.state.error?.message}</strong></p>
+          <pre style={{ background: '#fff', padding: '10px', overflow: 'auto', maxHeight: '200px', fontSize: '12px' }}>
+            {this.state.error?.stack}
+          </pre>
+          <details style={{ marginTop: '10px' }}>
+            <summary>Component Stack</summary>
+            <pre style={{ background: '#fff', padding: '10px', overflow: 'auto', maxHeight: '200px', fontSize: '11px' }}>
+              {this.state.errorInfo?.componentStack}
+            </pre>
+          </details>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const App: React.FC = () => {
+  console.log('[DEBUG] App component rendering...');
+  return (
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
+  );
+};
+
+console.log('[DEBUG] App.tsx loaded successfully');
 
 export default App;
