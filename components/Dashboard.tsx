@@ -141,7 +141,7 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
       <g transform={`translate(${centerX}, ${safeY})`}>
         <rect x={-56} y={-16} width={112} height={28} rx={14} fill="#fbbf24" opacity="0.95" />
         <text x={0} y={0} fill="#78350f" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="middle">
-          ★ Premium VIP
+          ★ N°1 MARKET LEADER
         </text>
       </g>
     );
@@ -749,13 +749,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         >
           <div className="flex flex-col xl:flex-row gap-6 h-full">
             <div className="w-full xl:max-w-sm space-y-4">
-              <div className="rounded-2xl border border-violet-200 dark:border-violet-500/40 bg-gradient-to-br from-violet-50 to-white dark:from-violet-500/10 dark:to-transparent p-5">
-                <p className="text-xs font-semibold text-violet-500 dark:text-violet-200 uppercase tracking-wide">Enseigne leader</p>
+              <div className="rounded-2xl border border-sky-200 dark:border-sky-500/40 bg-gradient-to-br from-sky-50 via-white to-white dark:from-sky-500/10 dark:to-transparent p-5">
+                <p className="text-xs font-semibold text-sky-500 dark:text-sky-200 uppercase tracking-wide">Enseigne leader</p>
                 <p className="text-2xl font-black text-slate-900 dark:text-white mt-2">{competitorInsights.leader?.name || 'N/A'}</p>
                 <div className="flex items-end justify-between mt-6">
                   <div>
                     <p className="text-[11px] uppercase text-slate-500 dark:text-gray-400">Part de visite</p>
-                    <p className="text-4xl font-black text-violet-600 dark:text-violet-300">{competitorInsights.leaderShare}%</p>
+                    <p className="text-4xl font-black text-sky-600 dark:text-sky-300">{competitorInsights.leaderShare}%</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] uppercase text-slate-500 dark:text-gray-400">Volume</p>
@@ -1091,20 +1091,28 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <div className="w-full lg:w-80 space-y-4">
                 {q10Insights.chartData.map((item) => (
                   <div key={item.category} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-gray-400">{item.category}</p>
                         <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.labelPositive}</p>
                       </div>
-                      <span className="text-sm font-bold text-emerald-500">{item.positivePercent}%</span>
+                      <div className="text-right leading-tight">
+                        <p className="text-sm font-bold text-emerald-500">+{item.positivePercent}%</p>
+                        <p className="text-xs font-bold text-rose-500">-{item.negativePercent}%</p>
+                      </div>
                     </div>
                     <div className="space-y-2 text-xs text-slate-500 dark:text-gray-400">
-                      <div className="h-1.5 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${item.positivePercent}%` }} />
+                      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide">
+                        <span className="text-emerald-500">{item.labelPositive}</span>
+                        <span className="text-rose-500 text-right">{item.labelNegative}</span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-emerald-500 font-semibold">{item.labelPositive}: {item.positive}</span>
-                        <span className="text-rose-500 font-semibold">{item.labelNegative}: {item.negative}</span>
+                      <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden flex">
+                        <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${item.positivePercent}%` }} />
+                        <div className="h-full bg-gradient-to-r from-rose-400 to-rose-500" style={{ width: `${item.negativePercent}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between font-semibold">
+                        <span className="text-emerald-500">{item.positivePercent}% • {item.positive} réponses</span>
+                        <span className="text-rose-500 text-right">{item.negativePercent}% • {item.negative} réponses</span>
                       </div>
                     </div>
                   </div>
