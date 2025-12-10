@@ -4,7 +4,6 @@ import {
   Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -28,6 +27,25 @@ import FrequencyTrendChart from './FrequencyTrendChart';
 import { render3DPie } from './Pie3DRenderer';
 import * as XLSX from 'xlsx';
 
+// --- Constants & Config ---
+const COLORS = {
+  primary: '#6366f1',   // Indigo 500
+  secondary: '#8b5cf6', // Violet 500
+  accent: '#ec4899',    // Pink 500
+  success: '#10b981',   // Emerald 500
+  warning: '#f59e0b',   // Amber 500
+  danger: '#ef4444',    // Red 500
+  slate: '#64748b',     // Slate 500
+  dark: '#0f172a',      // Slate 900
+};
+
+const GRADIENTS = {
+  primary: ['#0f172a', '#1e293b'],
+  card: 'bg-white dark:bg-[#0f111a]',
+  glass: 'backdrop-blur-xl bg-white/70 dark:bg-[#0f111a]/80',
+};
+
+// --- Interfaces ---
 interface DashboardProps {
   data: SurveyDataset;
 }
@@ -75,24 +93,19 @@ const EXPERIENCE_NEG_COLOR = '#ef4444';
 
 const CustomTooltip: React.FC<TooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
-
   return (
-    <div
-      className="bg-white/95 dark:bg-dark-surface/95 backdrop-blur-md p-4 rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border text-sm text-slate-800 dark:text-gray-100"
-      role="tooltip"
-    >
-      <p className="font-bold text-slate-800 dark:text-white mb-1">{label || payload[0].name}</p>
-      {payload.map((entry, index) => (
+    <div className="bg-slate-900/95 backdrop-blur-xl p-3 rounded-lg shadow-2xl border border-white/10 text-xs text-white">
+      <p className="font-bold mb-1 opacity-80">{label || payload[0].name}</p>
+      {payload.map((entry: any, index: number) => (
         <div key={index} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} aria-hidden="true" />
-          <span className="text-slate-500 dark:text-gray-400 capitalize">{entry.name} :</span>
-          <span className="font-mono font-semibold text-slate-700 dark:text-gray-100">{entry.value}</span>
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
+          <span className="opacity-70">{entry.name}:</span>
+          <span className="font-mono font-bold">{entry.value}</span>
         </div>
       ))}
     </div>
   );
 };
-
 const ExperienceTooltip: React.FC<TooltipProps> = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const dataPoint = payload[0].payload as { category: string; positive: number; negative: number; labelPositive?: string; labelNegative?: string };
@@ -192,63 +205,36 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const [selectedZone, setSelectedZone] = useState<string>('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const scaleDataset = useCallback((dataset: SimpleDataPoint[], ratio: number): SimpleDataPoint[] => {
-    return dataset.map((item) => ({
-      ...item,
-      value: Math.round(item.value * ratio),
-    }));
-  }, []);
-
+  // --- Filtering Logic (Reused & Optimized) ---
   const filteredData = useMemo(() => {
     if (selectedZone === 'All') return data;
-
     const totalRespondents = data.zones.reduce((acc, curr) => acc + curr.value, 0);
     const zoneData = data.zones.find((z) => z.name === selectedZone);
     const zoneValue = zoneData?.value || 0;
-
     if (totalRespondents === 0 || zoneValue === 0) return data;
-
     const ratio = zoneValue / totalRespondents;
+    
+    const scale = (d: SimpleDataPoint[]) => d.map(i => ({ ...i, value: Math.round(i.value * ratio) }));
 
     return {
       ...data,
-      ageGroups: scaleDataset(data.ageGroups, ratio),
-      zones: data.zones.map((z) => ({ ...z, value: z.name === selectedZone ? z.value : 0 })),
-      transport: scaleDataset(data.transport, ratio),
-      frequency: scaleDataset(data.frequency, ratio),
-      visitReason: scaleDataset(data.visitReason, ratio),
-      competitors: scaleDataset(data.competitors, ratio),
-      choiceReason: scaleDataset(data.choiceReason, ratio),
-      satisfaction: scaleDataset(data.satisfaction, ratio),
-      preferredDepartment: scaleDataset(data.preferredDepartment, ratio),
-      nameChangeAwareness: scaleDataset(data.nameChangeAwareness, ratio),
-      experienceChanges: data.experienceChanges.map((item) => ({
+      ageGroups: scale(data.ageGroups),
+      zones: data.zones.map(z => ({ ...z, value: z.name === selectedZone ? z.value : 0 })),
+      transport: scale(data.transport),
+      frequency: scale(data.frequency),
+      visitReason: scale(data.visitReason),
+      competitors: scale(data.competitors),
+      choiceReason: scale(data.choiceReason),
+      satisfaction: scale(data.satisfaction),
+      preferredDepartment: scale(data.preferredDepartment),
+      nameChangeAwareness: scale(data.nameChangeAwareness),
+      experienceChanges: data.experienceChanges.map(item => ({
         ...item,
         positive: Math.round(item.positive * ratio),
         negative: Math.round(item.negative * ratio),
       })),
     };
-  }, [data, selectedZone, scaleDataset]);
-
-  const stats = useMemo(() => {
-    const totalRespondents = filteredData.zones.reduce((acc, curr) => acc + curr.value, 0);
-    const totalSatisfaction = filteredData.satisfaction.reduce((acc, curr) => acc + curr.value, 0);
-    const positiveSatisfaction = filteredData.satisfaction
-      .filter((s) => s.name === 'Satisfait' || s.name === 'Très satisfait')
-      .reduce((acc, curr) => acc + curr.value, 0);
-    const satisfactionRate = totalSatisfaction > 0 ? Math.round((positiveSatisfaction / totalSatisfaction) * 100) : 0;
-
-    const topZone = [...filteredData.zones].sort((a, b) => b.value - a.value)[0] || { name: 'N/A', value: 0 };
-    const totalZones = data.zones.reduce((acc, curr) => acc + curr.value, 0);
-    const topZonePercent = selectedZone === 'All' ? (totalZones > 0 ? Math.round((topZone.value / totalZones) * 100) : 0) : 100;
-
-    const topTransport = [...filteredData.transport].sort((a, b) => b.value - a.value)[0];
-    const totalTransport = filteredData.transport.reduce((acc, curr) => acc + curr.value, 0);
-    const topTransportPercent = totalTransport > 0 && topTransport ? Math.round((topTransport.value / totalTransport) * 100) : 0;
-
-    return { totalRespondents, satisfactionRate, topZone, topZonePercent, topTransport, topTransportPercent };
-  }, [filteredData, data.zones, selectedZone]);
-
+  }, [data, selectedZone]);
   const zoneInsights = useMemo(() => {
     const sorted = [...filteredData.zones].sort((a, b) => b.value - a.value);
     const total = sorted.reduce((sum, zone) => sum + zone.value, 0);
@@ -402,127 +388,51 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const handleExportXLSX = useCallback(() => {
     const wb = XLSX.utils.book_new();
     const dateStr = new Date().toISOString().split('T')[0];
-
-    const addSheet = (rows: SimpleDataPoint[] | typeof filteredData.experienceChanges, name: string) => {
+    const addSheet = (rows: any[], name: string) => {
       const ws = XLSX.utils.json_to_sheet(rows);
       XLSX.utils.book_append_sheet(wb, ws, name);
     };
-
-    addSheet(filteredData.ageGroups, 'Q0_Ages');
-    addSheet(filteredData.zones, 'Q1_Zones');
-    addSheet(filteredData.transport, 'Q2_Transport');
-    addSheet(filteredData.frequency, 'Q3_Frequence');
-    addSheet(filteredData.visitReason, 'Q4_Motifs');
-    addSheet(filteredData.competitors, 'Q5_Magasins');
-    addSheet(filteredData.choiceReason, 'Q6_Raisons');
-    addSheet(filteredData.satisfaction, 'Q7_Satisfaction');
-    addSheet(filteredData.preferredDepartment, 'Q8_Rayons');
-    addSheet(filteredData.nameChangeAwareness, 'Q9_Nom');
-    addSheet(filteredData.experienceChanges, 'Q10_Experience');
-
-    XLSX.writeFile(wb, `Hyper_Analyse_${selectedZone}_${dateStr}.xlsx`);
+    Object.keys(filteredData).forEach((key, idx) => {
+        if (Array.isArray((filteredData as any)[key])) {
+            addSheet((filteredData as any)[key], `Q${idx}`);
+        }
+    });
+    XLSX.writeFile(wb, `Fabrice_Report_${selectedZone}_${dateStr}.xlsx`);
   }, [filteredData, selectedZone]);
 
-  const handleZoneSelect = useCallback((zone: string) => {
-    setSelectedZone(zone);
-    setIsFilterOpen(false);
-  }, []);
-
-  const closeFilter = useCallback(() => {
-    setIsFilterOpen(false);
-  }, []);
-
+  // --- Render ---
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gradient-to-r from-white via-white to-slate-50/80 dark:from-dark-card/95 dark:via-dark-card/90 dark:to-dark-surface/80 p-5 rounded-2xl border border-slate-200/80 dark:border-dark-border shadow-sm relative z-20 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex p-3 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/25">
-            <TrendingUp size={22} className="text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Tableau de bord</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-sm text-slate-500 dark:text-gray-400">Analyse dynamique des réponses</p>
-              {selectedZone !== 'All' && (
-                <span className="bg-brand-100 dark:bg-brand-500/20 text-brand-700 dark:text-brand-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
-                  {selectedZone}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-          <div className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl text-sm font-medium border border-emerald-200/60 dark:border-emerald-500/20">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <Calendar size={14} />
-            <span>15 derniers jours</span>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              aria-expanded={isFilterOpen}
-              aria-haspopup="listbox"
-              aria-label="Filtrer par zone"
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                selectedZone !== 'All'
-                  ? 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-500/15 dark:text-brand-300 dark:border-brand-400/30 shadow-sm'
-                  : 'bg-white dark:bg-dark-card/80 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-dark-hover'
-              }`}
-            >
-              <MapPin size={15} />
-              <span>{selectedZone === 'All' ? 'Toutes zones' : selectedZone}</span>
-              <ChevronDown size={14} className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {isFilterOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={closeFilter} aria-hidden="true" />
-                <ul
-                  role="listbox"
-                  aria-label="Sélectionner une zone"
-                  className="absolute top-full right-0 mt-2 w-52 bg-white dark:bg-dark-surface rounded-xl shadow-xl dark:shadow-black/50 border border-slate-100 dark:border-dark-border overflow-hidden z-20 py-1"
+    <div className="space-y-8 font-sans text-slate-900 dark:text-slate-100">
+      
+      {/* --- Filter & Action Toolbar --- */}
+      <div className="flex flex-col sm:flex-row justify-end items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-2 rounded-2xl border border-white/20 dark:border-white/5">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
+                <button 
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-semibold px-4 py-2.5 rounded-xl flex items-center justify-between gap-2 transition-all shadow-sm border border-slate-200 dark:border-slate-700"
                 >
-                  <li className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
-                    Filtrer par zone
-                  </li>
-                  <li>
-                    <button
-                      role="option"
-                      aria-selected={selectedZone === 'All'}
-                      onClick={() => handleZoneSelect('All')}
-                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-300 flex items-center justify-between transition-colors"
-                    >
-                      <span>Toutes les zones</span>
-                      {selectedZone === 'All' && <Check size={14} className="text-brand-600" />}
-                    </button>
-                  </li>
-                  {data.zones.map((zone) => (
-                    <li key={zone.name}>
-                      <button
-                        role="option"
-                        aria-selected={selectedZone === zone.name}
-                        onClick={() => handleZoneSelect(zone.name)}
-                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-gray-200 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-dark-hover/60 dark:hover:text-brand-300 flex items-center justify-between transition-colors"
-                      >
-                        <span>{zone.name}</span>
-                        {selectedZone === zone.name && <Check size={14} className="text-brand-600" />}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-          <button
-            onClick={handleExportXLSX}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl text-sm font-medium hover:from-brand-700 hover:to-brand-800 shadow-md shadow-brand-500/25 dark:shadow-brand-900/30 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-            aria-label="Exporter les données au format Excel"
-          >
-            <Download size={16} />
-            <span className="hidden sm:inline">Exporter</span>
-          </button>
+                    <span className="flex items-center gap-2">
+                        <Filter size={16} className="text-indigo-500" />
+                        {selectedZone === 'All' ? 'Toutes les zones' : selectedZone}
+                    </span>
+                    <ChevronDown size={14} className={`transition-transform text-slate-400 ${isFilterOpen ? 'rotate-180': ''}`} />
+                </button>
+                {isFilterOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden py-1">
+                        <button onClick={() => { setSelectedZone('All'); setIsFilterOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700">Toutes les zones</button>
+                        {data.zones.map(z => (
+                            <button key={z.name} onClick={() => { setSelectedZone(z.name); setIsFilterOpen(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700">{z.name}</button>
+                        ))}
+                    </div>
+                )}
+            </div>
+            <button onClick={handleExportXLSX} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-500/20 transition-all">
+                <Download size={16} />
+                <span className="hidden sm:inline">Export</span>
+            </button>
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <article className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl p-6 text-white shadow-lg shadow-brand-200 dark:shadow-brand-900/50 group transition-all hover:shadow-xl hover:-translate-y-1">
           <div className="absolute -right-6 -top-6 bg-white/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-white/20 transition-all" aria-hidden="true" />
