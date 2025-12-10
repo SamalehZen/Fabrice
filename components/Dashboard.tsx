@@ -134,14 +134,14 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
   const rank = Number(value);
   if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || Number.isNaN(rank)) return null;
   const centerX = x + width / 2;
-  const safeY = Math.max(y - 40, 42);
+  const safeY = Math.max(y - 32, 36);
 
   if (rank === 1) {
-    const badgeWidth = 176;
-    const badgeHeight = 52;
-    const badgeRadius = 22;
-    const dropShadowOffset = 6;
-    const top = -badgeHeight - 4;
+    const badgeWidth = 150;
+    const badgeHeight = 44;
+    const badgeRadius = 18;
+    const dropShadowOffset = 5;
+    const top = -badgeHeight - 2;
 
     return (
       <g transform={`translate(${centerX}, ${safeY})`}>
@@ -151,7 +151,7 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
           width={badgeWidth}
           height={badgeHeight}
           rx={badgeRadius}
-          fill="rgba(2,6,23,0.35)"
+          fill="rgba(8,47,73,0.35)"
         />
         <rect
           x={-badgeWidth / 2}
@@ -159,22 +159,22 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
           width={badgeWidth}
           height={badgeHeight}
           rx={badgeRadius}
-          fill="#1d4ed8"
-          stroke="#93c5fd"
+          fill="#0ea5e9"
+          stroke="#38bdf8"
           strokeWidth={1.5}
         />
         <rect
-          x={-badgeWidth / 2 + 8}
-          y={top + 8}
-          width={badgeWidth - 16}
-          height={badgeHeight - 28}
+          x={-badgeWidth / 2 + 6}
+          y={top + 6}
+          width={badgeWidth - 12}
+          height={badgeHeight - 20}
           rx={badgeRadius}
-          fill="rgba(255,255,255,0.12)"
+          fill="rgba(255,255,255,0.14)"
         />
-        <text x={0} y={top + 24} fill="#dbeafe" fontSize={16} fontWeight={800} textAnchor="middle">
+        <text x={0} y={top + 20} fill="#e0f2fe" fontSize={14} fontWeight={800} textAnchor="middle">
           ★ N°1
         </text>
-        <text x={0} y={top + 40} fill="#e0f2fe" fontSize={11} fontWeight={700} letterSpacing="0.25em" textAnchor="middle">
+        <text x={0} y={top + 34} fill="#f0f9ff" fontSize={10} fontWeight={700} letterSpacing="0.2em" textAnchor="middle">
           MARKET LEADER
         </text>
       </g>
