@@ -134,14 +134,14 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
   const rank = Number(value);
   if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || Number.isNaN(rank)) return null;
   const centerX = x + width / 2;
-  const safeY = Math.max(y - 32, 36);
+  const safeY = Math.max(y - 26, 30);
 
   if (rank === 1) {
-    const badgeWidth = 150;
-    const badgeHeight = 44;
-    const badgeRadius = 18;
-    const dropShadowOffset = 5;
-    const top = -badgeHeight - 2;
+    const badgeWidth = 120;
+    const badgeHeight = 34;
+    const badgeRadius = 14;
+    const dropShadowOffset = 4;
+    const top = -badgeHeight;
 
     return (
       <g transform={`translate(${centerX}, ${safeY})`}>
@@ -164,17 +164,17 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
           strokeWidth={1.5}
         />
         <rect
-          x={-badgeWidth / 2 + 6}
-          y={top + 6}
-          width={badgeWidth - 12}
-          height={badgeHeight - 20}
+          x={-badgeWidth / 2 + 5}
+          y={top + 5}
+          width={badgeWidth - 10}
+          height={badgeHeight - 16}
           rx={badgeRadius}
-          fill="rgba(255,255,255,0.14)"
+          fill="rgba(255,255,255,0.12)"
         />
-        <text x={0} y={top + 20} fill="#e0f2fe" fontSize={14} fontWeight={800} textAnchor="middle">
+        <text x={0} y={top + 16} fill="#e0f2fe" fontSize={12} fontWeight={800} textAnchor="middle">
           ★ N°1
         </text>
-        <text x={0} y={top + 34} fill="#f0f9ff" fontSize={10} fontWeight={700} letterSpacing="0.2em" textAnchor="middle">
+        <text x={0} y={top + 27} fill="#f0f9ff" fontSize={9} fontWeight={700} letterSpacing="0.18em" textAnchor="middle">
           MARKET LEADER
         </text>
       </g>
