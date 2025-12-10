@@ -105,7 +105,7 @@ const AppContent: React.FC = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight leading-none">
-                Hyper <span className="text-brand-600 dark:text-brand-400">Analyse</span>
+                Hyper <span className="text-brand-600 dark:text-brand-400">Sam</span>
               </h1>
               <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium tracking-wide">Dashboard Analytics</p>
             </div>

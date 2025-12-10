@@ -109,7 +109,7 @@ export const SURVEY_DATA: SurveyDataset = {
 };
 
 export const SYSTEM_INSTRUCTION = `
-You are a senior data analyst for Hyper Analyse. 
+You are a senior data analyst for Hyper Sam. 
 You have access to the following survey dataset in JSON format:
 ${JSON.stringify(SURVEY_DATA)}
 

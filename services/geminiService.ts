@@ -43,7 +43,7 @@ const buildSystemInstruction = (currentData: SurveyDataset | undefined): string 
   const chartGuide = QUESTION_MAPPINGS.map(({ id, text, chart }) => `- ${id} ${text} : [[CHART:${chart}]]`).join('\n');
 
   return `
-Vous êtes un expert analyste de données pour Hyper Analyse.
+Vous êtes un expert analyste de données pour Hyper Sam.
 Vous avez accès aux données de l'enquête au format JSON ci-dessous :
 ${dataContext}
 

@@ -69,7 +69,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      text: "Bonjour ! Je suis votre assistant analytique pour Hyper Analyse. Posez-moi vos questions sur les données (ex: 'Quelle est la satisfaction ?'), je peux afficher des graphiques.",
+      text: "Bonjour ! Je suis votre assistant analytique pour Hyper Sam. Posez-moi vos questions sur les données (ex: 'Quelle est la satisfaction ?'), je peux afficher des graphiques.",
     },
   ]);
   const [input, setInput] = useState('');
@@ -422,7 +422,7 @@ const AIChatOverlay: React.FC<AIChatOverlayProps> = ({ currentData }) => {
 
       <div
         role="dialog"
-        aria-label="Assistant IA Hyper Analyse"
+        aria-label="Assistant IA Hyper Sam"
         aria-hidden={!isOpen}
         className={`fixed z-50 bg-white/95 dark:bg-dark-surface/95 rounded-xl shadow-2xl shadow-slate-200/70 dark:shadow-black/70 border border-slate-200 dark:border-dark-border flex flex-col transition-all duration-300 origin-bottom-right ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'} ${isExpanded ? 'bottom-6 right-6 w-[920px] h-[80vh] max-w-[96vw]' : 'bottom-24 right-6 w-[480px] h-[600px] max-h-[70vh] max-w-[92vw]'}`}
       >
