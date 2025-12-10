@@ -134,14 +134,14 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
   const rank = Number(value);
   if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || Number.isNaN(rank)) return null;
   const centerX = x + width / 2;
-  const safeY = Math.max(y - 26, 30);
+  const safeY = Math.max(y - 18, 28);
 
   if (rank === 1) {
     const badgeWidth = 120;
     const badgeHeight = 34;
     const badgeRadius = 14;
     const dropShadowOffset = 4;
-    const top = -badgeHeight;
+    const top = -badgeHeight + 4;
 
     return (
       <g transform={`translate(${centerX}, ${safeY})`}>
