@@ -385,6 +385,39 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     return { totalPositive, totalNegative, positiveRate, negativeRate, netIndex, chartData, standout };
   }, [filteredData.experienceChanges]);
 
+  const stats = useMemo(() => {
+    const zones = filteredData.zones ?? [];
+    const transport = filteredData.transport ?? [];
+    const satisfaction = filteredData.satisfaction ?? [];
+
+    const totalRespondents = zones.reduce((sum, zone) => sum + (zone.value || 0), 0);
+    const totalTransport = transport.reduce((sum, entry) => sum + (entry.value || 0), 0);
+    const totalSatisfaction = satisfaction.reduce((sum, slice) => sum + (slice.value || 0), 0);
+
+    const satisfiedCount = satisfaction.reduce((sum, slice) => {
+      return slice.name.toLowerCase().includes('satisfait') ? sum + (slice.value || 0) : sum;
+    }, 0);
+
+    const topZone = zones.reduce<SimpleDataPoint | null>((top, zone) => {
+      if (!top || (zone.value || 0) > (top.value || 0)) return zone;
+      return top;
+    }, zones[0] ?? null);
+
+    const topTransport = transport.reduce<SimpleDataPoint | null>((top, item) => {
+      if (!top || (item.value || 0) > (top.value || 0)) return item;
+      return top;
+    }, transport[0] ?? null);
+
+    return {
+      totalRespondents,
+      satisfactionRate: totalSatisfaction ? Math.round((satisfiedCount / totalSatisfaction) * 100) : 0,
+      topZone: topZone ?? { name: 'N/A', value: 0 },
+      topZonePercent: totalRespondents && topZone ? Math.round(((topZone.value || 0) / totalRespondents) * 100) : 0,
+      topTransport: topTransport ?? { name: 'N/A', value: 0 },
+      topTransportPercent: totalTransport && topTransport ? Math.round(((topTransport.value || 0) / totalTransport) * 100) : 0,
+    };
+  }, [filteredData]);
+
   const handleExportXLSX = useCallback(() => {
     const wb = XLSX.utils.book_new();
     const dateStr = new Date().toISOString().split('T')[0];
