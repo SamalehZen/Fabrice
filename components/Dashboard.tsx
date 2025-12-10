@@ -832,6 +832,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                     showLegend: false,
                     labelPosition: 'outside',
                     labelOffset: 16,
+                    showLabels: false,
                   })}
                 </div>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
