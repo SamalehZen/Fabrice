@@ -18,6 +18,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   LabelList,
+  Legend,
 } from 'recharts';
 import { Users, MapPin, Smile, Car, Download, Calendar, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot, Filter } from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
