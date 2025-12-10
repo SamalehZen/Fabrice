@@ -49,7 +49,7 @@ const QUESTION_META = {
   q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
   q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' },
   q9: { title: 'Q9 • Changement de nom remarqué', subtitle: 'Sensibilité à la nouvelle identité' },
-  q10: { title: 'Q10 • Évolution expérience', subtitle: "Comparaison avec l'année précédente" },
+  q10: { title: 'Q10 • Évolution expérience', subtitle: 'Comparaison avec Géant' },
 } as const;
 
 const TRANSPORT_CONFIG: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
