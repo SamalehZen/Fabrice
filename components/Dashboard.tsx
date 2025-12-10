@@ -766,9 +766,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
                     {visitReasonInsights.leaderShare}%
                   </text>
-                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-sm font-semibold fill-slate-800 dark:fill-white">
-                    {visitReasonInsights.leader?.name || ''}
-                  </text>
                 </PieChart>
               </ResponsiveContainer>
             </div>
