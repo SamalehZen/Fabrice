@@ -18,6 +18,7 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  LabelList,
 } from 'recharts';
 import { Users, MapPin, Smile, Car, Download, Calendar, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
@@ -119,6 +120,37 @@ const ExperienceTooltip: React.FC<TooltipProps> = ({ active, payload }) => {
         </div>
       </div>
     </div>
+  );
+};
+
+interface RankLabelProps {
+  x?: number;
+  y?: number;
+  width?: number;
+  value?: number | string;
+}
+
+const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) => {
+  const rank = Number(value);
+  if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || Number.isNaN(rank)) return null;
+  const centerX = x + width / 2;
+  const safeY = Math.max(y - 16, 22);
+
+  if (rank === 1) {
+    return (
+      <g transform={`translate(${centerX}, ${safeY})`}>
+        <rect x={-56} y={-16} width={112} height={28} rx={14} fill="#fbbf24" opacity="0.95" />
+        <text x={0} y={0} fill="#78350f" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="middle">
+          ★ Premium VIP
+        </text>
+      </g>
+    );
+  }
+
+  return (
+    <text x={centerX} y={safeY - 2} fill="#475569" fontSize={11} fontWeight={600} textAnchor="middle">
+      #{rank}
+    </text>
   );
 };
 
@@ -252,6 +284,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     const gap = runnerUp && leader ? leader.value - runnerUp.value : leader?.value ?? 0;
     return { sorted, total, leader, runnerUp, leaderShare, runnerUpShare, gap };
   }, [filteredData.competitors]);
+
+  const competitorChartData = useMemo(
+    () => competitorInsights.sorted.map((entry, index) => ({ ...entry, rank: index + 1 })),
+    [competitorInsights.sorted]
+  );
 
   const departmentInsights = useMemo(() => {
     const sorted = [...filteredData.preferredDepartment].sort((a, b) => b.value - a.value);
@@ -751,7 +788,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             </div>
             <div className="flex-1 min-h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={competitorInsights.sorted} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={competitorChartData} margin={{ top: 45, right: 30, left: 20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="q5Bar" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
@@ -767,9 +804,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
-                    {competitorInsights.sorted.map((entry) => (
+                    {competitorChartData.map((entry) => (
                       <Cell key={entry.name} fill={entry.name === competitorInsights.leader?.name ? 'url(#q5BarHighlight)' : 'url(#q5Bar)'} />
                     ))}
+                    <LabelList dataKey="rank" content={(props) => <CompetitorRankLabel {...props} />} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
