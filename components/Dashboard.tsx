@@ -1197,6 +1197,14 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                         <stop offset="0%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.3} />
                         <stop offset="100%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.9} />
                       </linearGradient>
+                      <linearGradient id="q10PricePositive" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#fca5a5" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.95} />
+                      </linearGradient>
+                      <linearGradient id="q10PriceNegative" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#bbf7d0" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor={EXPERIENCE_POS_COLOR} stopOpacity={0.95} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                     <XAxis type="number" hide domain={[0, 1]} />
@@ -1204,12 +1212,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                     <Tooltip content={<ExperienceTooltip />} cursor={{ fill: '#f8fafc' }} />
                     <Bar dataKey="positive" stackId="experience" radius={[0, 0, 0, 0]}>
                       {q10Insights.chartData.map((item) => (
-                        <Cell key={`${item.category}-positive`} fill={item.isPrice ? EXPERIENCE_NEG_COLOR : 'url(#q10Positive)'} />
+                        <Cell key={`${item.category}-positive`} fill={item.isPrice ? 'url(#q10PricePositive)' : 'url(#q10Positive)'} />
                       ))}
                     </Bar>
                     <Bar dataKey="negative" stackId="experience" radius={[0, 0, 0, 0]}>
                       {q10Insights.chartData.map((item) => (
-                        <Cell key={`${item.category}-negative`} fill={item.isPrice ? EXPERIENCE_POS_COLOR : 'url(#q10Negative)'} />
+                        <Cell key={`${item.category}-negative`} fill={item.isPrice ? 'url(#q10PriceNegative)' : 'url(#q10Negative)'} />
                       ))}
                     </Bar>
                   </BarChart>
