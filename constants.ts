@@ -66,7 +66,7 @@ export const SURVEY_DATA: SurveyDataset = {
     { name: 'Nougaprix', value: 62 },
     { name: 'Napoleon', value: 42 },
     { name: 'Casino', value: 76 },
-    { name: 'Bawadi Mall', value: 250 },
+    { name: 'Hypermarché', value: 250 },
     { name: 'Autre', value: 25 },
   ],
   choiceReason: [
