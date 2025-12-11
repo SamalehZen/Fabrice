@@ -6,6 +6,7 @@ import QuestionsView from './components/QuestionsView';
 import DataEditor from './components/DataEditor';
 import AIChatOverlay from './components/AIChatOverlay';
 import AnimatedBadge from './components/AnimatedBadge';
+import DataFlowAnimation from './components/DataFlowAnimation';
 import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu, X, Sun, Moon } from 'lucide-react';
 
 type TabType = 'dashboard' | 'questions' | 'editor';
@@ -119,6 +120,7 @@ const AppContent: React.FC = () => {
                   key={id}
                   onClick={() => handleTabChange(id)}
                   aria-current={activeTab === id ? 'page' : undefined}
+                  data-flow-target={id === 'editor' ? 'editor-nav' : undefined}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
                     activeTab === id
                       ? 'bg-white dark:bg-dark-hover text-brand-600 dark:text-brand-400 shadow-sm'
@@ -193,7 +195,7 @@ const AppContent: React.FC = () => {
               <p className="text-slate-500 dark:text-gray-400 mt-1.5 text-sm sm:text-base max-w-xl leading-relaxed">{currentPage.description}</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center">
+          <div className="hidden sm:flex items-center" data-flow-source="realtime-badge">
             <AnimatedBadge text="Données en temps réel" color="#0ea5e9" />
           </div>
         </div>
@@ -201,6 +203,7 @@ const AppContent: React.FC = () => {
       </main>
 
       <AIChatOverlay currentData={surveyData} />
+      <DataFlowAnimation isActive={activeTab === 'dashboard'} duration={1.6} delay={3} />
     </div>
   );
 };
