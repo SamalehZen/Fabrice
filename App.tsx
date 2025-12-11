@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import QuestionsView from './components/QuestionsView';
 import DataEditor from './components/DataEditor';
 import AIChatOverlay from './components/AIChatOverlay';
+import AnimatedBadge from './components/AnimatedBadge';
 import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu, X, Sun, Moon } from 'lucide-react';
 
 type TabType = 'dashboard' | 'questions' | 'editor';
@@ -94,11 +95,11 @@ const AppContent: React.FC = () => {
   }, [activeTab, surveyData, updateSurveyData]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-dark-bg dark:via-dark-bg dark:to-dark-surface pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-dark-bg dark:via-dark-bg dark:to-dark-surface pb-24 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col">
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       
       <header className="bg-white/90 dark:bg-dark-surface/95 border-b border-slate-200/80 dark:border-dark-border sticky top-0 z-40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-br from-brand-500 to-brand-700 p-2.5 rounded-xl shadow-lg shadow-brand-500/25 dark:shadow-brand-500/15">
               <LayoutDashboard className="text-white w-5 h-5" aria-hidden="true" />
@@ -181,7 +182,7 @@ const AppContent: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 w-full px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 py-10">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="flex items-start gap-4">
             <div className="hidden sm:flex p-3 rounded-2xl bg-gradient-to-br from-brand-500/10 to-purple-500/10 dark:from-brand-500/20 dark:to-purple-500/20 border border-brand-200/50 dark:border-brand-500/20">
@@ -192,9 +193,8 @@ const AppContent: React.FC = () => {
               <p className="text-slate-500 dark:text-gray-400 mt-1.5 text-sm sm:text-base max-w-xl leading-relaxed">{currentPage.description}</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 dark:text-gray-500">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span>Données en temps réel</span>
+          <div className="hidden sm:flex items-center">
+            <AnimatedBadge text="Données en temps réel" color="#0ea5e9" />
           </div>
         </div>
         <div className="transition-opacity duration-300">{renderContent}</div>

@@ -43,7 +43,7 @@ const QUESTION_META = {
   q1: { title: 'Q1 • Zone de résidence', subtitle: 'Origine géographique des visiteurs' },
   q2: { title: 'Q2 • Moyen de transport', subtitle: 'Comment les visiteurs se rendent au mall' },
   q3: { title: 'Q3 • Fréquence de visite', subtitle: "Rythme des achats à l'hypermarché" },
-  q4: { title: 'Q4 • Motivation principale', subtitle: 'Pourquoi ils choisissent le mall aujourd’hui' },
+  q4: { title: 'Q4 • Motivation principale', subtitle: 'Pourquoi choisissent-ils le mall d’habitude ?' },
   q5: { title: 'Q5 • Magasin alimentaire le plus fréquenté', subtitle: 'Part de visite par enseigne' },
   q6: { title: 'Q6 • Raison du choix', subtitle: "Critères d'arbitrage des visiteurs" },
   q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
@@ -259,12 +259,56 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     return { sorted, total, leader, runnerUp, leaderShare, gap };
   }, [filteredData.zones]);
 
-  const ageInsights = useMemo(() => {
-    const sorted = [...filteredData.ageGroups].sort((a, b) => b.value - a.value);
-    const leader = sorted[0];
-    const total = sorted.reduce((sum, group) => sum + group.value, 0);
-    const leaderShare = total ? Math.round(((leader?.value ?? 0) / total) * 100) : 0;
-    return { leader, leaderShare };
+  const q1ZoneHighlights = useMemo(() => {
+    const total = filteredData.zones.reduce((sum, zone) => sum + zone.value, 0) || 1;
+    const balbala = filteredData.zones.find((zone) => zone.name.toLowerCase().includes('balbala'));
+    const centerVille = filteredData.zones.find((zone) => zone.name.toLowerCase().includes('centre'));
+    const balbalaValue = balbala?.value ?? 0;
+    const centerValue = centerVille?.value ?? 0;
+    const combinedValue = balbalaValue + centerValue;
+    const toPercent = (value: number, decimals = 0) => Number((((value / total) * 100) || 0).toFixed(decimals));
+
+    return {
+      combined: {
+        label: 'Balbala + Centre Ville',
+        value: combinedValue,
+        percent: Math.round((combinedValue / total) * 100) || 0,
+      },
+      breakdown: [
+        { label: 'Balbala', value: balbalaValue, percent: toPercent(balbalaValue, 2) },
+        { label: 'Centre Ville', value: centerValue, percent: toPercent(centerValue, 2) },
+      ],
+      total,
+    };
+  }, [filteredData.zones]);
+
+  const q0SegmentHighlights = useMemo(() => {
+    const total = filteredData.ageGroups.reduce((sum, group) => sum + group.value, 0) || 1;
+    const focusGroup = filteredData.ageGroups.find((group) => group.name === '20-30 ans');
+    const supportGroup = filteredData.ageGroups.find((group) => group.name === '30-50 ans');
+    const focusValue = focusGroup?.value ?? 0;
+    const supportValue = supportGroup?.value ?? 0;
+    const combinedValue = focusValue + supportValue;
+    const toPercent = (value: number) => Math.round((value / total) * 100);
+
+    return {
+      combined: {
+        label: '20–50 ans',
+        value: combinedValue,
+        percent: toPercent(combinedValue),
+      },
+      focus: {
+        label: '20–30 ans',
+        value: focusValue,
+        percent: toPercent(focusValue),
+      },
+      support: {
+        label: '30–50 ans',
+        value: supportValue,
+        percent: toPercent(supportValue),
+      },
+      total,
+    };
   }, [filteredData.ageGroups]);
 
   const frequencyInsights = useMemo(() => {
@@ -393,6 +437,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         negativePercent: Math.round((item.negative / categoryTotal) * 100),
         labelPositive: item.labelPositive,
         labelNegative: item.labelNegative,
+        isPrice: item.category === 'Prix',
       };
     });
     const standout = [...chartData].sort((a, b) => b.positivePercent - a.positivePercent)[0];
@@ -598,13 +643,51 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-12 gap-6 auto-rows-[minmax(320px,auto)]">
         <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle} className="lg:col-span-3 xl:col-span-4">
           <div className="flex flex-col h-full gap-4">
-            <div className="rounded-2xl border border-purple-100 dark:border-purple-500/30 bg-gradient-to-br from-purple-50 to-white dark:from-purple-500/10 dark:to-transparent p-4">
-              <p className="text-xs font-semibold text-purple-500 dark:text-purple-200 uppercase tracking-wide">Segment dominant</p>
-              <p className="text-lg font-bold text-slate-800 dark:text-white mt-1">{ageInsights.leader?.name || 'N/A'}</p>
-              <div className="flex items-end justify-between mt-4">
-                <span className="text-3xl font-black text-purple-600 dark:text-purple-300">{ageInsights.leaderShare}%</span>
-                <span className="text-xs text-slate-500 dark:text-gray-400">{ageInsights.leader?.value ?? 0} répondants</span>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <article className="rounded-2xl border border-violet-100 dark:border-violet-500/40 bg-gradient-to-br from-[#f7f3ff] via-[#ede7ff] to-[#e0dcff] dark:from-[#161329] dark:via-[#201a3d] dark:to-[#2b1f52] text-slate-900 dark:text-white p-5 shadow-md shadow-violet-200/60 dark:shadow-violet-900/30">
+                <p className="text-xs font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-200">SEGMENT dominant</p>
+                <h4 className="text-xs font-semibold text-slate-500 dark:text-gray-300 mt-1">{q0SegmentHighlights.combined.label}</h4>
+                <p className="text-[68px] font-black mt-4 leading-none text-violet-800 dark:text-violet-100">{q0SegmentHighlights.combined.percent}%</p>
+                <p className="text-sm text-slate-600 dark:text-gray-300 mt-2">{q0SegmentHighlights.combined.value} répondants • panel {q0SegmentHighlights.total}</p>
+                <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl border border-white/70 dark:border-white/10 bg-white/80 dark:bg-white/5 p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{q0SegmentHighlights.focus.label}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{q0SegmentHighlights.focus.percent}%</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{q0SegmentHighlights.focus.value} pers.</p>
+                  </div>
+                  <div className="rounded-xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-white/5 p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{q0SegmentHighlights.support.label}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{q0SegmentHighlights.support.percent}%</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{q0SegmentHighlights.support.value} pers.</p>
+                  </div>
+                </div>
+              </article>
+              <article className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/90 dark:bg-dark-card/80 p-4 shadow-sm shadow-slate-200/50 dark:shadow-black/30 flex flex-col justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">Segment cœur</p>
+                  <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{q0SegmentHighlights.focus.label}</h4>
+                  <p className="text-4xl font-black text-slate-900 dark:text-white leading-none mt-3">{q0SegmentHighlights.focus.percent}%</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{q0SegmentHighlights.focus.value} répondants</p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-gray-400">
+                    <span>Poids dans le panel</span>
+                    <span>{q0SegmentHighlights.focus.percent}%</span>
+                  </div>
+                  <div
+                    className="mt-2 h-2 rounded-full bg-slate-100 dark:bg-dark-muted overflow-hidden"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={q0SegmentHighlights.focus.percent}
+                  >
+                    <span className="block h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-700" style={{ width: `${q0SegmentHighlights.focus.percent}%` }} />
+                  </div>
+                  <p className="mt-3 text-[11px] text-slate-500 dark:text-gray-400">
+                    {q0SegmentHighlights.support.percent}% supplémentaires proviennent des {q0SegmentHighlights.support.label}.
+                  </p>
+                </div>
+              </article>
             </div>
             <div className="flex-1 min-h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -622,18 +705,23 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
         <ChartCard title={QUESTION_META.q1.title} subtitle={QUESTION_META.q1.subtitle} className="lg:col-span-3 xl:col-span-4">
           <div className="flex flex-col h-full gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-blue-100 dark:border-blue-500/30 bg-gradient-to-br from-blue-50 to-white dark:from-blue-500/10 dark:to-transparent p-4">
-                <p className="text-xs font-semibold text-blue-500 dark:text-blue-200 uppercase tracking-wide">Zone leader</p>
-                <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{zoneInsights.leader?.name || 'N/A'}</p>
-                <p className="text-3xl font-black text-blue-600 dark:text-blue-300 mt-3">{zoneInsights.leaderShare}%</p>
+            <article className="rounded-2xl border border-blue-100 dark:border-blue-500/30 bg-gradient-to-br from-[#eff6ff] via-white to-[#e0f2ff] dark:from-[#0f172a] dark:via-[#0b1a2e] dark:to-[#0a2744] p-5 shadow-sm shadow-blue-200/60 dark:shadow-blue-900/30">
+              <p className="text-xs font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-300">SEGMENT dominant</p>
+              <h4 className="text-xs font-semibold text-slate-500 dark:text-gray-300 mt-1">{q1ZoneHighlights.combined.label}</h4>
+              <p className="text-[64px] font-black text-sky-700 dark:text-sky-200 leading-none mt-4">{q1ZoneHighlights.combined.percent}%</p>
+              <p className="text-sm text-slate-600 dark:text-gray-300 mt-2">{q1ZoneHighlights.combined.value} clients • panel {q1ZoneHighlights.total}</p>
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                {q1ZoneHighlights.breakdown.map((detail) => (
+                  <div key={detail.label} className="rounded-xl border border-white/70 dark:border-white/10 bg-white/80 dark:bg-white/5 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{detail.label}</span>
+                      <span className="text-lg font-bold text-slate-900 dark:text-white">{detail.percent}%</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">{detail.value} répondants</p>
+                  </div>
+                ))}
               </div>
-              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/70 dark:bg-dark-card/70">
-                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Écart vs n°2</p>
-                <p className="text-2xl font-black text-slate-800 dark:text-white mt-2">{zoneInsights.gap}</p>
-                <p className="text-[11px] text-slate-500 dark:text-gray-400">répondants</p>
-              </div>
-            </div>
+            </article>
             <div className="flex-1 min-h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={zoneInsights.sorted} layout="vertical" margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
@@ -1109,13 +1197,29 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                         <stop offset="0%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.3} />
                         <stop offset="100%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.9} />
                       </linearGradient>
+                      <linearGradient id="q10PricePositive" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#fca5a5" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor={EXPERIENCE_NEG_COLOR} stopOpacity={0.95} />
+                      </linearGradient>
+                      <linearGradient id="q10PriceNegative" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#bbf7d0" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor={EXPERIENCE_POS_COLOR} stopOpacity={0.95} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                     <XAxis type="number" hide domain={[0, 1]} />
                     <YAxis dataKey="category" type="category" axisLine={false} tickLine={false} width={120} tick={{ fill: '#475569', fontSize: 12 }} />
                     <Tooltip content={<ExperienceTooltip />} cursor={{ fill: '#f8fafc' }} />
-                    <Bar dataKey="positive" stackId="experience" fill="url(#q10Positive)" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="negative" stackId="experience" fill="url(#q10Negative)" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="positive" stackId="experience" radius={[0, 0, 0, 0]}>
+                      {q10Insights.chartData.map((item) => (
+                        <Cell key={`${item.category}-positive`} fill={item.isPrice ? 'url(#q10PricePositive)' : 'url(#q10Positive)'} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="negative" stackId="experience" radius={[0, 0, 0, 0]}>
+                      {q10Insights.chartData.map((item) => (
+                        <Cell key={`${item.category}-negative`} fill={item.isPrice ? 'url(#q10PriceNegative)' : 'url(#q10Negative)'} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1128,22 +1232,22 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                         <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.labelPositive}</p>
                       </div>
                       <div className="text-right leading-tight">
-                        <p className="text-sm font-bold text-emerald-500">+{item.positivePercent}%</p>
-                        <p className="text-xs font-bold text-rose-500">-{item.negativePercent}%</p>
+                        <p className={`text-sm font-bold ${item.isPrice ? 'text-rose-500' : 'text-emerald-500'}`}>+{item.positivePercent}%</p>
+                        <p className={`text-xs font-bold ${item.isPrice ? 'text-emerald-500' : 'text-rose-500'}`}>-{item.negativePercent}%</p>
                       </div>
                     </div>
                     <div className="space-y-2 text-xs text-slate-500 dark:text-gray-400">
                       <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide">
-                        <span className="text-emerald-500">{item.labelPositive}</span>
-                        <span className="text-rose-500 text-right">{item.labelNegative}</span>
+                        <span className={item.isPrice ? 'text-rose-500' : 'text-emerald-500'}>{item.labelPositive}</span>
+                        <span className={item.isPrice ? 'text-emerald-500 text-right' : 'text-rose-500 text-right'}>{item.labelNegative}</span>
                       </div>
                       <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden flex">
-                        <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${item.positivePercent}%` }} />
-                        <div className="h-full bg-gradient-to-r from-rose-400 to-rose-500" style={{ width: `${item.negativePercent}%` }} />
+                        <div className={item.isPrice ? 'h-full bg-gradient-to-r from-rose-500 to-rose-600' : 'h-full bg-gradient-to-r from-emerald-400 to-emerald-500'} style={{ width: `${item.positivePercent}%` }} />
+                        <div className={item.isPrice ? 'h-full bg-gradient-to-r from-emerald-400 to-emerald-500' : 'h-full bg-gradient-to-r from-rose-400 to-rose-500'} style={{ width: `${item.negativePercent}%` }} />
                       </div>
                       <div className="flex items-center justify-between font-semibold">
-                        <span className="text-emerald-500">{item.positivePercent}% • {item.positive} réponses</span>
-                        <span className="text-rose-500 text-right">{item.negativePercent}% • {item.negative} réponses</span>
+                        <span className={item.isPrice ? 'text-rose-500' : 'text-emerald-500'}>{item.positivePercent}% • {item.positive} réponses</span>
+                        <span className={item.isPrice ? 'text-emerald-500 text-right' : 'text-rose-500 text-right'}>{item.negativePercent}% • {item.negative} réponses</span>
                       </div>
                     </div>
                   </div>
