@@ -437,6 +437,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         negativePercent: Math.round((item.negative / categoryTotal) * 100),
         labelPositive: item.labelPositive,
         labelNegative: item.labelNegative,
+        isPrice: item.category === 'Prix',
       };
     });
     const standout = [...chartData].sort((a, b) => b.positivePercent - a.positivePercent)[0];
@@ -1201,8 +1202,16 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                     <XAxis type="number" hide domain={[0, 1]} />
                     <YAxis dataKey="category" type="category" axisLine={false} tickLine={false} width={120} tick={{ fill: '#475569', fontSize: 12 }} />
                     <Tooltip content={<ExperienceTooltip />} cursor={{ fill: '#f8fafc' }} />
-                    <Bar dataKey="positive" stackId="experience" fill="url(#q10Positive)" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="negative" stackId="experience" fill="url(#q10Negative)" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="positive" stackId="experience" radius={[0, 0, 0, 0]}>
+                      {q10Insights.chartData.map((item) => (
+                        <Cell key={`${item.category}-positive`} fill={item.isPrice ? EXPERIENCE_NEG_COLOR : 'url(#q10Positive)'} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="negative" stackId="experience" radius={[0, 0, 0, 0]}>
+                      {q10Insights.chartData.map((item) => (
+                        <Cell key={`${item.category}-negative`} fill={item.isPrice ? EXPERIENCE_POS_COLOR : 'url(#q10Negative)'} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1215,22 +1224,22 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                         <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.labelPositive}</p>
                       </div>
                       <div className="text-right leading-tight">
-                        <p className="text-sm font-bold text-emerald-500">+{item.positivePercent}%</p>
-                        <p className="text-xs font-bold text-rose-500">-{item.negativePercent}%</p>
+                        <p className={`text-sm font-bold ${item.isPrice ? 'text-rose-500' : 'text-emerald-500'}`}>+{item.positivePercent}%</p>
+                        <p className={`text-xs font-bold ${item.isPrice ? 'text-emerald-500' : 'text-rose-500'}`}>-{item.negativePercent}%</p>
                       </div>
                     </div>
                     <div className="space-y-2 text-xs text-slate-500 dark:text-gray-400">
                       <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide">
-                        <span className="text-emerald-500">{item.labelPositive}</span>
-                        <span className="text-rose-500 text-right">{item.labelNegative}</span>
+                        <span className={item.isPrice ? 'text-rose-500' : 'text-emerald-500'}>{item.labelPositive}</span>
+                        <span className={item.isPrice ? 'text-emerald-500 text-right' : 'text-rose-500 text-right'}>{item.labelNegative}</span>
                       </div>
                       <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden flex">
-                        <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${item.positivePercent}%` }} />
-                        <div className="h-full bg-gradient-to-r from-rose-400 to-rose-500" style={{ width: `${item.negativePercent}%` }} />
+                        <div className={item.isPrice ? 'h-full bg-gradient-to-r from-rose-500 to-rose-600' : 'h-full bg-gradient-to-r from-emerald-400 to-emerald-500'} style={{ width: `${item.positivePercent}%` }} />
+                        <div className={item.isPrice ? 'h-full bg-gradient-to-r from-emerald-400 to-emerald-500' : 'h-full bg-gradient-to-r from-rose-400 to-rose-500'} style={{ width: `${item.negativePercent}%` }} />
                       </div>
                       <div className="flex items-center justify-between font-semibold">
-                        <span className="text-emerald-500">{item.positivePercent}% • {item.positive} réponses</span>
-                        <span className="text-rose-500 text-right">{item.negativePercent}% • {item.negative} réponses</span>
+                        <span className={item.isPrice ? 'text-rose-500' : 'text-emerald-500'}>{item.positivePercent}% • {item.positive} réponses</span>
+                        <span className={item.isPrice ? 'text-emerald-500 text-right' : 'text-rose-500 text-right'}>{item.negativePercent}% • {item.negative} réponses</span>
                       </div>
                     </div>
                   </div>
