@@ -259,6 +259,29 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     return { sorted, total, leader, runnerUp, leaderShare, gap };
   }, [filteredData.zones]);
 
+  const q1ZoneHighlights = useMemo(() => {
+    const total = filteredData.zones.reduce((sum, zone) => sum + zone.value, 0) || 1;
+    const balbala = filteredData.zones.find((zone) => zone.name.toLowerCase().includes('balbala'));
+    const centerVille = filteredData.zones.find((zone) => zone.name.toLowerCase().includes('centre'));
+    const balbalaValue = balbala?.value ?? 0;
+    const centerValue = centerVille?.value ?? 0;
+    const combinedValue = balbalaValue + centerValue;
+    const toPercent = (value: number, decimals = 0) => Number((((value / total) * 100) || 0).toFixed(decimals));
+
+    return {
+      combined: {
+        label: 'Balbala + Centre Ville',
+        value: combinedValue,
+        percent: Math.round((combinedValue / total) * 100) || 0,
+      },
+      breakdown: [
+        { label: 'Balbala', value: balbalaValue, percent: toPercent(balbalaValue, 2) },
+        { label: 'Centre Ville', value: centerValue, percent: toPercent(centerValue, 2) },
+      ],
+      total,
+    };
+  }, [filteredData.zones]);
+
   const q0SegmentHighlights = useMemo(() => {
     const total = filteredData.ageGroups.reduce((sum, group) => sum + group.value, 0) || 1;
     const focusGroup = filteredData.ageGroups.find((group) => group.name === '20-30 ans');
@@ -681,18 +704,23 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
         <ChartCard title={QUESTION_META.q1.title} subtitle={QUESTION_META.q1.subtitle} className="lg:col-span-3 xl:col-span-4">
           <div className="flex flex-col h-full gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-blue-100 dark:border-blue-500/30 bg-gradient-to-br from-blue-50 to-white dark:from-blue-500/10 dark:to-transparent p-4">
-                <p className="text-xs font-semibold text-blue-500 dark:text-blue-200 uppercase tracking-wide">Zone leader</p>
-                <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{zoneInsights.leader?.name || 'N/A'}</p>
-                <p className="text-3xl font-black text-blue-600 dark:text-blue-300 mt-3">{zoneInsights.leaderShare}%</p>
+            <article className="rounded-2xl border border-blue-100 dark:border-blue-500/30 bg-gradient-to-br from-[#eff6ff] via-white to-[#e0f2ff] dark:from-[#0f172a] dark:via-[#0b1a2e] dark:to-[#0a2744] p-5 shadow-sm shadow-blue-200/60 dark:shadow-blue-900/30">
+              <p className="text-xs font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-300">SEGMENT dominant</p>
+              <h4 className="text-xs font-semibold text-slate-500 dark:text-gray-300 mt-1">{q1ZoneHighlights.combined.label}</h4>
+              <p className="text-[64px] font-black text-sky-700 dark:text-sky-200 leading-none mt-4">{q1ZoneHighlights.combined.percent}%</p>
+              <p className="text-sm text-slate-600 dark:text-gray-300 mt-2">{q1ZoneHighlights.combined.value} clients • panel {q1ZoneHighlights.total}</p>
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                {q1ZoneHighlights.breakdown.map((detail) => (
+                  <div key={detail.label} className="rounded-xl border border-white/70 dark:border-white/10 bg-white/80 dark:bg-white/5 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{detail.label}</span>
+                      <span className="text-lg font-bold text-slate-900 dark:text-white">{detail.percent}%</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1">{detail.value} répondants</p>
+                  </div>
+                ))}
               </div>
-              <div className="rounded-2xl border border-slate-200 dark:border-dark-border p-4 bg-white/70 dark:bg-dark-card/70">
-                <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wide">Écart vs n°2</p>
-                <p className="text-2xl font-black text-slate-800 dark:text-white mt-2">{zoneInsights.gap}</p>
-                <p className="text-[11px] text-slate-500 dark:text-gray-400">répondants</p>
-              </div>
-            </div>
+            </article>
             <div className="flex-1 min-h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={zoneInsights.sorted} layout="vertical" margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
