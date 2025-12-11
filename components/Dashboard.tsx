@@ -13,6 +13,11 @@ import {
   CartesianGrid,
   AreaChart,
   Area,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
   LabelList,
 } from 'recharts';
 import { Users, MapPin, Smile, Car, Download, Calendar, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
@@ -256,32 +261,28 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
   const q0SegmentHighlights = useMemo(() => {
     const total = filteredData.ageGroups.reduce((sum, group) => sum + group.value, 0) || 1;
-    const segment20_30 = filteredData.ageGroups.find((group) => group.name === '20-30 ans');
-    const segment30_50 = filteredData.ageGroups.find((group) => group.name === '30-50 ans');
-    const value20_30 = segment20_30?.value ?? 0;
-    const value30_50 = segment30_50?.value ?? 0;
-    const combinedValue = value20_30 + value30_50;
+    const focusGroup = filteredData.ageGroups.find((group) => group.name === '20-30 ans');
+    const supportGroup = filteredData.ageGroups.find((group) => group.name === '30-50 ans');
+    const focusValue = focusGroup?.value ?? 0;
+    const supportValue = supportGroup?.value ?? 0;
+    const combinedValue = focusValue + supportValue;
     const toPercent = (value: number) => Math.round((value / total) * 100);
 
     return {
       combined: {
-        label: 'Segment global 20–50 ans',
-        percent: toPercent(combinedValue),
+        label: '20–50 ans',
         value: combinedValue,
-        breakdown: {
-          twentyThirty: { percent: toPercent(value20_30), value: value20_30 },
-          thirtyFifty: { percent: toPercent(value30_50), value: value30_50 },
-        },
+        percent: toPercent(combinedValue),
       },
       focus: {
         label: '20–30 ans',
-        percent: toPercent(value20_30),
-        value: value20_30,
+        value: focusValue,
+        percent: toPercent(focusValue),
       },
       support: {
         label: '30–50 ans',
-        percent: toPercent(value30_50),
-        value: value30_50,
+        value: supportValue,
+        percent: toPercent(supportValue),
       },
       total,
     };
@@ -617,62 +618,64 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-12 gap-6 auto-rows-[minmax(320px,auto)]">
         <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle} className="lg:col-span-3 xl:col-span-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
-            <article className="rounded-2xl bg-gradient-to-br from-[#4c1d95] via-[#5b21b6] to-[#7c3aed] text-white p-5 shadow-lg shadow-purple-900/30 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-white/70">Segment principal</p>
-                  <h4 className="text-xl font-semibold">{q0SegmentHighlights.combined.label}</h4>
+          <div className="flex flex-col h-full gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <article className="rounded-2xl border border-purple-100 dark:border-purple-500/30 bg-gradient-to-br from-purple-600 via-purple-500 to-purple-400 text-white p-4 shadow-lg shadow-purple-900/20">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-white/70">Segment principal élargi</p>
+                <h4 className="text-lg font-semibold">{q0SegmentHighlights.combined.label}</h4>
+                <p className="text-5xl font-black mt-3 leading-none">{q0SegmentHighlights.combined.percent}%</p>
+                <p className="text-xs text-white/80 mt-1">{q0SegmentHighlights.combined.value} répondants</p>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-white/15 p-3">
+                    <p className="text-xs text-white/70 uppercase tracking-wide">{q0SegmentHighlights.focus.label}</p>
+                    <p className="text-xl font-bold">{q0SegmentHighlights.focus.percent}%</p>
+                    <p className="text-[11px] text-white/60">{q0SegmentHighlights.focus.value} pers.</p>
+                  </div>
+                  <div className="rounded-xl bg-white/10 p-3">
+                    <p className="text-xs text-white/70 uppercase tracking-wide">{q0SegmentHighlights.support.label}</p>
+                    <p className="text-xl font-bold">{q0SegmentHighlights.support.percent}%</p>
+                    <p className="text-[11px] text-white/60">{q0SegmentHighlights.support.value} pers.</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[64px] leading-none font-black">{q0SegmentHighlights.combined.percent}%</p>
-                  <p className="text-sm text-white/80 mt-2">des répondants ont entre 20 et 50 ans.</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-xl bg-white/15 p-3">
-                  <p className="text-xs text-white/70 uppercase tracking-wide">20–30 ans</p>
-                  <p className="text-xl font-bold">{q0SegmentHighlights.combined.breakdown.twentyThirty.percent}%</p>
-                  <p className="text-[10px] text-white/60">{q0SegmentHighlights.combined.breakdown.twentyThirty.value} répondants</p>
-                </div>
-                <div className="rounded-xl bg-white/10 p-3">
-                  <p className="text-xs text-white/70 uppercase tracking-wide">30–50 ans</p>
-                  <p className="text-xl font-bold">{q0SegmentHighlights.combined.breakdown.thirtyFifty.percent}%</p>
-                  <p className="text-[10px] text-white/60">{q0SegmentHighlights.combined.breakdown.thirtyFifty.value} répondants</p>
-                </div>
-              </div>
-            </article>
-            <article className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/90 dark:bg-dark-card/80 p-5 flex flex-col justify-between shadow-slate-200/60 dark:shadow-black/40">
-              <div className="space-y-4">
+              </article>
+              <article className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/90 dark:bg-dark-card/80 p-4 shadow-sm shadow-slate-200/50 dark:shadow-black/30 flex flex-col justify-between">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400 dark:text-gray-500">Segment cœur</p>
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">{q0SegmentHighlights.focus.label}</h4>
+                  <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1">{q0SegmentHighlights.focus.label}</h4>
+                  <p className="text-4xl font-black text-slate-900 dark:text-white leading-none mt-3">{q0SegmentHighlights.focus.percent}%</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{q0SegmentHighlights.focus.value} répondants</p>
                 </div>
                 <div>
-                  <p className="text-5xl font-black text-slate-900 dark:text-white leading-none">{q0SegmentHighlights.focus.percent}%</p>
-                  <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">soit {q0SegmentHighlights.focus.value} répondants.</p>
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-gray-400">
+                    <span>Poids dans le panel</span>
+                    <span>{q0SegmentHighlights.focus.percent}%</span>
+                  </div>
+                  <div
+                    className="mt-2 h-2 rounded-full bg-slate-100 dark:bg-dark-muted overflow-hidden"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={q0SegmentHighlights.focus.percent}
+                  >
+                    <span className="block h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-700" style={{ width: `${q0SegmentHighlights.focus.percent}%` }} />
+                  </div>
+                  <p className="mt-3 text-[11px] text-slate-500 dark:text-gray-400">
+                    {q0SegmentHighlights.support.percent}% supplémentaires proviennent des {q0SegmentHighlights.support.label}.
+                  </p>
                 </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-gray-400">
-                  <span>Objectif atteint</span>
-                  <span>{q0SegmentHighlights.focus.percent}% du total</span>
-                </div>
-                <div
-                  className="mt-2 h-2 rounded-full bg-slate-100 dark:bg-dark-muted overflow-hidden"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={q0SegmentHighlights.focus.percent}
-                >
-                  <span className="block h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-700" style={{ width: `${q0SegmentHighlights.focus.percent}%` }} />
-                </div>
-                <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-gray-400">
-                  <span>30–50 ans</span>
-                  <span className="font-semibold text-purple-600 dark:text-purple-300">{q0SegmentHighlights.support.percent}%</span>
-                </div>
-              </div>
-            </article>
+              </article>
+            </div>
+            <div className="flex-1 min-h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={filteredData.ageGroups}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
+                  <Radar name="Répondants" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fill="#8b5cf6" fillOpacity={0.4} />
+                  <Tooltip content={<CustomTooltip />} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </ChartCard>
 
