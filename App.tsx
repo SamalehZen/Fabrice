@@ -51,7 +51,7 @@ const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] 
 
 const PAGE_TITLES: Record<TabType, { title: string; description: string }> = {
   dashboard: {
-    title: "Panorama de l'analyse",
+    title: "Piano de l'analyse",
     description: "Analyse complète des profils clients, habitudes d'achat et niveaux de satisfaction.",
   },
   questions: {
