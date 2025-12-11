@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import QuestionsView from './components/QuestionsView';
 import DataEditor from './components/DataEditor';
 import AIChatOverlay from './components/AIChatOverlay';
+import AnimatedBadge from './components/AnimatedBadge';
 import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu, X, Sun, Moon } from 'lucide-react';
 
 type TabType = 'dashboard' | 'questions' | 'editor';
@@ -192,9 +193,8 @@ const AppContent: React.FC = () => {
               <p className="text-slate-500 dark:text-gray-400 mt-1.5 text-sm sm:text-base max-w-xl leading-relaxed">{currentPage.description}</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 dark:text-gray-500">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span>Données en temps réel</span>
+          <div className="hidden sm:flex items-center">
+            <AnimatedBadge text="Données en temps réel" color="#0ea5e9" />
           </div>
         </div>
         <div className="transition-opacity duration-300">{renderContent}</div>
