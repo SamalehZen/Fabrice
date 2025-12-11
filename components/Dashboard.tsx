@@ -43,7 +43,7 @@ const QUESTION_META = {
   q1: { title: 'Q1 • Zone de résidence', subtitle: 'Origine géographique des visiteurs' },
   q2: { title: 'Q2 • Moyen de transport', subtitle: 'Comment les visiteurs se rendent au mall' },
   q3: { title: 'Q3 • Fréquence de visite', subtitle: "Rythme des achats à l'hypermarché" },
-  q4: { title: 'Q4 • Motivation principale', subtitle: 'Pourquoi ils choisissent le mall aujourd’hui' },
+  q4: { title: 'Q4 • Motivation principale', subtitle: 'Pourquoi choisissent-ils le mall d’habitude ?' },
   q5: { title: 'Q5 • Magasin alimentaire le plus fréquenté', subtitle: 'Part de visite par enseigne' },
   q6: { title: 'Q6 • Raison du choix', subtitle: "Critères d'arbitrage des visiteurs" },
   q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
