@@ -621,8 +621,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           <div className="flex flex-col h-full gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <article className="rounded-2xl border border-violet-100 dark:border-violet-500/40 bg-gradient-to-br from-[#f7f3ff] via-[#ede7ff] to-[#e0dcff] dark:from-[#161329] dark:via-[#201a3d] dark:to-[#2b1f52] text-slate-900 dark:text-white p-5 shadow-md shadow-violet-200/60 dark:shadow-violet-900/30">
-                <p className="text-[11px] font-black uppercase tracking-[0.6em] text-violet-600 dark:text-violet-200 font-['Space_Grotesk',sans-serif]">SEGMENT dominant</p>
-                <h4 className="text-sm font-semibold text-slate-500 dark:text-gray-300 mt-2">{q0SegmentHighlights.combined.label}</h4>
+                <p className="text-xs font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-200">SEGMENT dominant</p>
+                <h4 className="text-xs font-semibold text-slate-500 dark:text-gray-300 mt-1">{q0SegmentHighlights.combined.label}</h4>
                 <p className="text-[68px] font-black mt-4 leading-none text-violet-800 dark:text-violet-100">{q0SegmentHighlights.combined.percent}%</p>
                 <p className="text-sm text-slate-600 dark:text-gray-300 mt-2">{q0SegmentHighlights.combined.value} répondants • panel {q0SegmentHighlights.total}</p>
                 <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
@@ -640,8 +640,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               </article>
               <article className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/90 dark:bg-dark-card/80 p-4 shadow-sm shadow-slate-200/50 dark:shadow-black/30 flex flex-col justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400 dark:text-gray-500">Segment cœur</p>
-                  <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1">{q0SegmentHighlights.focus.label}</h4>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">Segment cœur</p>
+                  <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{q0SegmentHighlights.focus.label}</h4>
                   <p className="text-4xl font-black text-slate-900 dark:text-white leading-none mt-3">{q0SegmentHighlights.focus.percent}%</p>
                   <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{q0SegmentHighlights.focus.value} répondants</p>
                 </div>
