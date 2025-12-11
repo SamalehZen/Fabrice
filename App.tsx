@@ -44,10 +44,10 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onClick, size = 'md' }
   );
 };
 
-const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
+const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard; navId?: string }[] = [
   { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
   { id: 'questions', label: 'Questions (camemberts)', icon: PieChartIcon },
-  { id: 'editor', label: 'Éditeur de données', icon: Database },
+  { id: 'editor', label: 'Éditeur de données', icon: Database, navId: 'data-editor-nav' },
 ];
 
 const PAGE_TITLES: Record<TabType, { title: string; description: string }> = {
@@ -69,6 +69,7 @@ const AppContent: React.FC = () => {
   const { theme, toggleTheme, surveyData, updateSurveyData, toasts, dismissToast } = useApp();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dataFlowHighlight, setDataFlowHighlight] = useState(false);
 
   const handleTabChange = useCallback((tab: TabType) => {
     setActiveTab(tab);
@@ -77,6 +78,15 @@ const AppContent: React.FC = () => {
 
   const handleToggleMobileMenu = useCallback(() => {
     setMobileMenuOpen(prev => !prev);
+  }, []);
+
+  const handleFlowComplete = useCallback(() => {
+    setDataFlowHighlight(true);
+    setTimeout(() => setDataFlowHighlight(false), 1500);
+  }, []);
+
+  const handleFlowStart = useCallback(() => {
+    setDataFlowHighlight(false);
   }, []);
 
   const currentPage = useMemo(() => PAGE_TITLES[activeTab], [activeTab]);
@@ -114,23 +124,50 @@ const AppContent: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <nav className="hidden md:flex items-center bg-slate-100/80 dark:bg-dark-card/60 rounded-xl p-1" role="navigation" aria-label="Navigation principale">
-              {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => handleTabChange(id)}
-                  aria-current={activeTab === id ? 'page' : undefined}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                    activeTab === id
-                      ? 'bg-white dark:bg-dark-hover text-brand-600 dark:text-brand-400 shadow-sm'
-                      : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Icon size={16} aria-hidden="true" />
-                    <span className="hidden lg:inline">{label}</span>
-                  </span>
-                </button>
-              ))}
+              {NAV_ITEMS.map(({ id, label, icon: Icon, navId }) => {
+                const isEditorHighlighted = navId === 'data-editor-nav' && dataFlowHighlight;
+                
+                return (
+                  <button
+                    key={id}
+                    id={navId}
+                    onClick={() => handleTabChange(id)}
+                    aria-current={activeTab === id ? 'page' : undefined}
+                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                      activeTab === id
+                        ? 'bg-white dark:bg-dark-hover text-brand-600 dark:text-brand-400 shadow-sm'
+                        : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                    } ${isEditorHighlighted ? 'data-flow-highlight' : ''}`}
+                    style={isEditorHighlighted ? {
+                      color: '#0ea5e9',
+                      transform: 'scale(1.04)',
+                      boxShadow: '0 0 20px rgba(14, 165, 233, 0.4), 0 0 40px rgba(14, 165, 233, 0.2), inset 0 0 20px rgba(14, 165, 233, 0.1)',
+                      background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(14, 165, 233, 0.05) 100%)',
+                      borderColor: 'rgba(14, 165, 233, 0.3)',
+                    } : undefined}
+                  >
+                    {isEditorHighlighted && (
+                      <span 
+                        className="absolute inset-0 rounded-lg animate-pulse-ring"
+                        style={{
+                          boxShadow: '0 0 0 2px rgba(14, 165, 233, 0.3)',
+                        }}
+                      />
+                    )}
+                    <span className="relative flex items-center gap-2">
+                      <Icon 
+                        size={16} 
+                        aria-hidden="true"
+                        className={isEditorHighlighted ? 'text-sky-500 dark:text-sky-400' : ''}
+                        style={isEditorHighlighted ? {
+                          filter: 'drop-shadow(0 0 6px rgba(14, 165, 233, 0.8))',
+                        } : undefined}
+                      />
+                      <span className="hidden lg:inline">{label}</span>
+                    </span>
+                  </button>
+                );
+              })}
             </nav>
 
             <div className="hidden md:block w-px h-8 bg-slate-200 dark:bg-dark-border mx-1" />
@@ -194,13 +231,43 @@ const AppContent: React.FC = () => {
             </div>
           </div>
           <div className="hidden sm:flex items-center">
-            <AnimatedBadge text="Données en temps réel" color="#0ea5e9" />
+            <AnimatedBadge 
+              text="Données en temps réel" 
+              color="#0ea5e9" 
+              targetIconId="data-editor-nav"
+              onFlowComplete={handleFlowComplete}
+              onFlowStart={handleFlowStart}
+            />
           </div>
         </div>
         <div className="transition-opacity duration-300">{renderContent}</div>
       </main>
 
       <AIChatOverlay currentData={surveyData} />
+
+      <style>
+        {`
+        @keyframes pulse-ring {
+          0% {
+            box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
+          }
+          70% {
+            box-shadow: 0 0 0 6px rgba(14, 165, 233, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
+          }
+        }
+        
+        .animate-pulse-ring {
+          animation: pulse-ring 1s ease-out infinite;
+        }
+        
+        .data-flow-highlight {
+          transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        `}
+      </style>
     </div>
   );
 };

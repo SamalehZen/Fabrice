@@ -19,5 +19,143 @@
 }
 
 body {
-    @apply bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-slate-100;
+  @apply bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-slate-100;
+}
+
+@keyframes data-flow-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 15px rgba(14, 165, 233, 0.3),
+      0 0 30px rgba(14, 165, 233, 0.15),
+      inset 0 0 15px rgba(14, 165, 233, 0.08);
+  }
+  50% {
+    box-shadow: 
+      0 0 25px rgba(14, 165, 233, 0.5),
+      0 0 50px rgba(14, 165, 233, 0.25),
+      inset 0 0 25px rgba(14, 165, 233, 0.12);
+  }
+}
+
+@keyframes data-flow-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes data-flow-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.5);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(14, 165, 233, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes icon-highlight {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(14, 165, 233, 0));
+    color: inherit;
+  }
+  20% {
+    filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.9));
+    color: #0ea5e9;
+  }
+  100% {
+    filter: drop-shadow(0 0 4px rgba(14, 165, 233, 0.5));
+    color: #0ea5e9;
+  }
+}
+
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.data-flow-active {
+  animation: 
+    data-flow-glow 800ms ease-in-out,
+    data-flow-pulse 800ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.data-flow-icon-active {
+  animation: icon-highlight 500ms ease-out forwards;
+}
+
+.data-flow-ring::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  animation: data-flow-ring 800ms ease-out forwards;
+}
+
+.animate-gentle-float {
+  animation: gentle-float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(14, 165, 233, 0.1) 25%,
+    rgba(14, 165, 233, 0.2) 50%,
+    rgba(14, 165, 233, 0.1) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes flow-line {
+  0% {
+    stroke-dashoffset: 100%;
+  }
+  100% {
+    stroke-dashoffset: 0%;
+  }
+}
+
+.animate-flow-line {
+  animation: flow-line 650ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .data-flow-active,
+  .data-flow-icon-active,
+  .animate-gentle-float,
+  .animate-shimmer,
+  .animate-flow-line {
+    animation: none;
+  }
+  
+  .data-flow-ring::after {
+    animation: none;
+  }
+}
+
+.dark .data-flow-highlight {
+  --glow-color: rgba(56, 189, 248, 0.5);
+}
+
+.data-flow-highlight {
+  --glow-color: rgba(14, 165, 233, 0.4);
 }
