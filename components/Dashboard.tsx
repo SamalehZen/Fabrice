@@ -18,6 +18,7 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  LabelList,
 } from 'recharts';
 import { Users, MapPin, Smile, Car, Download, Calendar, TrendingUp, ArrowUpRight, Check, ChevronDown, Bus, Footprints, CircleDot } from 'lucide-react';
 import { SurveyDataset, SimpleDataPoint } from '../types';
@@ -48,7 +49,7 @@ const QUESTION_META = {
   q7: { title: 'Q7 • Satisfaction globale', subtitle: 'Évaluation de la visite du jour' },
   q8: { title: 'Q8 • Rayons préférés', subtitle: 'Départements les plus attractifs' },
   q9: { title: 'Q9 • Changement de nom remarqué', subtitle: 'Sensibilité à la nouvelle identité' },
-  q10: { title: 'Q10 • Évolution expérience', subtitle: "Comparaison avec l'année précédente" },
+  q10: { title: 'Q10 • Évolution expérience', subtitle: 'Comparaison avec Géant' },
 } as const;
 
 const TRANSPORT_CONFIG: Record<string, { icon: typeof Car; color: string; gradient: string }> = {
@@ -119,6 +120,71 @@ const ExperienceTooltip: React.FC<TooltipProps> = ({ active, payload }) => {
         </div>
       </div>
     </div>
+  );
+};
+
+interface RankLabelProps {
+  x?: number;
+  y?: number;
+  width?: number;
+  value?: number | string;
+}
+
+const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) => {
+  const rank = Number(value);
+  if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || Number.isNaN(rank)) return null;
+  const centerX = x + width / 2;
+  const safeY = Math.max(y - 18, 28);
+
+  if (rank === 1) {
+    const badgeWidth = 120;
+    const badgeHeight = 34;
+    const badgeRadius = 14;
+    const dropShadowOffset = 4;
+    const top = -badgeHeight + 4;
+
+    return (
+      <g transform={`translate(${centerX}, ${safeY})`}>
+        <rect
+          x={-badgeWidth / 2}
+          y={top + dropShadowOffset}
+          width={badgeWidth}
+          height={badgeHeight}
+          rx={badgeRadius}
+          fill="rgba(8,47,73,0.35)"
+        />
+        <rect
+          x={-badgeWidth / 2}
+          y={top}
+          width={badgeWidth}
+          height={badgeHeight}
+          rx={badgeRadius}
+          fill="#0ea5e9"
+          stroke="#38bdf8"
+          strokeWidth={1.5}
+        />
+        <rect
+          x={-badgeWidth / 2 + 5}
+          y={top + 5}
+          width={badgeWidth - 10}
+          height={badgeHeight - 16}
+          rx={badgeRadius}
+          fill="rgba(255,255,255,0.12)"
+        />
+        <text x={0} y={top + 16} fill="#e0f2fe" fontSize={12} fontWeight={800} textAnchor="middle">
+          ★ N°1
+        </text>
+        <text x={0} y={top + 27} fill="#f0f9ff" fontSize={9} fontWeight={700} letterSpacing="0.18em" textAnchor="middle">
+          MARKET LEADER
+        </text>
+      </g>
+    );
+  }
+
+  return (
+    <text x={centerX} y={safeY - 2} fill="#475569" fontSize={11} fontWeight={600} textAnchor="middle">
+      #{rank}
+    </text>
   );
 };
 
@@ -252,6 +318,11 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
     const gap = runnerUp && leader ? leader.value - runnerUp.value : leader?.value ?? 0;
     return { sorted, total, leader, runnerUp, leaderShare, runnerUpShare, gap };
   }, [filteredData.competitors]);
+
+  const competitorChartData = useMemo(
+    () => competitorInsights.sorted.map((entry, index) => ({ ...entry, rank: index + 1 })),
+    [competitorInsights.sorted]
+  );
 
   const departmentInsights = useMemo(() => {
     const sorted = [...filteredData.preferredDepartment].sort((a, b) => b.value - a.value);
@@ -695,9 +766,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-slate-800 dark:fill-white">
                     {visitReasonInsights.leaderShare}%
                   </text>
-                  <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500 dark:fill-gray-400 font-medium uppercase tracking-wide">
-                    {visitReasonInsights.leader?.name || ''}
-                  </text>
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -712,13 +780,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         >
           <div className="flex flex-col xl:flex-row gap-6 h-full">
             <div className="w-full xl:max-w-sm space-y-4">
-              <div className="rounded-2xl border border-violet-200 dark:border-violet-500/40 bg-gradient-to-br from-violet-50 to-white dark:from-violet-500/10 dark:to-transparent p-5">
-                <p className="text-xs font-semibold text-violet-500 dark:text-violet-200 uppercase tracking-wide">Enseigne leader</p>
+              <div className="rounded-2xl border border-sky-200 dark:border-sky-500/40 bg-gradient-to-br from-sky-50 via-white to-white dark:from-sky-500/10 dark:to-transparent p-5">
+                <p className="text-xs font-semibold text-sky-500 dark:text-sky-200 uppercase tracking-wide">Enseigne leader</p>
                 <p className="text-2xl font-black text-slate-900 dark:text-white mt-2">{competitorInsights.leader?.name || 'N/A'}</p>
                 <div className="flex items-end justify-between mt-6">
                   <div>
                     <p className="text-[11px] uppercase text-slate-500 dark:text-gray-400">Part de visite</p>
-                    <p className="text-4xl font-black text-violet-600 dark:text-violet-300">{competitorInsights.leaderShare}%</p>
+                    <p className="text-4xl font-black text-sky-600 dark:text-sky-300">{competitorInsights.leaderShare}%</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] uppercase text-slate-500 dark:text-gray-400">Volume</p>
@@ -751,7 +819,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             </div>
             <div className="flex-1 min-h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={competitorInsights.sorted} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={competitorChartData} margin={{ top: 45, right: 30, left: 20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="q5Bar" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
@@ -767,9 +835,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
-                    {competitorInsights.sorted.map((entry) => (
+                    {competitorChartData.map((entry) => (
                       <Cell key={entry.name} fill={entry.name === competitorInsights.leader?.name ? 'url(#q5BarHighlight)' : 'url(#q5Bar)'} />
                     ))}
+                    <LabelList dataKey="rank" content={(props) => <CompetitorRankLabel {...props} />} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -777,7 +846,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q6.title} subtitle={QUESTION_META.q6.subtitle} className="lg:col-span-3 xl:col-span-5">
+        <ChartCard title={QUESTION_META.q6.title} subtitle={QUESTION_META.q6.subtitle} className="lg:col-span-3 xl:col-span-6">
           <div className="flex flex-col h-full gap-4">
             <div className="rounded-2xl border border-emerald-100 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/10 dark:to-transparent p-4">
               <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-300 uppercase tracking-wide">Critère n°1</p>
@@ -805,7 +874,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </ChartCard>
 
-        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="lg:col-span-3 xl:col-span-4">
+        <ChartCard title={QUESTION_META.q7.title} subtitle={QUESTION_META.q7.subtitle} className="lg:col-span-3 xl:col-span-6">
           <div className="flex flex-col h-full gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-2xl border border-green-100 dark:border-green-500/30 p-4 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/10 dark:to-transparent">
@@ -832,6 +901,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                     showLegend: false,
                     labelPosition: 'outside',
                     labelOffset: 16,
+                    showLabels: false,
                   })}
                 </div>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -1052,20 +1122,28 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
               <div className="w-full lg:w-80 space-y-4">
                 {q10Insights.chartData.map((item) => (
                   <div key={item.category} className="rounded-2xl border border-slate-200 dark:border-dark-border bg-white/80 dark:bg-dark-card/70 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-gray-400">{item.category}</p>
                         <p className="text-lg font-semibold text-slate-900 dark:text-white">{item.labelPositive}</p>
                       </div>
-                      <span className="text-sm font-bold text-emerald-500">{item.positivePercent}%</span>
+                      <div className="text-right leading-tight">
+                        <p className="text-sm font-bold text-emerald-500">+{item.positivePercent}%</p>
+                        <p className="text-xs font-bold text-rose-500">-{item.negativePercent}%</p>
+                      </div>
                     </div>
                     <div className="space-y-2 text-xs text-slate-500 dark:text-gray-400">
-                      <div className="h-1.5 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${item.positivePercent}%` }} />
+                      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide">
+                        <span className="text-emerald-500">{item.labelPositive}</span>
+                        <span className="text-rose-500 text-right">{item.labelNegative}</span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-emerald-500 font-semibold">{item.labelPositive}: {item.positive}</span>
-                        <span className="text-rose-500 font-semibold">{item.labelNegative}: {item.negative}</span>
+                      <div className="h-2 bg-slate-100 dark:bg-dark-muted rounded-full overflow-hidden flex">
+                        <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${item.positivePercent}%` }} />
+                        <div className="h-full bg-gradient-to-r from-rose-400 to-rose-500" style={{ width: `${item.negativePercent}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between font-semibold">
+                        <span className="text-emerald-500">{item.positivePercent}% • {item.positive} réponses</span>
+                        <span className="text-rose-500 text-right">{item.negativePercent}% • {item.negative} réponses</span>
                       </div>
                     </div>
                   </div>
