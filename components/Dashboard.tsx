@@ -620,21 +620,21 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         <ChartCard title={QUESTION_META.q0.title} subtitle={QUESTION_META.q0.subtitle} className="lg:col-span-3 xl:col-span-4">
           <div className="flex flex-col h-full gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <article className="rounded-2xl border border-purple-100 dark:border-purple-500/30 bg-gradient-to-br from-purple-600 via-purple-500 to-purple-400 text-white p-4 shadow-lg shadow-purple-900/20">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-white/70">Segment principal élargi</p>
-                <h4 className="text-lg font-semibold">{q0SegmentHighlights.combined.label}</h4>
-                <p className="text-5xl font-black mt-3 leading-none">{q0SegmentHighlights.combined.percent}%</p>
-                <p className="text-xs text-white/80 mt-1">{q0SegmentHighlights.combined.value} répondants</p>
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl bg-white/15 p-3">
-                    <p className="text-xs text-white/70 uppercase tracking-wide">{q0SegmentHighlights.focus.label}</p>
-                    <p className="text-xl font-bold">{q0SegmentHighlights.focus.percent}%</p>
-                    <p className="text-[11px] text-white/60">{q0SegmentHighlights.focus.value} pers.</p>
+              <article className="rounded-2xl border border-violet-100 dark:border-violet-500/40 bg-gradient-to-br from-[#f7f3ff] via-[#ede7ff] to-[#e0dcff] text-slate-900 dark:text-white p-5 shadow-md shadow-violet-200/60 dark:shadow-violet-900/30">
+                <p className="text-[11px] font-black uppercase tracking-[0.6em] text-violet-600 dark:text-violet-200 font-['Space_Grotesk',sans-serif]">SEGMENT dominant</p>
+                <h4 className="text-sm font-semibold text-slate-500 dark:text-gray-300 mt-2">{q0SegmentHighlights.combined.label}</h4>
+                <p className="text-[68px] font-black mt-4 leading-none text-violet-800 dark:text-violet-100">{q0SegmentHighlights.combined.percent}%</p>
+                <p className="text-sm text-slate-600 dark:text-gray-300 mt-2">{q0SegmentHighlights.combined.value} répondants • panel {q0SegmentHighlights.total}</p>
+                <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl border border-white/70 dark:border-white/10 bg-white/80 dark:bg-white/5 p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{q0SegmentHighlights.focus.label}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{q0SegmentHighlights.focus.percent}%</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{q0SegmentHighlights.focus.value} pers.</p>
                   </div>
-                  <div className="rounded-xl bg-white/10 p-3">
-                    <p className="text-xs text-white/70 uppercase tracking-wide">{q0SegmentHighlights.support.label}</p>
-                    <p className="text-xl font-bold">{q0SegmentHighlights.support.percent}%</p>
-                    <p className="text-[11px] text-white/60">{q0SegmentHighlights.support.value} pers.</p>
+                  <div className="rounded-xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-white/5 p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">{q0SegmentHighlights.support.label}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{q0SegmentHighlights.support.percent}%</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400">{q0SegmentHighlights.support.value} pers.</p>
                   </div>
                 </div>
               </article>
