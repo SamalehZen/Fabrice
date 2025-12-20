@@ -29,7 +29,6 @@ import {
   ResponsiveContainer, 
   Cell 
 } from 'recharts';
-import { motion } from 'motion/react';
 
 interface FinanceDashboardProps {
   activeTab?: string;

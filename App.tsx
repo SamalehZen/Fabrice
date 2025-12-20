@@ -6,7 +6,7 @@ import QuestionsView from './components/QuestionsView';
 import DataEditor from './components/DataEditor';
 import AIChatOverlay from './components/AIChatOverlay';
 import AnimatedBadge from './components/AnimatedBadge';
-import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu, X, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu, X, Sun, Moon, CreditCard } from 'lucide-react';
 
 import FinanceDashboard from './components/FinanceDashboard';
 
