@@ -8,7 +8,9 @@ import AIChatOverlay from './components/AIChatOverlay';
 import AnimatedBadge from './components/AnimatedBadge';
 import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu, X, Sun, Moon } from 'lucide-react';
 
-type TabType = 'dashboard' | 'questions' | 'editor';
+import FinanceDashboard from './components/FinanceDashboard';
+
+type TabType = 'dashboard' | 'questions' | 'editor' | 'finance';
 
 interface ThemeToggleProps {
   theme: ThemeMode;
@@ -46,6 +48,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onClick, size = 'md' }
 
 const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+  { id: 'finance', label: 'Finance (Clone)', icon: CreditCard },
   { id: 'questions', label: 'Questions (camemberts)', icon: PieChartIcon },
   { id: 'editor', label: 'Éditeur de données', icon: Database },
 ];
@@ -63,11 +66,15 @@ const PAGE_TITLES: Record<TabType, { title: string; description: string }> = {
     title: 'Gestion des données',
     description: "Mettez à jour les données de l'analyse en temps réel : graphiques et IA se synchronisent automatiquement.",
   },
+  finance: {
+    title: 'Finance Dashboard (Clone PIXEL-PERFECT)',
+    description: 'Reproduction fidèle du design financier à partir du screenshot.',
+  },
 };
 
 const AppContent: React.FC = () => {
   const { theme, toggleTheme, surveyData, updateSurveyData, toasts, dismissToast } = useApp();
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>('finance');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleTabChange = useCallback((tab: TabType) => {
@@ -89,10 +96,21 @@ const AppContent: React.FC = () => {
         return <QuestionsView data={surveyData} />;
       case 'editor':
         return <DataEditor data={surveyData} onUpdate={updateSurveyData} />;
+      case 'finance':
+        return <FinanceDashboard />;
       default:
         return null;
     }
   }, [activeTab, surveyData, updateSurveyData]);
+
+  if (activeTab === 'finance') {
+    return (
+      <div className="min-h-screen w-full bg-finance-black">
+        <FinanceDashboard activeTab={activeTab} onTabChange={handleTabChange} />
+        <AIChatOverlay currentData={surveyData} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-dark-bg dark:via-dark-bg dark:to-dark-surface pb-24 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col">
