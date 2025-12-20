@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useApp } from '../context/AppContext';
 import {
   PieChart,
   Pie,
@@ -26,6 +27,7 @@ import { SATISFACTION_COLORS, COLORS } from '../constants';
 import ChartCard from './ChartCard';
 import FrequencyTrendChart from './FrequencyTrendChart';
 import { render3DPie } from './Pie3DRenderer';
+import { StatCard } from './StatCard';
 import * as XLSX from 'xlsx';
 
 interface DashboardProps {
@@ -189,8 +191,11 @@ const CompetitorRankLabel: React.FC<RankLabelProps> = ({ x, y, width, value }) =
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ data }) => {
+  const { theme } = useApp();
   const [selectedZone, setSelectedZone] = useState<string>('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const notchColor = theme === 'dark' ? '#121212' : '#F8FAFC';
 
   const scaleDataset = useCallback((dataset: SimpleDataPoint[], ratio: number): SimpleDataPoint[] => {
     return dataset.map((item) => ({
@@ -568,76 +573,39 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <article className="relative overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl p-6 text-white shadow-lg shadow-brand-200 dark:shadow-brand-900/50 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute -right-6 -top-6 bg-white/10 w-32 h-32 rounded-full blur-2xl group-hover:bg-white/20 transition-all" aria-hidden="true" />
-          <div className="relative z-10">
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                <Users size={20} className="text-white" />
-              </div>
-              <span className="flex items-center text-xs font-medium bg-green-400/20 text-green-100 px-2 py-1 rounded-full border border-green-400/30">
-                <TrendingUp size={12} className="mr-1" /> Actif
-              </span>
-            </div>
-            <p className="text-brand-100 text-xs font-medium uppercase tracking-wider mb-1">
-              {selectedZone === 'All' ? 'Répondants totaux' : `Répondants – ${selectedZone}`}
-            </p>
-            <p className="text-4xl font-bold tracking-tight">{stats.totalRespondents}</p>
-          </div>
-        </article>
-
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-green-50 to-transparent dark:from-green-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-green-50 dark:bg-green-500/20 rounded-xl">
-              <Smile size={20} className="text-green-600 dark:text-green-300" />
-            </div>
-            <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-500/20 px-2 py-1 rounded-full">
-              <ArrowUpRight size={12} className="mr-1" /> Haut
-            </span>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Taux de satisfaction (Q7)</p>
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.satisfactionRate}%</p>
-          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden" role="progressbar" aria-valuenow={stats.satisfactionRate} aria-valuemin={0} aria-valuemax={100}>
-            <div className="bg-green-500 dark:bg-green-300 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.satisfactionRate}%` }} />
-          </div>
-        </article>
-
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent dark:from-purple-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-purple-50 dark:bg-purple-500/20 rounded-xl">
-              <MapPin size={20} className="text-purple-600 dark:text-purple-300" />
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-slate-800 dark:text-white block leading-none">{stats.topZonePercent}%</span>
-              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des répondants</span>
-            </div>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Zone la plus représentée (Q1)</p>
-          <p className="text-xl font-bold text-slate-800 dark:text-white truncate" title={stats.topZone.name}>
-            {stats.topZone.name}
-          </p>
-        </article>
-
-        <article className="relative overflow-hidden bg-white/90 dark:bg-dark-card/80 rounded-xl p-6 border border-slate-100 dark:border-dark-border shadow-sm shadow-slate-200/60 dark:shadow-black/40 group transition-all hover:shadow-xl hover:-translate-y-1">
-          <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-orange-50 to-transparent dark:from-orange-500/20 rounded-bl-full opacity-50" aria-hidden="true" />
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-orange-50 dark:bg-orange-500/20 rounded-xl">
-              <Car size={20} className="text-orange-600 dark:text-orange-300" />
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-orange-600 dark:text-orange-400 block leading-none">{stats.topTransportPercent}%</span>
-              <span className="text-[10px] text-slate-400 dark:text-gray-500 font-medium">des visiteurs</span>
-            </div>
-          </div>
-          <p className="text-slate-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-1">Mode d'accès dominant (Q2)</p>
-          <p className="text-xl font-bold text-slate-800 dark:text-white truncate">{stats.topTransport?.name || 'N/A'}</p>
-          <div className="w-full bg-slate-100 dark:bg-dark-muted h-1.5 rounded-full mt-3 overflow-hidden">
-            <div className="bg-orange-500 dark:bg-orange-400 h-full rounded-full transition-all duration-1000" style={{ width: `${stats.topTransportPercent}%` }} />
-          </div>
-        </article>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 justify-items-center mb-12">
+        <StatCard 
+          title="Répondants" 
+          value={stats.totalRespondents.toString()} 
+          label="Total des participants" 
+          color="#D9FF00" 
+          isViolet={false} 
+          notchColor={notchColor}
+        />
+        <StatCard 
+          title="Satisfaction" 
+          value={`${stats.satisfactionRate}%`} 
+          label="Taux global (Q7)" 
+          color="#7B61FF" 
+          isViolet={true} 
+          notchColor={notchColor}
+        />
+        <StatCard 
+          title="Zone" 
+          value={`${stats.topZonePercent}%`} 
+          label={`Top: ${stats.topZone.name}`} 
+          color="#D9FF00" 
+          isViolet={false} 
+          notchColor={notchColor}
+        />
+        <StatCard 
+          title="Transport" 
+          value={`${stats.topTransportPercent}%`} 
+          label={`Top: ${stats.topTransport?.name || 'N/A'}`} 
+          color="#7B61FF" 
+          isViolet={true} 
+          notchColor={notchColor}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-12 gap-6 auto-rows-[minmax(320px,auto)]">
