@@ -6,9 +6,10 @@ import QuestionsView from './components/QuestionsView';
 import DataEditor from './components/DataEditor';
 import AIChatOverlay from './components/AIChatOverlay';
 import AnimatedBadge from './components/AnimatedBadge';
+import TrustedCompanies from './components/TrustedCompanies';
 import { LayoutDashboard, PieChart as PieChartIcon, Database, Menu, X, Sun, Moon } from 'lucide-react';
 
-type TabType = 'dashboard' | 'questions' | 'editor';
+type TabType = 'dashboard' | 'questions' | 'editor' | 'trusted';
 
 interface ThemeToggleProps {
   theme: ThemeMode;
@@ -68,15 +69,9 @@ const PAGE_TITLES: Record<TabType, { title: string; description: string }> = {
 const AppContent: React.FC = () => {
   const { theme, toggleTheme, surveyData, updateSurveyData, toasts, dismissToast } = useApp();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleTabChange = useCallback((tab: TabType) => {
     setActiveTab(tab);
-    setMobileMenuOpen(false);
-  }, []);
-
-  const handleToggleMobileMenu = useCallback(() => {
-    setMobileMenuOpen(prev => !prev);
   }, []);
 
   const currentPage = useMemo(() => PAGE_TITLES[activeTab], [activeTab]);
@@ -89,116 +84,92 @@ const AppContent: React.FC = () => {
         return <QuestionsView data={surveyData} />;
       case 'editor':
         return <DataEditor data={surveyData} onUpdate={updateSurveyData} />;
+      case 'trusted':
+        return <TrustedCompanies isDarkMode={theme === 'dark'} />;
       default:
         return null;
     }
   }, [activeTab, surveyData, updateSurveyData]);
 
+  const isDarkMode = theme === 'dark';
+  const bgColor = isDarkMode ? '#0A0A0A' : '#F2F2F7';
+
+  if (activeTab === 'trusted') {
+    return (
+      <div className="min-h-screen w-full transition-colors duration-500 overflow-x-hidden selection:bg-[#D9FF00] selection:text-black" style={{ backgroundColor: bgColor }}>
+        <div className="fixed top-4 right-4 z-50 flex gap-3">
+           <ThemeToggle theme={theme} onClick={toggleTheme} />
+           <button 
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest shadow-xl transition-all ${isDarkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-black text-white hover:bg-zinc-800'}`}
+           >
+            Back to Dashboard
+           </button>
+        </div>
+        <TrustedCompanies isDarkMode={isDarkMode} />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-dark-bg dark:via-dark-bg dark:to-dark-surface pb-24 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col">
+    <div className="min-h-screen w-full transition-colors duration-500 overflow-x-hidden selection:bg-[#D9FF00] selection:text-black flex flex-col" style={{ backgroundColor: bgColor }}>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       
-      <header className="bg-white/90 dark:bg-dark-surface/95 border-b border-slate-200/80 dark:border-dark-border sticky top-0 z-40 backdrop-blur-xl">
-        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-brand-500 to-brand-700 p-2.5 rounded-xl shadow-lg shadow-brand-500/25 dark:shadow-brand-500/15">
-              <LayoutDashboard className="text-white w-5 h-5" aria-hidden="true" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight leading-none">
-                Hyper <span className="text-brand-600 dark:text-brand-400">Analyse</span>
-              </h1>
-              <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium tracking-wide">Dashboard Analytics</p>
-            </div>
-          </div>
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#7B61FF] rounded-full blur-[180px] transition-opacity duration-500 ${isDarkMode ? 'opacity-10' : 'opacity-5'}`}></div>
+        <div className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#D9FF00] rounded-full blur-[180px] transition-opacity duration-500 ${isDarkMode ? 'opacity-10' : 'opacity-5'}`}></div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <nav className="hidden md:flex items-center bg-slate-100/80 dark:bg-dark-card/60 rounded-xl p-1" role="navigation" aria-label="Navigation principale">
-              {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => handleTabChange(id)}
-                  aria-current={activeTab === id ? 'page' : undefined}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
-                    activeTab === id
-                      ? 'bg-white dark:bg-dark-hover text-brand-600 dark:text-brand-400 shadow-sm'
-                      : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Icon size={16} aria-hidden="true" />
-                    <span className="hidden lg:inline">{label}</span>
-                  </span>
-                </button>
-              ))}
-            </nav>
-
-            <div className="hidden md:block w-px h-8 bg-slate-200 dark:bg-dark-border mx-1" />
-
-            <ThemeToggle theme={theme} onClick={toggleTheme} />
-
-            <div className="flex items-center gap-2 md:hidden">
-              <ThemeToggle theme={theme} onClick={toggleTheme} size="sm" />
-              <button
-                className="p-2 text-slate-600 dark:text-gray-300 rounded-xl hover:bg-slate-100 dark:hover:bg-dark-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                onClick={handleToggleMobileMenu}
-                aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-                aria-expanded={mobileMenuOpen}
-                aria-controls="mobile-menu"
-              >
-                {mobileMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
-              </button>
-            </div>
-          </div>
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-12 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-2 transition-colors duration-500">
+            {activeTab === 'dashboard' ? 'Analytics' : activeTab === 'questions' ? 'Questions' : 'Data Editor'}<span className="text-[#D9FF00]">.</span>
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-lg max-w-md leading-relaxed">
+            {activeTab === 'dashboard' 
+              ? "Real-time insights into your platform's performance. Updated every 30 seconds."
+              : activeTab === 'questions'
+                ? "Detailed breakdown of survey responses per category."
+                : "Manage and update your survey dataset locally."}
+          </p>
         </div>
-
-        <div
-          id="mobile-menu"
-          className={`md:hidden bg-white/98 dark:bg-dark-surface/98 border-t border-slate-100 dark:border-dark-border shadow-xl shadow-slate-900/5 dark:shadow-black/30 overflow-hidden transition-all duration-300 ${
-            mobileMenuOpen ? 'max-h-96 py-4 px-4' : 'max-h-0 py-0 px-4'
-          }`}
-          role="navigation"
-          aria-label="Navigation mobile"
-        >
-          <div className="space-y-2">
+        
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setActiveTab('trusted')}
+            className={`px-4 py-3 rounded-full border transition-all text-sm font-bold uppercase tracking-widest hover:scale-105 ${isDarkMode ? 'border-white/10 hover:bg-white/5' : 'border-black/10 hover:bg-black/5'}`}
+          >
+            Trusted By
+          </button>
+          <ThemeToggle theme={theme} onClick={toggleTheme} />
+          
+          <nav className="flex items-center bg-slate-100/80 dark:bg-white/5 rounded-xl p-1 border border-black/5 dark:border-white/5">
             {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => handleTabChange(id)}
-                aria-current={activeTab === id ? 'page' : undefined}
-                className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-widest transition-all duration-200 ${
                   activeTab === id
-                    ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 font-semibold'
-                    : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-dark-hover/60'
+                    ? (isDarkMode ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
+                    : (isDarkMode ? 'text-zinc-400 hover:text-white' : 'text-zinc-500 hover:text-black')
                 }`}
               >
-                <span className={`p-2 rounded-lg ${activeTab === id ? 'bg-brand-100 dark:bg-brand-500/20' : 'bg-slate-100 dark:bg-dark-card'}`}>
-                  <Icon size={18} aria-hidden="true" />
-                </span>
-                {label}
+                <Icon size={16} className="inline mr-2" />
+                <span className="hidden lg:inline">{label}</span>
               </button>
             ))}
-          </div>
+          </nav>
         </div>
       </header>
 
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 py-10">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="hidden sm:flex p-3 rounded-2xl bg-gradient-to-br from-brand-500/10 to-purple-500/10 dark:from-brand-500/20 dark:to-purple-500/20 border border-brand-200/50 dark:border-brand-500/20">
-              <span className="text-3xl">{activeTab === 'dashboard' ? '📊' : activeTab === 'questions' ? '🥧' : '✏️'}</span>
-            </div>
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 via-slate-700 to-slate-800 dark:from-white dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent">{currentPage.title}</h2>
-              <p className="text-slate-500 dark:text-gray-400 mt-1.5 text-sm sm:text-base max-w-xl leading-relaxed">{currentPage.description}</p>
-            </div>
-          </div>
-          <div className="hidden sm:flex items-center">
-            <AnimatedBadge text="Données en temps réel" color="#0ea5e9" />
-          </div>
-        </div>
-        <div className="transition-opacity duration-300">{renderContent}</div>
+      <main className="relative z-10 flex-1 w-full max-w-7xl mx-auto px-6 py-10 transition-opacity duration-300">
+        {renderContent}
       </main>
+
+      <AIChatOverlay currentData={surveyData} />
+    </div>
+  );
 
       <AIChatOverlay currentData={surveyData} />
     </div>
