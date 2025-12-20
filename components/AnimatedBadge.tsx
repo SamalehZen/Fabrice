@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 
 export interface AnimatedBadgeProps {
@@ -27,11 +26,7 @@ function hexToRgba(hexColor: string, alpha: number): string {
 
 const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ text = 'Données en temps réel', color = '#0ea5e9', href }) => {
   const content = (
-    <motion.div
-      initial={false}
-      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      transition={{ duration: 0.3, delay: 0.1, ease: 'easeInOut' }}
-      viewport={{ once: true }}
+    <div
       className="group relative flex max-w-fit items-center justify-center gap-3 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-neutral-700 transition-colors dark:border-neutral-700/80 dark:bg-black dark:text-zinc-300"
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-full h-20 w-[165px]" aria-hidden="true">
@@ -65,7 +60,7 @@ const AnimatedBadge: React.FC<AnimatedBadgeProps> = ({ text = 'Données en temps
       <div className="mx-2 h-4 w-px bg-neutral-300 dark:bg-neutral-600/80" aria-hidden="true" />
       <span className="bg-clip-text text-xs font-medium">{text}</span>
       <ChevronRight className="ml-1 h-3.5 w-3.5 text-neutral-400 transition-transform duration-200 group-hover:translate-x-0.5 dark:text-neutral-500" aria-hidden="true" />
-    </motion.div>
+    </div>
   );
 
   return (
