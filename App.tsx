@@ -170,10 +170,6 @@ const AppContent: React.FC = () => {
       <AIChatOverlay currentData={surveyData} />
     </div>
   );
-
-      <AIChatOverlay currentData={surveyData} />
-    </div>
-  );
 };
 
 const App: React.FC = () => (
